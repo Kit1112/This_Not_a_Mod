@@ -1,0 +1,19 @@
+{
+	"credit": "Made with Blockbench",
+	"texture_size": [128, 128],
+	"textures": {
+		"0": "tex_locker",
+		"particle": "tex_locker"
+	},
+	"elements": [
+		{
+			"from": [1, 0, 3],
+			"to": [15, 7, 4],
+			"rotation": {"angle": 0, "axis": "y", "origin": [17, -20, 4]},
+			"faces": {
+				"north": {"uv": [1.875, 8, 3.5, 8.875], "texture": "#0"},
+				"south": {"uv": [0.125, 8, 1.75, 8.875], "texture": "#0"}
+			}
+		}
+	]
+}

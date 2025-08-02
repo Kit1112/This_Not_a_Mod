@@ -1,0 +1,134 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"0": {
+			"loop": "hold_on_last_frame"
+		},
+		"1": {
+			"loop": "hold_on_last_frame",
+			"animation_length": 35,
+			"bones": {
+				"2": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"30.0": {
+							"vector": [45, 0, 0]
+						}
+					}
+				},
+				"Тарелка2": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"30.0": {
+							"vector": [45, 0, 0],
+							"easing": "linear"
+						}
+					}
+				},
+				"": {
+					"rotation": {
+						"vector": [0, 45, 0]
+					}
+				}
+			}
+		},
+		"2": {
+			"loop": "hold_on_last_frame",
+			"animation_length": 35,
+			"bones": {
+				"2": {
+					"rotation": {
+						"0.0": {
+							"vector": [45, 0, 0]
+						},
+						"30.0": {
+							"vector": [0, 0, 0]
+						}
+					}
+				},
+				"Тарелка2": {
+					"rotation": {
+						"0.0": {
+							"vector": [45, 0, 0]
+						},
+						"30.0": {
+							"vector": [0, 0, 0]
+						}
+					}
+				},
+				"": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 45, 0]
+						},
+						"30.0": {
+							"vector": [0, 0, 0]
+						}
+					}
+				}
+			}
+		},
+		"3": {
+			"loop": "hold_on_last_frame",
+			"animation_length": 35,
+			"bones": {
+				"Тарелка2": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"30.0": {
+							"vector": [45, 0, 0]
+						}
+					}
+				},
+				"Телескоп": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"30.0": {
+							"vector": [0, 45, 0]
+						}
+					}
+				}
+			}
+		},
+		"4": {
+			"loop": "hold_on_last_frame",
+			"animation_length": 30,
+			"bones": {
+				"Телескоп": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 45, 0]
+						},
+						"30.0": {
+							"vector": [0, 9, 0]
+						}
+					}
+				},
+				"Тарелка2": {
+					"rotation": {
+						"0.0": {
+							"vector": [45, 0, 0]
+						},
+						"30.0": {
+							"vector": [0, 0, 0]
+						}
+					}
+				}
+			},
+			"sound_effects": {
+				"0.0": {
+					"effect": "dish__moves_30s"
+				}
+			}
+		}
+	},
+	"geckolib_format_version": 2
+}

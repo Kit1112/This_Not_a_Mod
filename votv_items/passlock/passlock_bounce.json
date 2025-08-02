@@ -1,0 +1,22 @@
+{
+	"format_version": "1.21.6",
+	"credit": "Made with Blockbench",
+	"textures": {
+		"particle": "tex_passlock"
+	},
+	"elements": [
+		{
+			"from": [4, 1, 15],
+			"to": [12, 15, 16],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 8, 16]},
+			"faces": {
+				"north": {"uv": [8, 2, 16, 16], "texture": "#missing"},
+				"east": {"uv": [7, 2, 8, 16], "texture": "#missing"},
+				"south": {"uv": [8, 2, 16, 15], "texture": "#missing"},
+				"west": {"uv": [7, 2, 8, 16], "texture": "#missing"},
+				"up": {"uv": [8, 1, 16, 2], "texture": "#missing"},
+				"down": {"uv": [16, 15, 8, 16], "texture": "#missing"}
+			}
+		}
+	]
+}

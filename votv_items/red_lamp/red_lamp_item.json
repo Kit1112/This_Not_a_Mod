@@ -1,0 +1,21 @@
+{
+  "credit": "Made with Blockbench",
+  "parent": "builtin/entity",
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        45,
+        0
+      ],
+      "translation": [
+        0,
+        -3.25,
+        0
+      ]
+    }
+  },
+  "textures": {
+    "particle": "item/industrial_iron_lamp_own_off"
+  }
+}
