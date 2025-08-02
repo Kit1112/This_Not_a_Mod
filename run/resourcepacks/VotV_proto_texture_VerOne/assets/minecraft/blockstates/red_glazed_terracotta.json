@@ -1,0 +1,72 @@
+{
+  "variants": {
+    "facing=east": [
+	{
+      "model": "minecraft:block/red_glazed_terracotta",
+      "y": 270, "weight": 150
+    },
+	{
+      "model": "minecraft:block/red_glazed_terracotta_2",
+      "y": 270, "weight": 150
+    },
+	{
+      "model": "minecraft:block/red_glazed_terracotta_3",
+      "y": 270, "weight": 25
+    },
+	{
+      "model": "minecraft:block/red_glazed_terracotta_4",
+      "y": 270, "weight": 50
+    }
+	],
+    "facing=north": [
+	{
+      "model": "minecraft:block/red_glazed_terracotta",
+      "y": 180, "weight": 150
+    },
+	{
+      "model": "minecraft:block/red_glazed_terracotta_2",
+      "y": 180, "weight": 150
+    },
+	{
+      "model": "minecraft:block/red_glazed_terracotta_3",
+      "y": 180, "weight": 25
+    },
+	{
+      "model": "minecraft:block/red_glazed_terracotta_4",
+      "y": 180, "weight": 50
+    }
+	],
+    "facing=south": [
+	{
+      "model": "minecraft:block/red_glazed_terracotta", "weight": 150
+    },
+	{
+      "model": "minecraft:block/red_glazed_terracotta_2", "weight": 150
+    },
+	{
+      "model": "minecraft:block/red_glazed_terracotta_3", "weight": 25
+    },
+	{
+      "model": "minecraft:block/red_glazed_terracotta_4", "weight": 50
+    }
+	],
+    "facing=west": [
+	{
+      "model": "minecraft:block/red_glazed_terracotta",
+      "y": 90, "weight": 150
+    },
+	{
+      "model": "minecraft:block/red_glazed_terracotta_2",
+      "y": 90, "weight": 150
+    },
+	{
+      "model": "minecraft:block/red_glazed_terracotta_3",
+      "y": 90, "weight": 25
+    },
+	{
+      "model": "minecraft:block/red_glazed_terracotta_4",
+      "y": 90, "weight": 50
+    }
+	]
+  }
+}

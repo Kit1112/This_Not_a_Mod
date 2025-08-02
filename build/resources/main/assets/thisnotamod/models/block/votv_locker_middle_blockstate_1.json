@@ -1,0 +1,6 @@
+{
+  "parent": "thisnotamod:custom/votv_locker_middle_particle",
+  "textures": {
+    "particle": "thisnotamod:block/transparent"
+  }
+}

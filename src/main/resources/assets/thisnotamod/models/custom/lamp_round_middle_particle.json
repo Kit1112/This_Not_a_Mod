@@ -1,0 +1,6 @@
+{
+  "parent": "thisnotamod:displaysettings/lampitem",
+  "textures": {
+    "particle": "thisnotamod:block/lamproundoff"
+  }
+}

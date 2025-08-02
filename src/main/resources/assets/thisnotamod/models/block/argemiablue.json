@@ -1,0 +1,9 @@
+{
+  "parent": "thisnotamod:custom/arirplush_blue",
+  "textures": {
+    "all": "thisnotamod:block/rirplush_blue",
+    "particle": "thisnotamod:block/rirplush",
+    "0": "thisnotamod:block/rirplush_blue"
+  },
+  "render_type": "cutout_mipped"
+}

@@ -1,0 +1,83 @@
+{
+  "variants": {
+    "type=bottom": [
+	{
+      "model": "minecraft:block/polished_andesite_slab"
+    },
+	{
+      "model": "minecraft:block/polished_andesite_slab", "y": 180
+    },
+	{
+      "model": "minecraft:block/polished_andesite_slab", "y": 90
+    },
+    {
+      "model": "minecraft:block/polished_andesite_slab_2"
+    },
+    {
+      "model": "minecraft:block/polished_andesite_slab_2", "y": 90
+    },
+    {
+      "model": "minecraft:block/polished_andesite_slab_2", "y": 180
+    },
+    {
+      "model": "minecraft:block/polished_andesite_slab_3"
+    },
+    {
+      "model": "minecraft:block/polished_andesite_slab_3", "y": 180
+    },
+    {
+      "model": "minecraft:block/polished_andesite_slab_3", "y": 270
+    },
+    {
+      "model": "minecraft:block/polished_andesite_slab_4"
+    },
+    {
+      "model": "minecraft:block/polished_andesite_slab_4", "y": 90
+    },
+    {
+      "model": "minecraft:block/polished_andesite_slab_4", "y": 270
+    }
+	],
+    "type=double": {
+      "model": "minecraft:block/polished_andesite"
+    },
+    "type=top": [
+	{
+      "model": "minecraft:block/polished_andesite_slab_top"
+    },
+	{
+      "model": "minecraft:block/polished_andesite_slab_top", "y": 180
+    },
+	{
+      "model": "minecraft:block/polished_andesite_slab_top", "y": 90
+    },
+    {
+      "model": "minecraft:block/polished_andesite_slab_top_2"
+    },
+    {
+      "model": "minecraft:block/polished_andesite_slab_top_2", "y": 90
+    },
+    {
+      "model": "minecraft:block/polished_andesite_slab_top_2", "y": 180
+    },
+    {
+      "model": "minecraft:block/polished_andesite_slab_top_3"
+    },
+    {
+      "model": "minecraft:block/polished_andesite_slab_top_3", "y": 180
+    },
+    {
+      "model": "minecraft:block/polished_andesite_slab_top_3", "y": 270
+    },
+    {
+      "model": "minecraft:block/polished_andesite_slab_top_4"
+    },
+    {
+      "model": "minecraft:block/polished_andesite_slab_top_4", "y": 90
+    },
+    {
+      "model": "minecraft:block/polished_andesite_slab_top_4", "y": 270
+    }
+	]
+  }
+}

@@ -1,0 +1,42 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="Not specified"
+
+[[mods]]
+modId="thisnotamod"
+version="1.8.7.1"
+displayName="This (Not) a Mod"
+displayURL="https://t.me/death_nick"
+logoFile="logo.png"
+credits="Kvasiss, Tailsrus"
+authors="Kit_1112"
+description="Эксклюзивный мод для This (Not) a Modpack"
+displayTest="IGNORE_SERVER_VERSION"
+
+# Start of user code block mod configuration
+# End of user code block mod configuration
+
+[[dependencies.thisnotamod]]
+    modId="minecraft"
+    mandatory=true
+    versionRange="[1.20.1]"
+    ordering="AFTER"
+    side="BOTH"
+
+
+[[dependencies.thisnotamod]]
+    modId="curios_api"
+    mandatory=false
+    versionRange="[0,)"
+    ordering="NONE"
+    side="BOTH"
+[[dependencies.thisnotamod]]
+    modId="geckolib"
+    mandatory=false
+    versionRange="[0,)"
+    ordering="NONE"
+    side="BOTH"
+
+
+# Start of user code block dependencies configuration
+# End of user code block dependencies configuration

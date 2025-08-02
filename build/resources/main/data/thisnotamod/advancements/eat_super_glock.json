@@ -1,0 +1,30 @@
+{
+  "display": {
+    "icon": {
+      "item": "minecraft:light"
+    },
+    "title": {
+      "translate": "advancements.eat_super_glock.title"
+    },
+    "description": {
+      "translate": "advancements.eat_super_glock.descr"
+    },
+    "frame": "challenge",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": true
+  },
+  "criteria": {
+    "eat_super_glock_0": {
+      "trigger": "minecraft:consume_item",
+      "conditions": {
+        "item": {
+          "items": [
+            "thisnotamod:super_glock_17"
+          ]
+        }
+      }
+    }
+  },
+  "parent": "minecraft:adventure/root"
+}

@@ -1,0 +1,26 @@
+{
+  "_fv": 66,
+  "_type": "musicdisc",
+  "definition": {
+    "name": "Пластинка",
+    "rarity": "EPIC",
+    "texture": "musicdiscvotv",
+    "description": "VotV Title theme - Wolfeni",
+    "creativeTabs": [
+      {
+        "value": "CUSTOM:VotV"
+      }
+    ],
+    "specialInformation": {
+      "fixedValue": []
+    },
+    "glowCondition": {
+      "fixedValue": false
+    },
+    "music": {
+      "value": "CUSTOM:votv_theme"
+    },
+    "lengthInTicks": 2160,
+    "analogOutput": 15
+  }
+}

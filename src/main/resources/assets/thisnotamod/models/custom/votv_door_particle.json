@@ -1,0 +1,7 @@
+
+{
+  "parent": "thisnotamod:displaysettings/votvdooritem",
+  "textures": {
+    "particle": "thisnotamod:block/transparent"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab",
+  "textures": {
+    "bottom": "minecraft:block/tex_concrete_0001_var3",
+    "side": "minecraft:block/tex_concretewall_0005",
+    "top": "minecraft:block/tex_concrete_0001_var3"
+  }
+}

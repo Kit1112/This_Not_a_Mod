@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "thisnotamod:custom/radiotielieskop_particle"
+    },
+    "facing=east": {
+      "model": "thisnotamod:custom/radiotielieskop_particle",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "thisnotamod:custom/radiotielieskop_particle",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "thisnotamod:custom/radiotielieskop_particle",
+      "y": 270
+    }
+  }
+}

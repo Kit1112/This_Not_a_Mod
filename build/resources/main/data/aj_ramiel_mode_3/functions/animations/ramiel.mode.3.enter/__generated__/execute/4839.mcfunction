@@ -1,0 +1,18 @@
+#built using mc-build (https://github.com/mc-build/mc-build)
+
+execute if score #this.aj.anim aj.i matches 94 as @e[type=armor_stand,tag=aj.ramiel_mode_3.down2,distance=..17.4] if score @s aj.id = #this.aj.id aj.i run data modify entity @s Pose.Head set value [0f,75f,0f]
+execute if score #this.aj.anim aj.i matches 94..96 run tp @s ^-1.91 ^-1.918 ^3.309 ~ ~
+execute if score #this.aj.anim aj.i matches 97 run tp @s ^-3.485 ^-1.918 ^6.037 ~ ~
+execute if score #this.aj.anim aj.i matches 98 run tp @s ^-3.785 ^-1.968 ^6.556 ~ ~
+execute if score #this.aj.anim aj.i matches 99 run tp @s ^-3.785 ^-2.027 ^6.556 ~ ~
+execute if score #this.aj.anim aj.i matches 100 run tp @s ^-3.785 ^-2.086 ^6.556 ~ ~
+execute if score #this.aj.anim aj.i matches 101 run tp @s ^-3.785 ^-2.143 ^6.556 ~ ~
+execute if score #this.aj.anim aj.i matches 102 run tp @s ^-3.785 ^-2.204 ^6.556 ~ ~
+execute if score #this.aj.anim aj.i matches 103 run tp @s ^-3.785 ^-2.263 ^6.556 ~ ~
+execute if score #this.aj.anim aj.i matches 94 as @e[type=armor_stand,tag=aj.ramiel_mode_3.down2,distance=..17.4] if score @s[tag=aj.state.default] aj.id = #this.aj.id aj.i run item replace entity @s armor.head with iron_ingot{CustomModelData:1575}
+execute if score #this.aj.anim aj.i matches 98 as @e[type=armor_stand,tag=aj.ramiel_mode_3.down2,distance=..17.4] if score @s[tag=aj.state.default] aj.id = #this.aj.id aj.i run item replace entity @s armor.head with iron_ingot{CustomModelData:1589}
+execute if score #this.aj.anim aj.i matches 99 as @e[type=armor_stand,tag=aj.ramiel_mode_3.down2,distance=..17.4] if score @s[tag=aj.state.default] aj.id = #this.aj.id aj.i run item replace entity @s armor.head with iron_ingot{CustomModelData:1590}
+execute if score #this.aj.anim aj.i matches 100 as @e[type=armor_stand,tag=aj.ramiel_mode_3.down2,distance=..17.4] if score @s[tag=aj.state.default] aj.id = #this.aj.id aj.i run item replace entity @s armor.head with iron_ingot{CustomModelData:1591}
+execute if score #this.aj.anim aj.i matches 101 as @e[type=armor_stand,tag=aj.ramiel_mode_3.down2,distance=..17.4] if score @s[tag=aj.state.default] aj.id = #this.aj.id aj.i run item replace entity @s armor.head with iron_ingot{CustomModelData:1592}
+execute if score #this.aj.anim aj.i matches 102 as @e[type=armor_stand,tag=aj.ramiel_mode_3.down2,distance=..17.4] if score @s[tag=aj.state.default] aj.id = #this.aj.id aj.i run item replace entity @s armor.head with iron_ingot{CustomModelData:1593}
+execute if score #this.aj.anim aj.i matches 103 as @e[type=armor_stand,tag=aj.ramiel_mode_3.down2,distance=..17.4] if score @s[tag=aj.state.default] aj.id = #this.aj.id aj.i run item replace entity @s armor.head with iron_ingot{CustomModelData:1594}

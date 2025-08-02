@@ -1,0 +1,58 @@
+{
+  "_fv": 66,
+  "_type": "gui",
+  "definition": {
+    "type": 0,
+    "width": 86,
+    "height": 166,
+    "inventoryOffsetX": 0,
+    "inventoryOffsetY": 0,
+    "renderBgLayer": false,
+    "doesPauseGame": false,
+    "components": [
+      {
+        "type": "button",
+        "data": {
+          "name": "button_aktivirovat",
+          "text": "Активировать",
+          "isUndecorated": false,
+          "width": 88,
+          "height": 20,
+          "x": 170,
+          "y": 144
+        }
+      },
+      {
+        "type": "button",
+        "data": {
+          "name": "button_ispolzovat",
+          "text": "Использовать",
+          "isUndecorated": false,
+          "width": 88,
+          "height": 20,
+          "x": 170,
+          "y": 164
+        }
+      },
+      {
+        "type": "button",
+        "data": {
+          "name": "button_ispolzovat1",
+          "text": "Погладить",
+          "isUndecorated": false,
+          "width": 88,
+          "height": 20,
+          "x": 170,
+          "y": 184
+        }
+      }
+    ],
+    "gridSettings": {
+      "sx": 18,
+      "sy": 18,
+      "ox": 11,
+      "oy": 15,
+      "snapOnGrid": false
+    }
+  }
+}

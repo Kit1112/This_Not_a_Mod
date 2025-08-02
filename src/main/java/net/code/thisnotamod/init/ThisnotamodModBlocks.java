@@ -1,0 +1,131 @@
+
+/*
+ *    MCreator note: This file will be REGENERATED on each build.
+ */
+package net.code.thisnotamod.init;
+
+import net.minecraftforge.registries.RegistryObject;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.DeferredRegister;
+
+import net.minecraft.world.level.block.Block;
+
+import net.code.thisnotamod.block.ZigaBlock;
+import net.code.thisnotamod.block.WorkStatBlock;
+import net.code.thisnotamod.block.WindowRightDBlock;
+import net.code.thisnotamod.block.WindowAleftTBlock;
+import net.code.thisnotamod.block.WindowAleftDBlock;
+import net.code.thisnotamod.block.WindowARightTBlock;
+import net.code.thisnotamod.block.WCanimBlock;
+import net.code.thisnotamod.block.VotvLockerTopBlock;
+import net.code.thisnotamod.block.VotvLockerMiddleBlock;
+import net.code.thisnotamod.block.VotvLockerBlock;
+import net.code.thisnotamod.block.VotvDoorTopBlock;
+import net.code.thisnotamod.block.VotvDoorBlock;
+import net.code.thisnotamod.block.VentCornerHorizontalBlock;
+import net.code.thisnotamod.block.VentCornerBlock;
+import net.code.thisnotamod.block.TerminalBlock;
+import net.code.thisnotamod.block.TermRTBlock;
+import net.code.thisnotamod.block.TermLTBlock;
+import net.code.thisnotamod.block.TermLDBlock;
+import net.code.thisnotamod.block.TelescopeBlock;
+import net.code.thisnotamod.block.TableRBlock;
+import net.code.thisnotamod.block.TableLBlock;
+import net.code.thisnotamod.block.TableKitchenBlock;
+import net.code.thisnotamod.block.ServerTopBlock;
+import net.code.thisnotamod.block.ServerBlock;
+import net.code.thisnotamod.block.RadiotielieskopBlock;
+import net.code.thisnotamod.block.RadarBlock;
+import net.code.thisnotamod.block.PasslockBlock;
+import net.code.thisnotamod.block.MannequinTopBlock;
+import net.code.thisnotamod.block.MannequinDownBlock;
+import net.code.thisnotamod.block.LightSwitchBlock;
+import net.code.thisnotamod.block.Lampplus1UppedBlock;
+import net.code.thisnotamod.block.Lampplus1Block;
+import net.code.thisnotamod.block.LampUppedBlock;
+import net.code.thisnotamod.block.LampRoundUpMiddleBlock;
+import net.code.thisnotamod.block.LampRoundUpBlock;
+import net.code.thisnotamod.block.LampRoundMiddleBlock;
+import net.code.thisnotamod.block.LampRoundBlock;
+import net.code.thisnotamod.block.LampMiddleUppedBlock;
+import net.code.thisnotamod.block.LampMiddlePlus1UppedBlock;
+import net.code.thisnotamod.block.LampMiddlePlus1Block;
+import net.code.thisnotamod.block.LampMiddleBlock;
+import net.code.thisnotamod.block.LampBlock;
+import net.code.thisnotamod.block.KripoghusBlock;
+import net.code.thisnotamod.block.ConcreteWallSideBlock;
+import net.code.thisnotamod.block.ConcreteWallRightBlock;
+import net.code.thisnotamod.block.ConcreteWallRBlock;
+import net.code.thisnotamod.block.ConcreteWallNBlock;
+import net.code.thisnotamod.block.ConcreteWallBlock;
+import net.code.thisnotamod.block.ChessAndesitBlock;
+import net.code.thisnotamod.block.ArgemiayellowBlock;
+import net.code.thisnotamod.block.ArgemiawhiteBlock;
+import net.code.thisnotamod.block.ArgemiaredBlock;
+import net.code.thisnotamod.block.ArgemiapurpleBlock;
+import net.code.thisnotamod.block.ArgemiagreenBlock;
+import net.code.thisnotamod.block.ArgemiacyanBlock;
+import net.code.thisnotamod.block.ArgemiablueBlock;
+import net.code.thisnotamod.ThisnotamodMod;
+
+public class ThisnotamodModBlocks {
+	public static final DeferredRegister<Block> REGISTRY = DeferredRegister.create(ForgeRegistries.BLOCKS, ThisnotamodMod.MODID);
+	public static final RegistryObject<Block> KRIPOGHUS = REGISTRY.register("kripoghus", () -> new KripoghusBlock());
+	public static final RegistryObject<Block> ARGEMIABLUE = REGISTRY.register("argemiablue", () -> new ArgemiablueBlock());
+	public static final RegistryObject<Block> ARGEMIARED = REGISTRY.register("argemiared", () -> new ArgemiaredBlock());
+	public static final RegistryObject<Block> ARGEMIACYAN = REGISTRY.register("argemiacyan", () -> new ArgemiacyanBlock());
+	public static final RegistryObject<Block> ARGEMIAGREEN = REGISTRY.register("argemiagreen", () -> new ArgemiagreenBlock());
+	public static final RegistryObject<Block> ARGEMIAPURPLE = REGISTRY.register("argemiapurple", () -> new ArgemiapurpleBlock());
+	public static final RegistryObject<Block> ARGEMIAYELLOW = REGISTRY.register("argemiayellow", () -> new ArgemiayellowBlock());
+	public static final RegistryObject<Block> ARGEMIAWHITE = REGISTRY.register("argemiawhite", () -> new ArgemiawhiteBlock());
+	public static final RegistryObject<Block> VOTV_DOOR = REGISTRY.register("votv_door", () -> new VotvDoorBlock());
+	public static final RegistryObject<Block> VOTV_DOOR_TOP = REGISTRY.register("votv_door_top", () -> new VotvDoorTopBlock());
+	public static final RegistryObject<Block> VOTV_LOCKER = REGISTRY.register("votv_locker", () -> new VotvLockerBlock());
+	public static final RegistryObject<Block> VOTV_LOCKER_MIDDLE = REGISTRY.register("votv_locker_middle", () -> new VotvLockerMiddleBlock());
+	public static final RegistryObject<Block> VOTV_LOCKER_TOP = REGISTRY.register("votv_locker_top", () -> new VotvLockerTopBlock());
+	public static final RegistryObject<Block> TABLE_L = REGISTRY.register("table_l", () -> new TableLBlock());
+	public static final RegistryObject<Block> TABLE_R = REGISTRY.register("table_r", () -> new TableRBlock());
+	public static final RegistryObject<Block> LAMP = REGISTRY.register("lamp", () -> new LampBlock());
+	public static final RegistryObject<Block> TELESCOPE = REGISTRY.register("telescope", () -> new TelescopeBlock());
+	public static final RegistryObject<Block> RADIOTIELIESKOP = REGISTRY.register("radiotielieskop", () -> new RadiotielieskopBlock());
+	public static final RegistryObject<Block> CONCRETE_WALL = REGISTRY.register("concrete_wall", () -> new ConcreteWallBlock());
+	public static final RegistryObject<Block> CONCRETE_WALL_RIGHT = REGISTRY.register("concrete_wall_right", () -> new ConcreteWallRightBlock());
+	public static final RegistryObject<Block> CONCRETE_WALL_SIDE = REGISTRY.register("concrete_wall_side", () -> new ConcreteWallSideBlock());
+	public static final RegistryObject<Block> CONCRETE_WALL_N = REGISTRY.register("concrete_wall_n", () -> new ConcreteWallNBlock());
+	public static final RegistryObject<Block> CONCRETE_WALL_R = REGISTRY.register("concrete_wall_r", () -> new ConcreteWallRBlock());
+	public static final RegistryObject<Block> WORK_STAT = REGISTRY.register("work_stat", () -> new WorkStatBlock());
+	public static final RegistryObject<Block> MANNEQUIN_TOP = REGISTRY.register("mannequin_top", () -> new MannequinTopBlock());
+	public static final RegistryObject<Block> MANNEQUIN_DOWN = REGISTRY.register("mannequin_down", () -> new MannequinDownBlock());
+	public static final RegistryObject<Block> TERMINAL = REGISTRY.register("terminal", () -> new TerminalBlock());
+	public static final RegistryObject<Block> SERVER = REGISTRY.register("server", () -> new ServerBlock());
+	public static final RegistryObject<Block> RADAR = REGISTRY.register("radar", () -> new RadarBlock());
+	public static final RegistryObject<Block> TABLE_KITCHEN = REGISTRY.register("table_kitchen", () -> new TableKitchenBlock());
+	public static final RegistryObject<Block> TERM_RT = REGISTRY.register("term_rt", () -> new TermRTBlock());
+	public static final RegistryObject<Block> TERM_LD = REGISTRY.register("term_ld", () -> new TermLDBlock());
+	public static final RegistryObject<Block> TERM_LT = REGISTRY.register("term_lt", () -> new TermLTBlock());
+	public static final RegistryObject<Block> CHESS_ANDESIT = REGISTRY.register("chess_andesit", () -> new ChessAndesitBlock());
+	public static final RegistryObject<Block> ZIGA = REGISTRY.register("ziga", () -> new ZigaBlock());
+	public static final RegistryObject<Block> PASSLOCK = REGISTRY.register("passlock", () -> new PasslockBlock());
+	public static final RegistryObject<Block> LAMPPLUS_1 = REGISTRY.register("lampplus_1", () -> new Lampplus1Block());
+	public static final RegistryObject<Block> LAMPPLUS_1_UPPED = REGISTRY.register("lampplus_1_upped", () -> new Lampplus1UppedBlock());
+	public static final RegistryObject<Block> LAMP_UPPED = REGISTRY.register("lamp_upped", () -> new LampUppedBlock());
+	public static final RegistryObject<Block> LAMP_MIDDLE = REGISTRY.register("lamp_middle", () -> new LampMiddleBlock());
+	public static final RegistryObject<Block> LAMP_MIDDLE_PLUS_1 = REGISTRY.register("lamp_middle_plus_1", () -> new LampMiddlePlus1Block());
+	public static final RegistryObject<Block> LAMP_MIDDLE_UPPED = REGISTRY.register("lamp_middle_upped", () -> new LampMiddleUppedBlock());
+	public static final RegistryObject<Block> LAMP_MIDDLE_PLUS_1_UPPED = REGISTRY.register("lamp_middle_plus_1_upped", () -> new LampMiddlePlus1UppedBlock());
+	public static final RegistryObject<Block> VENT_CORNER = REGISTRY.register("vent_corner", () -> new VentCornerBlock());
+	public static final RegistryObject<Block> VENT_CORNER_HORIZONTAL = REGISTRY.register("vent_corner_horizontal", () -> new VentCornerHorizontalBlock());
+	public static final RegistryObject<Block> SERVER_TOP = REGISTRY.register("server_top", () -> new ServerTopBlock());
+	public static final RegistryObject<Block> W_CANIM = REGISTRY.register("w_canim", () -> new WCanimBlock());
+	public static final RegistryObject<Block> LIGHT_SWITCH = REGISTRY.register("light_switch", () -> new LightSwitchBlock());
+	public static final RegistryObject<Block> LAMP_ROUND = REGISTRY.register("lamp_round", () -> new LampRoundBlock());
+	public static final RegistryObject<Block> LAMP_ROUND_UP = REGISTRY.register("lamp_round_up", () -> new LampRoundUpBlock());
+	public static final RegistryObject<Block> LAMP_ROUND_UP_MIDDLE = REGISTRY.register("lamp_round_up_middle", () -> new LampRoundUpMiddleBlock());
+	public static final RegistryObject<Block> LAMP_ROUND_MIDDLE = REGISTRY.register("lamp_round_middle", () -> new LampRoundMiddleBlock());
+	public static final RegistryObject<Block> WINDOW_RIGHT_D = REGISTRY.register("window_right_d", () -> new WindowRightDBlock());
+	public static final RegistryObject<Block> WINDOW_ALEFT_D = REGISTRY.register("window_aleft_d", () -> new WindowAleftDBlock());
+	public static final RegistryObject<Block> WINDOW_A_RIGHT_T = REGISTRY.register("window_a_right_t", () -> new WindowARightTBlock());
+	public static final RegistryObject<Block> WINDOW_ALEFT_T = REGISTRY.register("window_aleft_t", () -> new WindowAleftTBlock());
+	// Start of user code block custom blocks
+	// End of user code block custom blocks
+}

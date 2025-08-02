@@ -1,0 +1,198 @@
+{
+  "_fv": 66,
+  "_type": "gui",
+  "definition": {
+    "type": 0,
+    "width": 134,
+    "height": 166,
+    "inventoryOffsetX": 0,
+    "inventoryOffsetY": 0,
+    "renderBgLayer": false,
+    "doesPauseGame": false,
+    "components": [
+      {
+        "type": "image",
+        "data": {
+          "image": "passlock_fronnt.png",
+          "use1Xscale": false,
+          "x": 147,
+          "y": 41
+        }
+      },
+      {
+        "type": "textfield",
+        "data": {
+          "placeholder": "",
+          "name": "passChangeField",
+          "width": 120,
+          "height": 20,
+          "x": 154,
+          "y": 60
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_pas_b_1",
+          "image": "pas_b_1.png",
+          "hoveredImage": "pas_b_1_h.png",
+          "onClick": {
+            "name": "PassChange1b"
+          },
+          "x": 153,
+          "y": 100
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_pas_b_2",
+          "image": "pas_b_2.png",
+          "hoveredImage": "pas_b_2_h.png",
+          "onClick": {
+            "name": "PassChange2b"
+          },
+          "x": 194,
+          "y": 100
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_pas_b_3",
+          "image": "pas_b_3.png",
+          "hoveredImage": "pas_b_3_h.png",
+          "onClick": {
+            "name": "PassChange3b"
+          },
+          "x": 235,
+          "y": 100
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_pas_b_4",
+          "image": "pas_b_4.png",
+          "hoveredImage": "pas_b_4_h.png",
+          "onClick": {
+            "name": "PassChange4b"
+          },
+          "x": 153,
+          "y": 121
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_pas_b_5",
+          "image": "pas_b_5.png",
+          "hoveredImage": "pas_b_5_h.png",
+          "onClick": {
+            "name": "PassChange5b"
+          },
+          "x": 194,
+          "y": 121
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_pas_b_6",
+          "image": "pas_b_6.png",
+          "hoveredImage": "pas_b_6_h.png",
+          "onClick": {
+            "name": "PassChange6b"
+          },
+          "x": 235,
+          "y": 121
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_pas_b_7",
+          "image": "pas_b_7.png",
+          "hoveredImage": "pas_b_7_h.png",
+          "onClick": {
+            "name": "PassChange7b"
+          },
+          "x": 153,
+          "y": 142
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_pas_b_8",
+          "image": "pas_b_8.png",
+          "hoveredImage": "pas_b_8_h.png",
+          "onClick": {
+            "name": "PassChange8b"
+          },
+          "x": 194,
+          "y": 142
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_pas_b_9",
+          "image": "pas_b_9.png",
+          "hoveredImage": "pas_b_9_h.png",
+          "onClick": {
+            "name": "PassChange9b"
+          },
+          "x": 235,
+          "y": 142
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_pas_b_deny",
+          "image": "pas_b_deny.png",
+          "hoveredImage": "pas_b_deny_h.png",
+          "onClick": {
+            "name": "PassChangeXb"
+          },
+          "x": 153,
+          "y": 163
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_pas_b_0",
+          "image": "pas_b_0.png",
+          "hoveredImage": "pas_b_0_h.png",
+          "onClick": {
+            "name": "PassChange0b"
+          },
+          "x": 194,
+          "y": 163
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_pas_b_access",
+          "image": "pas_b_access.png",
+          "hoveredImage": "pas_b_access_h.png",
+          "onClick": {
+            "name": "PassChangeOkB"
+          },
+          "x": 235,
+          "y": 163
+        }
+      }
+    ],
+    "gridSettings": {
+      "sx": 18,
+      "sy": 18,
+      "ox": 11,
+      "oy": 15,
+      "snapOnGrid": false
+    }
+  }
+}

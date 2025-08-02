@@ -1,0 +1,100 @@
+{
+  "credit": "Made with Blockbench",
+  "parent": "builtin/entity",
+  "texture_size": [
+    128,
+    128
+  ],
+  "display": {
+    "thirdperson_righthand": {
+      "rotation": [
+        -180,
+        0,
+        0
+      ],
+      "translation": [
+        -6.5,
+        16,
+        6.5
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        -180,
+        0,
+        0
+      ],
+      "translation": [
+        -6.25,
+        16,
+        6.25
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        -180,
+        0,
+        0
+      ],
+      "translation": [
+        -0.75,
+        6.75,
+        2.75
+      ],
+      "scale": [
+        0.33,
+        0.33,
+        0.33
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        -180,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        6.75,
+        2.75
+      ],
+      "scale": [
+        0.33,
+        0.33,
+        0.33
+      ]
+    },
+    "ground": {
+      "rotation": [
+        -180,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        13.75,
+        7.5
+      ]
+    },
+    "gui": {
+      "rotation": [
+        -139,
+        30,
+        0
+      ],
+      "translation": [
+        -1.25,
+        1.75,
+        0
+      ],
+      "scale": [
+        0.33,
+        0.33,
+        0.33
+      ]
+    }
+  },
+  "textures": {
+    "particle": "item/tex_ceilinglamp_on"
+  }
+}

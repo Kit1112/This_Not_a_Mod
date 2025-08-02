@@ -1,0 +1,10 @@
+{
+  "mappings": {
+    "default": {
+      "map": {
+        "0": "tex_table2"
+      },
+      "name": "default"
+    }
+  }
+}

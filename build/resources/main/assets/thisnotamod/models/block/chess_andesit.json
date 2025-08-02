@@ -1,0 +1,13 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "down": "thisnotamod:block/blokradibloka",
+    "up": "thisnotamod:block/blokradibloka",
+    "north": "thisnotamod:block/andesite",
+    "east": "thisnotamod:block/andesite",
+    "south": "thisnotamod:block/andesite",
+    "west": "thisnotamod:block/andesite",
+    "particle": "thisnotamod:block/blokradibloka"
+  },
+  "render_type": "solid"
+}

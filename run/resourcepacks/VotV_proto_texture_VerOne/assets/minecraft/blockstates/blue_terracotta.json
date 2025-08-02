@@ -1,0 +1,18 @@
+{
+  "variants": {
+    "": [
+	{
+      "model": "minecraft:block/blue_terracotta", "weight": 50
+    },
+    {
+      "model": "minecraft:block/blue_terracotta_2", "weight": 100
+    },
+    {
+      "model": "minecraft:block/blue_terracotta_3", "weight": 40
+    },
+    {
+      "model": "minecraft:block/blue_terracotta_4", "weight": 25
+    }
+   ]
+  }
+}

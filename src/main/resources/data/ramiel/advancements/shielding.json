@@ -1,0 +1,14 @@
+{
+  "criteria": {
+    "requirement": {
+      "trigger": "minecraft:using_item",
+      "conditions": {
+        "item": {
+          "items": [
+            "minecraft:shield", "terramity:giant_dungeon_slab", "call_of_yucutan:hematite_shield", "twilightforest:knightmetal_shield", "ars_nouveau:enchanters_shield", "cataclysm:bulwark_of_the_flame", "cataclysm:black_steel_targe", "minecells:cudgel", "minecells:rampart", "minecells:assault_shield", "minecells:bloodthirsty_shield", "minecells:greed_shield", "minecells:ice_shield"
+          ]
+        }
+      }
+    }
+  }
+}

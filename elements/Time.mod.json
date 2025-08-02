@@ -1,0 +1,48 @@
+{
+  "_fv": 66,
+  "_type": "overlay",
+  "definition": {
+    "priority": "NORMAL",
+    "components": [
+      {
+        "type": "label",
+        "data": {
+          "name": "label_proc_time_proc1",
+          "text": {
+            "fixedValue": "",
+            "name": "TimeProc"
+          },
+          "color": {
+            "value": -1,
+            "falpha": 0.0
+          },
+          "anchorPoint": "TOP_LEFT",
+          "x": 8,
+          "y": 7
+        }
+      },
+      {
+        "type": "image",
+        "data": {
+          "image": "time_back1.png",
+          "use1Xscale": true,
+          "anchorPoint": "TOP_LEFT",
+          "x": 4,
+          "y": 4
+        }
+      }
+    ],
+    "baseTexture": "",
+    "overlayTarget": "Ingame",
+    "displayCondition": {
+      "name": "TimeDisp"
+    },
+    "gridSettings": {
+      "sx": 18,
+      "sy": 18,
+      "ox": 11,
+      "oy": 15,
+      "snapOnGrid": false
+    }
+  }
+}

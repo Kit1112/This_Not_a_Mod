@@ -1,0 +1,204 @@
+{
+  "swaga": {
+    "subtitle": "subtitles.swaga",
+    "sounds": [
+      {
+        "name": "thisnotamod:swaga",
+        "stream": true
+      }
+    ]
+  },
+  "doorslide1": {
+    "sounds": [
+      {
+        "name": "thisnotamod:doorslide1",
+        "stream": false
+      }
+    ]
+  },
+  "locker_move": {
+    "sounds": [
+      {
+        "name": "thisnotamod:locker_move",
+        "stream": false
+      }
+    ]
+  },
+  "dish_moves_30s": {
+    "sounds": [
+      {
+        "name": "thisnotamod:dish__moves_30s_formatted",
+        "stream": true
+      }
+    ]
+  },
+  "winter_theme": {
+    "sounds": [
+      {
+        "name": "thisnotamod:winter_theme_formatted",
+        "stream": true
+      }
+    ]
+  },
+  "votv_theme": {
+    "subtitle": "subtitles.votv_theme",
+    "sounds": [
+      {
+        "name": "thisnotamod:votv_0001_formatted",
+        "stream": true
+      }
+    ]
+  },
+  "startup": {
+    "sounds": [
+      {
+        "name": "thisnotamod:startup_formatted",
+        "stream": false
+      }
+    ]
+  },
+  "term_work": {
+    "sounds": [
+      {
+        "name": "thisnotamod:work_formatted",
+        "stream": false
+      }
+    ]
+  },
+  "term_shutdown": {
+    "sounds": [
+      {
+        "name": "thisnotamod:shutdown_formatted",
+        "stream": false
+      }
+    ]
+  },
+  "term_off": {
+    "sounds": [
+      {
+        "name": "thisnotamod:term_off_sound_formatted",
+        "stream": false
+      }
+    ]
+  },
+  "passlock_success": {
+    "sounds": [
+      {
+        "name": "thisnotamod:button_keypad_success_formatted",
+        "stream": false
+      }
+    ]
+  },
+  "passlock_deny": {
+    "sounds": [
+      {
+        "name": "thisnotamod:button_keypad_deny_formatted",
+        "stream": false
+      }
+    ]
+  },
+  "passlock_button": {
+    "sounds": [
+      {
+        "name": "thisnotamod:button_computer_turnon_formatted",
+        "stream": false
+      }
+    ]
+  },
+  "locker_open": {
+    "sounds": [
+      {
+        "name": "thisnotamod:locker_open_formatted",
+        "stream": false
+      }
+    ]
+  },
+  "radar_sound": {
+    "sounds": [
+      {
+        "name": "thisnotamod:radar_sound",
+        "stream": false
+      }
+    ]
+  },
+  "passchange_start": {
+    "sounds": [
+      {
+        "name": "thisnotamod:buttonlong6_formatted",
+        "stream": false
+      }
+    ]
+  },
+  "passchange_ok": {
+    "sounds": [
+      {
+        "name": "thisnotamod:button_keypad_modify_formatted",
+        "stream": false
+      }
+    ]
+  },
+  "locker_close": {
+    "sounds": [
+      {
+        "name": "thisnotamod:locker_close_formatted",
+        "stream": false
+      }
+    ]
+  },
+  "kerfu_meow": {
+    "sounds": [
+      {
+        "name": "thisnotamod:kerfur2meow-02_formatted",
+        "stream": false
+      }
+    ]
+  },
+  "wc_off": {
+    "sounds": [
+      {
+        "name": "thisnotamod:wc_off_formatted",
+        "stream": false
+      }
+    ]
+  },
+  "wc_on": {
+    "sounds": [
+      {
+        "name": "thisnotamod:wc_on_formatted",
+        "stream": false
+      }
+    ]
+  },
+  "wc_sound": {
+    "sounds": [
+      {
+        "name": "thisnotamod:wc_sound_formatted",
+        "stream": false
+      }
+    ]
+  },
+  "button_switch": {
+    "sounds": [
+      {
+        "name": "thisnotamod:button_short_switch_formatted",
+        "stream": false
+      }
+    ]
+  },
+  "amb_morning": {
+    "sounds": [
+      {
+        "name": "thisnotamod:amb2_morning",
+        "stream": true
+      }
+    ]
+  },
+  "amb_night": {
+    "sounds": [
+      {
+        "name": "thisnotamod:amb2_night",
+        "stream": true
+      }
+    ]
+  }
+}

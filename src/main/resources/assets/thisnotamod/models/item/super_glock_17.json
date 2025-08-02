@@ -1,0 +1,7 @@
+{
+  "parent": "thisnotamod:custom/glock17",
+  "textures": {
+    "0": "thisnotamod:block/advanced_pistol",
+    "particle": "thisnotamod:item/advanced_pistol"
+  }
+}

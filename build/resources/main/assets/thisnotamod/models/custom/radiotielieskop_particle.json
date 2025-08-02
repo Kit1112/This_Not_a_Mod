@@ -1,0 +1,6 @@
+{
+  "parent": "thisnotamod:displaysettings/radiotelescopeitem",
+  "textures": {
+    "particle": "thisnotamod:block/pizda"
+  }
+}

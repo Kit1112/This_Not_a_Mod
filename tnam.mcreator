@@ -1,0 +1,161 @@
+{
+  "mod_elements": [
+    {
+      "name": "MinecellsGuidebook",
+      "type": "item",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "minecells_guidebook",
+      "metadata": {
+        "files": [
+          "src/main/resources/assets/thisnotamod/models/item/minecells_guidebook.json",
+          "src/main/java/net/code/thisnotamod/item/MinecellsGuidebookItem.java"
+        ]
+      },
+      "path": "~/GuidebooksIcons"
+    },
+    {
+      "name": "SimplyGuidebook",
+      "type": "item",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "simply_guidebook",
+      "metadata": {
+        "files": [
+          "src/main/java/net/code/thisnotamod/item/SimplyGuidebookItem.java",
+          "src/main/resources/assets/thisnotamod/models/item/simply_guidebook.json"
+        ]
+      },
+      "path": "~/GuidebooksIcons"
+    },
+    {
+      "name": "ApotheosisGuidebook",
+      "type": "item",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "apotheosis_guidebook",
+      "metadata": {
+        "files": [
+          "src/main/resources/assets/thisnotamod/models/item/apotheosis_guidebook.json",
+          "src/main/java/net/code/thisnotamod/item/ApotheosisGuidebookItem.java"
+        ]
+      },
+      "path": "~/GuidebooksIcons"
+    },
+    {
+      "name": "BloodGuidebook",
+      "type": "item",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "blood_guidebook",
+      "metadata": {
+        "files": [
+          "src/main/resources/assets/thisnotamod/models/item/blood_guidebook.json",
+          "src/main/java/net/code/thisnotamod/item/BloodGuidebookItem.java"
+        ]
+      },
+      "path": "~/GuidebooksIcons"
+    },
+    {
+      "name": "ArsGuidebook",
+      "type": "item",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "ars_guidebook",
+      "metadata": {
+        "files": [
+          "src/main/resources/assets/thisnotamod/models/item/ars_guidebook.json",
+          "src/main/java/net/code/thisnotamod/item/ArsGuidebookItem.java"
+        ]
+      },
+      "path": "~/GuidebooksIcons"
+    },
+    {
+      "name": "Glock17",
+      "type": "item",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "glock_17",
+      "metadata": {
+        "files": [
+          "src/main/java/net/code/thisnotamod/item/Glock17Item.java",
+          "src/main/resources/assets/thisnotamod/models/item/glock_17.json"
+        ]
+      }
+    }
+  ],
+  "variable_elements": [],
+  "sound_elements": [],
+  "tag_elements": {},
+  "tab_element_order": {},
+  "language_map": {
+    "ru_ru": {
+      "item.modname.minecells_guidebook": "Иконка гайдбука Minecells ",
+      "item.thisnotamod.apotheosis_guidebook": "Apotheosis Guidebook",
+      "item.tnam.minecells_guidebook": "Иконка гайдбука Minecells ",
+      "item.thisnotamod.blood_guidebook": "Blood Guidebook",
+      "item.thisnotamod.minecells_guidebook": "Minecells Guidebook",
+      "item.tnam.ars_guidebook": "Иконка гайдбука Ars Nouveau",
+      "item.tnam.blood_guidebook": "Иконка гайдбука Blood Magic",
+      "item.tnam.simply_guidebook": "Иконка гайдбука Simply Swords",
+      "item.tnam.apotheosis_guidebook": "Иконка гайдбука Apotheosis ",
+      "Иконка руководства Minecells": "Minecells Guidebook Icon",
+      "item.tnam.glock_17": "§dSuper-Glock 17",
+      "item.thisnotamod.ars_guidebook": "Ars Guidebook",
+      "item.thisnotamod.simply_guidebook": "Simply Guidebook",
+      "item.modname.ars_guidebook": "Иконка гайдбука Ars Nouveau",
+      "item.modname.apotheosis_guidebook": "Иконка гайдбука Apotheosis ",
+      "item.modname.blood_guidebook": "Иконка гайдбука Blood Magic",
+      "item.thisnotamod.glock_17": "Glock 1 7",
+      "item.modname.simply_guidebook": "Иконка гайдбука Simply Swords"
+    },
+    "en_us": {
+      "item.modname.minecells_guidebook": "Minecells Guidebook",
+      "item.thisnotamod.apotheosis_guidebook": "Apotheosis Guidebook",
+      "item.tnam.minecells_guidebook": "Minecells Guidebook",
+      "item.thisnotamod.blood_guidebook": "Blood Guidebook",
+      "item.thisnotamod.minecells_guidebook": "Minecells Guidebook",
+      "item.tnam.ars_guidebook": "Ars Guidebook",
+      "item.tnam.blood_guidebook": "Blood Guidebook",
+      "item.tnam.simply_guidebook": "Simply Guidebook",
+      "item.tnam.apotheosis_guidebook": "Apotheosis Guidebook",
+      "Иконка руководства Minecells": "Minecells Guidebook Icon",
+      "item.tnam.glock_17": "Glock 1 7",
+      "item.thisnotamod.ars_guidebook": "Ars Guidebook",
+      "item.thisnotamod.simply_guidebook": "Simply Guidebook",
+      "item.modname.ars_guidebook": "Ars Guidebook",
+      "item.modname.apotheosis_guidebook": "Apotheosis Guidebook",
+      "item.modname.blood_guidebook": "Blood Guidebook",
+      "item.thisnotamod.glock_17": "Glock 1 7",
+      "item.modname.simply_guidebook": "Simply Guidebook"
+    }
+  },
+  "foldersRoot": {
+    "name": "~",
+    "children": [
+      {
+        "name": "GuidebooksIcons",
+        "children": []
+      }
+    ]
+  },
+  "workspaceSettings": {
+    "modid": "thisnotamod",
+    "modName": "This (Not) a mod",
+    "version": "1.1.1",
+    "description": "Вспомогательный мод для This (Not) a Modpack",
+    "author": "Kit_1112",
+    "websiteURL": "https://t.me/death_nick",
+    "license": "Not specified",
+    "serverSideOnly": false,
+    "modPicture": "logo",
+    "requiredMods": [],
+    "dependencies": [],
+    "dependants": [],
+    "mcreatorDependencies": [],
+    "currentGenerator": "forge-1.20.1",
+    "credits": "Спасибо Kvasiss за текстуры!",
+    "modElementsPackage": "net.code.thisnotamod"
+  },
+  "mcreatorVersion": 202400232117
+}

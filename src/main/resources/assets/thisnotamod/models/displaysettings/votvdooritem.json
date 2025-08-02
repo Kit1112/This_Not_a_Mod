@@ -1,0 +1,75 @@
+{
+  "credit": "Made with Blockbench",
+  "parent": "builtin/entity",
+  "texture_size": [
+    64,
+    64
+  ],
+  "display": {
+    "thirdperson_righthand": {
+      "translation": [
+        -6,
+        0,
+        1.75
+      ]
+    },
+    "thirdperson_lefthand": {
+      "translation": [
+        -5.75,
+        0,
+        0
+      ]
+    },
+    "firstperson_righthand": {
+      "translation": [
+        1.25,
+        0,
+        0
+      ],
+      "scale": [
+        0.3,
+        0.3,
+        0.3
+      ]
+    },
+    "firstperson_lefthand": {
+      "translation": [
+        1.25,
+        0,
+        0
+      ],
+      "scale": [
+        0.3,
+        0.3,
+        0.3
+      ]
+    },
+    "ground": {
+      "rotation": [
+        90,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        -16
+      ]
+    },
+    "gui": {
+      "translation": [
+        0,
+        -7.75,
+        0
+      ],
+      "scale": [
+        0.55125,
+        0.48,
+        0.4
+      ]
+    }
+  },
+  "textures": {
+    "particle": "thisnotamod:item/votv_door"
+  }
+}

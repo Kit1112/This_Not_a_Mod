@@ -1,0 +1,9 @@
+{
+  "parent": "thisnotamod:custom/tablel",
+  "textures": {
+    "all": "thisnotamod:block/tex_table2",
+    "particle": "thisnotamod:block/tex_table2",
+    "0": "thisnotamod:block/tex_table2"
+  },
+  "render_type": "solid"
+}

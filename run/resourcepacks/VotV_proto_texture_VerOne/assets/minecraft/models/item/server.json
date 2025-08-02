@@ -1,0 +1,22 @@
+{
+	"credit": "Made with Blockbench",
+	"textures": {
+		"0": "minecraft:block/stone",
+		"particle": "minecraft:block/stone"
+	},
+	"elements": [
+		{
+			"from": [2, -9, 0],
+			"to": [14, 25, 16],
+			"color": 4,
+			"faces": {
+				"north": {"uv": [16, 16, 28, 50], "texture": "#0"},
+				"east": {"uv": [0, 16, 16, 50], "texture": "#0"},
+				"south": {"uv": [44, 16, 56, 50], "texture": "#0"},
+				"west": {"uv": [28, 16, 44, 50], "texture": "#0"},
+				"up": {"uv": [28, 16, 16, 0], "texture": "#0"},
+				"down": {"uv": [40, 0, 28, 16], "texture": "#0"}
+			}
+		}
+	]
+}

@@ -1,0 +1,6 @@
+{
+  "parent": "thisnotamod:displaysettings/locker_disp",
+  "textures": {
+    "particle": "thisnotamod:block/tex_locker"
+  }
+}

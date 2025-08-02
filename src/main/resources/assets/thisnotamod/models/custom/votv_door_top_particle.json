@@ -1,0 +1,7 @@
+
+{
+  "parent": "thisnotamod:displaysettings/votv_door.geo",
+  "textures": {
+    "particle": "thisnotamod:block/votv_door"
+  }
+}

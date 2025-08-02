@@ -1,0 +1,6 @@
+{
+  "parent": "thisnotamod:displaysettings/zigamet",
+  "textures": {
+    "particle": "thisnotamod:block/ziga"
+  }
+}

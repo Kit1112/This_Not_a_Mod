@@ -1,0 +1,6 @@
+{
+  "parent": "thisnotamod:displaysettings/switch_item",
+  "textures": {
+    "particle": "thisnotamod:block/tex_switch"
+  }
+}

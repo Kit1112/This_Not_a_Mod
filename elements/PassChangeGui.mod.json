@@ -1,0 +1,48 @@
+{
+  "_fv": 66,
+  "_type": "gui",
+  "definition": {
+    "type": 0,
+    "width": 176,
+    "height": 166,
+    "inventoryOffsetX": 0,
+    "inventoryOffsetY": 0,
+    "renderBgLayer": false,
+    "doesPauseGame": false,
+    "components": [
+      {
+        "type": "textfield",
+        "data": {
+          "placeholder": "Пароль, 4 цифры",
+          "name": "PassChange",
+          "width": 120,
+          "height": 20,
+          "x": 152,
+          "y": 107
+        }
+      },
+      {
+        "type": "button",
+        "data": {
+          "name": "button_empty",
+          "text": "OK",
+          "isUndecorated": false,
+          "onClick": {
+            "name": "PassChangeOkB"
+          },
+          "width": 25,
+          "height": 20,
+          "x": 273,
+          "y": 107
+        }
+      }
+    ],
+    "gridSettings": {
+      "sx": 18,
+      "sy": 18,
+      "ox": 11,
+      "oy": 15,
+      "snapOnGrid": false
+    }
+  }
+}

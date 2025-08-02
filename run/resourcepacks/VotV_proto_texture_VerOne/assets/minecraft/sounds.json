@@ -1,0 +1,30 @@
+{
+  "votv.use.hl2": {
+    "sounds": [
+      "votv/use"
+    ],
+    "replace": true, "subtitle": "votv.use.hl2"
+  },
+  "votv.do_not_play": {
+    "sounds": [
+      "votv/do_not_play"
+    ],
+    "replace": true, "subtitle": "AMOGUS"
+  },
+  "votv.amb2_morning": {
+    "sounds": [
+      {
+        "name": "votv/amb2_morning"
+      }
+    ],
+    "replace": true, "subtitle": "Hello_morning"
+  },
+  "votv.amb2_night": {
+    "sounds": [
+      {
+        "name": "votv/amb2_night"
+      }
+    ],
+    "replace": true, "subtitle": "GoodBye_=3"
+  }
+}

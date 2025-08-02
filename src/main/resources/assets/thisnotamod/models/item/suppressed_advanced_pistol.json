@@ -1,0 +1,6 @@
+{
+  "parent": "terramity:displaysettings/silenced_advanced_pistol.item",
+  "textures": {
+    "layer0": "terramity:item/advanced_pistol"
+  }
+}

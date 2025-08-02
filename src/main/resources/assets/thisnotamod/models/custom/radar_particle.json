@@ -1,0 +1,6 @@
+{
+  "parent": "thisnotamod:displaysettings/radaritem",
+  "textures": {
+    "particle": "thisnotamod:block/radar_anim"
+  }
+}

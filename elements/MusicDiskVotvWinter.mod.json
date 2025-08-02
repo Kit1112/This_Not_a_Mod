@@ -1,0 +1,26 @@
+{
+  "_fv": 66,
+  "_type": "musicdisc",
+  "definition": {
+    "name": "Пластинка",
+    "rarity": "EPIC",
+    "texture": "musicdiscvotvwinter",
+    "description": "VotV Winter theme - VtOS21",
+    "creativeTabs": [
+      {
+        "value": "CUSTOM:VotV"
+      }
+    ],
+    "specialInformation": {
+      "fixedValue": []
+    },
+    "glowCondition": {
+      "fixedValue": false
+    },
+    "music": {
+      "value": "CUSTOM:winter_theme"
+    },
+    "lengthInTicks": 2160,
+    "analogOutput": 15
+  }
+}

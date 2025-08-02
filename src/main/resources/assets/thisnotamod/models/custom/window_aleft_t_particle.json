@@ -1,0 +1,6 @@
+{
+  "parent": "thisnotamod:displaysettings/geckolib_item",
+  "textures": {
+    "particle": "thisnotamod:block/window_tuff"
+  }
+}

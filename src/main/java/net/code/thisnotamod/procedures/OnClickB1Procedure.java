@@ -1,0 +1,80 @@
+package net.code.thisnotamod.procedures;
+
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.network.PacketDistributor;
+
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.client.gui.components.EditBox;
+
+import net.code.thisnotamod.ThisnotamodMod;
+
+import java.util.HashMap;
+
+public class OnClickB1Procedure {
+	public static void execute(LevelAccessor world, double x, double y, double z, Entity entity, HashMap guistate) {
+		if (entity == null || guistate == null)
+			return;
+		String player_temp_code = "";
+		if (!world.isClientSide()) {
+			BlockPos _bp = BlockPos.containing(x, y, z);
+			BlockEntity _blockEntity = world.getBlockEntity(_bp);
+			BlockState _bs = world.getBlockState(_bp);
+			if (_blockEntity != null)
+				_blockEntity.getPersistentData().putString("password_input", ((new Object() {
+					public String getValue(LevelAccessor world, BlockPos pos, String tag) {
+						BlockEntity blockEntity = world.getBlockEntity(pos);
+						if (blockEntity != null)
+							return blockEntity.getPersistentData().getString(tag);
+						return "";
+					}
+				}.getValue(world, BlockPos.containing(x, y, z), "password_input")) + "1"));
+			if (world instanceof Level _level)
+				_level.sendBlockUpdated(_bp, _bs, _bs, 3);
+		}
+		if (entity instanceof ServerPlayer _player && !world.isClientSide())
+			ThisnotamodMod.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> _player), new ThisnotamodMod.TextboxSetMessage("password_field", (new Object() {
+				public String getValue(LevelAccessor world, BlockPos pos, String tag) {
+					BlockEntity blockEntity = world.getBlockEntity(pos);
+					if (blockEntity != null)
+						return blockEntity.getPersistentData().getString(tag);
+					return "";
+				}
+			}.getValue(world, BlockPos.containing(x, y, z), "password_input"))));
+		if ((new Object() {
+			public String getValue(LevelAccessor world, BlockPos pos, String tag) {
+				BlockEntity blockEntity = world.getBlockEntity(pos);
+				if (blockEntity != null)
+					return blockEntity.getPersistentData().getString(tag);
+				return "";
+			}
+		}.getValue(world, BlockPos.containing(x, y, z), "password_input")).length() > 4) {
+			PassIncorrecttProcedure.execute(world, x, y, z, entity);
+			if (guistate.get("text:password_field") instanceof EditBox _tf)
+				_tf.setValue("\u041A\u043E\u0434 \u043D\u0435\u0432\u0435\u0440\u043D\u044B\u0439!");
+			if (world instanceof Level _level) {
+				if (!_level.isClientSide()) {
+					_level.playSound(null, BlockPos.containing(x, y, z), ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("thisnotamod:passlock_deny")), SoundSource.BLOCKS, (float) 0.3, 1);
+				} else {
+					_level.playLocalSound(x, y, z, ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("thisnotamod:passlock_deny")), SoundSource.BLOCKS, (float) 0.3, 1, false);
+				}
+			}
+			if (!world.isClientSide()) {
+				BlockPos _bp = BlockPos.containing(x, y, z);
+				BlockEntity _blockEntity = world.getBlockEntity(_bp);
+				BlockState _bs = world.getBlockState(_bp);
+				if (_blockEntity != null)
+					_blockEntity.getPersistentData().putString("password_input", "");
+				if (world instanceof Level _level)
+					_level.sendBlockUpdated(_bp, _bs, _bs, 3);
+			}
+		}
+	}
+}

@@ -1,0 +1,135 @@
+{
+    "ramiel.sing": {
+        "sounds": [
+            "ramiel:screm"
+        ],
+        "subtitle": "Ramiel Sings"
+    },
+    "at_field.hit": {
+        "sounds": [
+            "ramiel:at_field/hit1",
+            "ramiel:at_field/hit2",
+            "ramiel:at_field/hit3"
+        ],
+        "subtitle": "Ramiel Sings"
+    },
+    "ramiel.mode_1.enter": {
+        "sounds": [
+            "ramiel:mode_1/enter"
+        ],
+        "subtitle": "Ramiel Readies"
+    },
+    "ramiel.mode_1.exit": {
+        "sounds": [
+            "ramiel:mode_1/exit"
+        ],
+        "subtitle": "Ramiel Rests"
+    },
+    "ramiel.mode_1.fire": {
+        "sounds": [
+            {
+                "name": "ramiel:mode_1/fire",
+                "stream": true,
+                "attenuation_distance": 5
+            }
+        ],
+        "subtitle": "Ramiel Fires"
+    },
+    "ramiel.mode_2.enter": {
+        "sounds": [
+            "ramiel:mode_2/enter"
+        ],
+        "subtitle": "Ramiel Readies"
+    },
+    "ramiel.mode_2.exit": {
+        "sounds": [
+            "ramiel:mode_2/exit"
+        ],
+        "subtitle": "Ramiel Rests"
+    },
+    "ramiel.mode_2.fire": {
+        "sounds": [
+            {
+                "name": "ramiel:mode_2/fire",
+                "stream": true,
+                "attenuation_distance": 5
+            }
+        ],
+        "subtitle": "Ramiel Fires"
+    },
+    "ramiel.mode_3.enter": {
+        "sounds": [
+            "ramiel:mode_3/enter"
+        ],
+        "subtitle": "Ramiel Readies"
+    },
+    "ramiel.mode_3.exit": {
+        "sounds": [
+            "ramiel:mode_3/exit"
+        ],
+        "subtitle": "Ramiel Rests"
+    },
+    "ramiel.mode_3.fire": {
+        "sounds": [
+            {
+                "name": "ramiel:mode_3/fire",
+                "stream": true,
+                "attenuation_distance": 5
+            }
+        ],
+        "subtitle": "Ramiel Fires"
+    },
+    "ramiel.mode_4.enter": {
+        "sounds": [
+            "ramiel:mode_4/enter"
+        ],
+        "subtitle": "Ramiel Readies"
+    },
+    "ramiel.mode_4.exit": {
+        "sounds": [
+            "ramiel:mode_4/exit"
+        ],
+        "subtitle": "Ramiel Rests"
+    },
+    "ramiel.mode_4.fire": {
+        "sounds": [
+            {
+                "name": "ramiel:mode_4/fire",
+                "stream": true,
+                "attenuation_distance": 5
+            }
+        ],
+        "subtitle": "Ramiel Fires"
+    },
+    "ramiel.mode_5.enter": {
+        "sounds": [
+            "ramiel:mode_5/enter"
+        ],
+        "subtitle": "Ramiel Readies"
+    },
+    "ramiel.mode_5.exit": {
+        "sounds": [
+            "ramiel:mode_5/exit"
+        ],
+        "subtitle": "Ramiel Rests"
+    },
+    "ramiel.mode_5.fire": {
+        "sounds": [
+            {
+                "name": "ramiel:mode_5/fire",
+                "stream": true,
+                "attenuation_distance": 5
+            }
+        ],
+        "subtitle": "Ramiel Fires"
+    },
+    "ramiel.defeat": {
+        "sounds": [
+            {
+                "name": "ramiel:defeat"
+            }
+        ],
+        "subtitle": "Ramiel Heccin Dies"
+    }
+}
+  

@@ -1,0 +1,200 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "minecraft:item/book"
+  },
+  "overrides": [
+    {
+      "predicate": {
+        "custom_model_data": 0
+      },
+      "model": "minecraft:item/book"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 1
+      },
+      "model": "minecraft:item/passlock"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 2
+      },
+      "model": "minecraft:item/passlock_close"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 3
+      },
+      "model": "minecraft:item/passlock_open"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 4
+      },
+      "model": "minecraft:item/iron_pipe_var1"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 5
+      },
+      "model": "minecraft:item/iron_pipe_var2"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 6
+      },
+      "model": "minecraft:item/ceillamp"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 7
+      },
+      "model": "minecraft:item/ceillamp_on"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 8
+      },
+      "model": "minecraft:item/window2_window1"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 9
+      },
+      "model": "minecraft:item/poster_0"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 10
+      },
+      "model": "minecraft:item/doorframe"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 11
+      },
+      "model": "minecraft:item/door_l"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 12
+      },
+      "model": "minecraft:item/door_r"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 13
+      },
+      "model": "minecraft:item/console"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 14
+      },
+      "model": "minecraft:item/table2"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 15
+      },
+      "model": "minecraft:item/server"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 16
+      },
+      "model": "minecraft:item/locker"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 17
+      },
+      "model": "minecraft:item/locker"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 18
+      },
+      "model": "minecraft:item/glass_votv"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 19
+      },
+      "model": "minecraft:item/kludge_1"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 20
+      },
+      "model": "minecraft:item/kludge_2"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 21
+      },
+      "model": "minecraft:item/kludge_3"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 22
+      },
+      "model": "minecraft:item/kludge_4"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 23
+      },
+      "model": "minecraft:item/kludge_5"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 24
+      },
+      "model": "minecraft:item/toilet"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 25
+      },
+      "model": "minecraft:item/mann_base"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 26
+      },
+      "model": "minecraft:item/tailsrus_a_whipping_toy"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 27
+      },
+      "model": "minecraft:item/kludge_6"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 28
+      },
+      "model": "minecraft:item/kludge_7"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 29
+      },
+      "model": "minecraft:item/"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 123
+      },
+      "model": "minecraft:item/"
+    },
+    {
+      "predicate": {
+        "custom_model_data": 123
+      },
+      "model": "minecraft:item/"
+    }
+  ]
+}

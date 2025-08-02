@@ -1,0 +1,9 @@
+{
+  "parent": "thisnotamod:custom/arirplush_white",
+  "textures": {
+    "all": "thisnotamod:block/rirplush_white",
+    "particle": "thisnotamod:block/rirplush",
+    "0": "thisnotamod:block/rirplush_white"
+  },
+  "render_type": "cutout_mipped"
+}

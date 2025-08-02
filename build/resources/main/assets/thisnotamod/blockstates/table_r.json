@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "thisnotamod:block/table_r"
+    },
+    "facing=east": {
+      "model": "thisnotamod:block/table_r",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "thisnotamod:block/table_r",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "thisnotamod:block/table_r",
+      "y": 270
+    }
+  }
+}

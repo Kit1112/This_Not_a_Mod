@@ -1,0 +1,26 @@
+{
+  "type": "thisnotamod:votv_questing",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "name": "thisnotamod:votv_questing",
+      "biome": "thisnotamod:voices_void",
+      "layers": [],
+      "structures": {
+        "structures": {}
+      },
+      "sea_level": 63,
+      "legacy_random_source": false,
+      "disable_mob_generation": false,
+      "aquifers_enabled": false,
+      "ore_veins_enabled": false,
+      "default_block": {
+        "Name": "minecraft:air"
+      },
+      "default_fluid": {
+        "Name": "minecraft:air"
+      },
+      "spawn_target": []
+    }
+  }
+}

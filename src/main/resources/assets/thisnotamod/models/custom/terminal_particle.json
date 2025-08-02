@@ -1,0 +1,6 @@
+{
+  "parent": "thisnotamod:displaysettings/terminal",
+  "textures": {
+    "particle": "thisnotamod:block/term_off"
+  }
+}

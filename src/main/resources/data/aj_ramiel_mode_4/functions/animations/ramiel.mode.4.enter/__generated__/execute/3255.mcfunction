@@ -1,0 +1,4 @@
+#built using mc-build (https://github.com/mc-build/mc-build)
+
+execute if score #this.aj.anim aj.i matches 16..23 run function aj_ramiel_mode_4:animations/ramiel.mode.4.enter/__generated__/execute/3256
+execute if score #this.aj.anim aj.i matches 24..30 run function aj_ramiel_mode_4:animations/ramiel.mode.4.enter/__generated__/execute/3260

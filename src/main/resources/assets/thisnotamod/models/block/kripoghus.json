@@ -1,0 +1,9 @@
+{
+  "parent": "thisnotamod:custom/kripogus",
+  "textures": {
+    "all": "thisnotamod:block/gusokrip",
+    "particle": "thisnotamod:block/gusokrip",
+    "1": "thisnotamod:block/gusokrip"
+  },
+  "render_type": "solid"
+}

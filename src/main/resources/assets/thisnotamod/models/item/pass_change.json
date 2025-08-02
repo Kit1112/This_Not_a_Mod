@@ -1,0 +1,6 @@
+{
+  "parent": "thisnotamod:displaysettings/passchangeitem",
+  "textures": {
+    "layer0": "thisnotamod:item/passchange"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "minecraft:block/concrete_tiles_0001",
+    "side": "minecraft:block/tex_concretewall_0002"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "thisnotamod:block/argemiared"
+    },
+    "facing=east": {
+      "model": "thisnotamod:block/argemiared",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "thisnotamod:block/argemiared",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "thisnotamod:block/argemiared",
+      "y": 270
+    }
+  }
+}

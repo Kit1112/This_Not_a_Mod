@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "thisnotamod:block/concrete_wall"
+    },
+    "facing=east": {
+      "model": "thisnotamod:block/concrete_wall",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "thisnotamod:block/concrete_wall",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "thisnotamod:block/concrete_wall",
+      "y": 270
+    }
+  }
+}

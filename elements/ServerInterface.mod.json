@@ -1,0 +1,1212 @@
+{
+  "_fv": 66,
+  "_type": "gui",
+  "definition": {
+    "type": 0,
+    "width": 200,
+    "height": 166,
+    "inventoryOffsetX": 0,
+    "inventoryOffsetY": 0,
+    "renderBgLayer": false,
+    "doesPauseGame": false,
+    "components": [
+      {
+        "type": "image",
+        "data": {
+          "image": "background.png",
+          "use1Xscale": false,
+          "x": 114,
+          "y": 40
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_0butt",
+          "image": "0butt.png",
+          "hoveredImage": "0butt.png",
+          "onClick": {
+            "name": "FB0"
+          },
+          "x": 115,
+          "y": 57
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_0butt1",
+          "image": "0butt.png",
+          "hoveredImage": "",
+          "onClick": {
+            "name": "SB0"
+          },
+          "x": 115,
+          "y": 73
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_0butt2",
+          "image": "0butt.png",
+          "hoveredImage": "",
+          "onClick": {
+            "name": "TB0"
+          },
+          "x": 115,
+          "y": 89
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_0butt3",
+          "image": "0butt.png",
+          "hoveredImage": "",
+          "onClick": {
+            "name": "FoB0"
+          },
+          "x": 115,
+          "y": 105
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_0butt4",
+          "image": "0butt.png",
+          "hoveredImage": "",
+          "onClick": {
+            "name": "FiB0"
+          },
+          "x": 115,
+          "y": 121
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_0butt5",
+          "image": "0butt.png",
+          "hoveredImage": "0butt.png",
+          "onClick": {
+            "name": "SiB0"
+          },
+          "x": 115,
+          "y": 137
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_0butt6",
+          "image": "0butt.png",
+          "hoveredImage": "0butt.png",
+          "onClick": {
+            "name": "SeB0"
+          },
+          "x": 115,
+          "y": 153
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_0butt7",
+          "image": "0butt.png",
+          "hoveredImage": "0butt.png",
+          "onClick": {
+            "name": "EB0"
+          },
+          "x": 115,
+          "y": 169
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_1butt",
+          "image": "1butt.png",
+          "hoveredImage": "1butt.png",
+          "onClick": {
+            "name": "FB1"
+          },
+          "x": 131,
+          "y": 57
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_1butt1",
+          "image": "1butt.png",
+          "hoveredImage": "1butt.png",
+          "onClick": {
+            "name": "SB1"
+          },
+          "x": 131,
+          "y": 73
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_1butt2",
+          "image": "1butt.png",
+          "hoveredImage": "1butt.png",
+          "onClick": {
+            "name": "TB1"
+          },
+          "x": 131,
+          "y": 89
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_1butt3",
+          "image": "1butt.png",
+          "hoveredImage": "1butt.png",
+          "onClick": {
+            "name": "FoB1"
+          },
+          "x": 131,
+          "y": 105
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_1butt4",
+          "image": "1butt.png",
+          "hoveredImage": "1butt.png",
+          "onClick": {
+            "name": "FiB1"
+          },
+          "x": 131,
+          "y": 121
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_1butt5",
+          "image": "1butt.png",
+          "hoveredImage": "1butt.png",
+          "onClick": {
+            "name": "SiB1"
+          },
+          "x": 131,
+          "y": 137
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_1butt6",
+          "image": "1butt.png",
+          "hoveredImage": "1butt.png",
+          "onClick": {
+            "name": "SeB1"
+          },
+          "x": 131,
+          "y": 153
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_1butt7",
+          "image": "1butt.png",
+          "hoveredImage": "1butt.png",
+          "onClick": {
+            "name": "EB1"
+          },
+          "x": 131,
+          "y": 169
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_2butt",
+          "image": "2butt.png",
+          "hoveredImage": "2butt.png",
+          "onClick": {
+            "name": "FB2"
+          },
+          "x": 147,
+          "y": 57
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_2butt1",
+          "image": "2butt.png",
+          "hoveredImage": "2butt.png",
+          "onClick": {
+            "name": "SB2"
+          },
+          "x": 147,
+          "y": 73
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_2butt2",
+          "image": "2butt.png",
+          "hoveredImage": "2butt.png",
+          "onClick": {
+            "name": "TB2"
+          },
+          "x": 147,
+          "y": 89
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_2butt3",
+          "image": "2butt.png",
+          "hoveredImage": "2butt.png",
+          "onClick": {
+            "name": "FoB2"
+          },
+          "x": 147,
+          "y": 105
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_2butt4",
+          "image": "2butt.png",
+          "hoveredImage": "2butt.png",
+          "onClick": {
+            "name": "FiB2"
+          },
+          "x": 147,
+          "y": 121
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_2butt5",
+          "image": "2butt.png",
+          "hoveredImage": "",
+          "onClick": {
+            "name": "SiB2"
+          },
+          "x": 147,
+          "y": 137
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_2butt6",
+          "image": "2butt.png",
+          "hoveredImage": "2butt.png",
+          "onClick": {
+            "name": "SeB2"
+          },
+          "x": 147,
+          "y": 153
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_2butt7",
+          "image": "2butt.png",
+          "hoveredImage": "2butt.png",
+          "onClick": {
+            "name": "EB2"
+          },
+          "x": 147,
+          "y": 169
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_3butt",
+          "image": "3butt.png",
+          "hoveredImage": "3butt.png",
+          "onClick": {
+            "name": "FB3"
+          },
+          "x": 163,
+          "y": 57
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_3butt1",
+          "image": "3butt.png",
+          "hoveredImage": "3butt.png",
+          "onClick": {
+            "name": "SB3"
+          },
+          "x": 163,
+          "y": 73
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_3butt2",
+          "image": "3butt.png",
+          "hoveredImage": "3butt.png",
+          "onClick": {
+            "name": "TB3"
+          },
+          "x": 163,
+          "y": 89
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_3butt3",
+          "image": "3butt.png",
+          "hoveredImage": "3butt.png",
+          "onClick": {
+            "name": "FoB3"
+          },
+          "x": 163,
+          "y": 105
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_3butt4",
+          "image": "3butt.png",
+          "hoveredImage": "3butt.png",
+          "onClick": {
+            "name": "FiB3"
+          },
+          "x": 163,
+          "y": 121
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_3butt5",
+          "image": "3butt.png",
+          "hoveredImage": "3butt.png",
+          "onClick": {
+            "name": "SiB3"
+          },
+          "x": 163,
+          "y": 137
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_3butt6",
+          "image": "3butt.png",
+          "hoveredImage": "3butt.png",
+          "onClick": {
+            "name": "SeB3"
+          },
+          "x": 163,
+          "y": 153
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_3butt7",
+          "image": "3butt.png",
+          "hoveredImage": "3butt.png",
+          "onClick": {
+            "name": "EB3"
+          },
+          "x": 163,
+          "y": 169
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_4butt",
+          "image": "4butt.png",
+          "hoveredImage": "4butt.png",
+          "onClick": {
+            "name": "FB4"
+          },
+          "x": 179,
+          "y": 57
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_4butt1",
+          "image": "4butt.png",
+          "hoveredImage": "4butt.png",
+          "onClick": {
+            "name": "SB4"
+          },
+          "x": 179,
+          "y": 73
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_4butt2",
+          "image": "4butt.png",
+          "hoveredImage": "4butt.png",
+          "onClick": {
+            "name": "TB4"
+          },
+          "x": 179,
+          "y": 89
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_4butt3",
+          "image": "4butt.png",
+          "hoveredImage": "4butt.png",
+          "onClick": {
+            "name": "FoB4"
+          },
+          "x": 179,
+          "y": 105
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_4butt4",
+          "image": "4butt.png",
+          "hoveredImage": "4butt.png",
+          "onClick": {
+            "name": "FiB4"
+          },
+          "x": 179,
+          "y": 121
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_4butt5",
+          "image": "4butt.png",
+          "hoveredImage": "4butt.png",
+          "onClick": {
+            "name": "SiB4"
+          },
+          "x": 179,
+          "y": 137
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_4butt6",
+          "image": "4butt.png",
+          "hoveredImage": "4butt.png",
+          "onClick": {
+            "name": "SeB4"
+          },
+          "x": 179,
+          "y": 153
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_4butt7",
+          "image": "4butt.png",
+          "hoveredImage": "4butt.png",
+          "onClick": {
+            "name": "EB4"
+          },
+          "x": 179,
+          "y": 169
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_5butt",
+          "image": "5butt.png",
+          "hoveredImage": "5butt.png",
+          "onClick": {
+            "name": "FB5"
+          },
+          "x": 195,
+          "y": 57
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_5butt1",
+          "image": "5butt.png",
+          "hoveredImage": "5butt.png",
+          "onClick": {
+            "name": "SB5"
+          },
+          "x": 195,
+          "y": 73
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_5butt2",
+          "image": "5butt.png",
+          "hoveredImage": "5butt.png",
+          "onClick": {
+            "name": "TB5"
+          },
+          "x": 195,
+          "y": 89
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_5butt3",
+          "image": "5butt.png",
+          "hoveredImage": "5butt.png",
+          "onClick": {
+            "name": "FoB5"
+          },
+          "x": 195,
+          "y": 105
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_5butt4",
+          "image": "5butt.png",
+          "hoveredImage": "5butt.png",
+          "onClick": {
+            "name": "FiB5"
+          },
+          "x": 195,
+          "y": 121
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_5butt5",
+          "image": "5butt.png",
+          "hoveredImage": "5butt.png",
+          "onClick": {
+            "name": "SiB5"
+          },
+          "x": 195,
+          "y": 137
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_5butt6",
+          "image": "5butt.png",
+          "hoveredImage": "5butt.png",
+          "onClick": {
+            "name": "SeB5"
+          },
+          "x": 195,
+          "y": 153
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_5butt7",
+          "image": "5butt.png",
+          "hoveredImage": "5butt.png",
+          "onClick": {
+            "name": "EB5"
+          },
+          "x": 195,
+          "y": 169
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_6butt",
+          "image": "6butt.png",
+          "hoveredImage": "6butt.png",
+          "onClick": {
+            "name": "FB6"
+          },
+          "x": 211,
+          "y": 57
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_6butt1",
+          "image": "6butt.png",
+          "hoveredImage": "6butt.png",
+          "onClick": {
+            "name": "SB6"
+          },
+          "x": 211,
+          "y": 73
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_6butt2",
+          "image": "6butt.png",
+          "hoveredImage": "6butt.png",
+          "onClick": {
+            "name": "TB6"
+          },
+          "x": 211,
+          "y": 89
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_6butt3",
+          "image": "6butt.png",
+          "hoveredImage": "6butt.png",
+          "onClick": {
+            "name": "FoB6"
+          },
+          "x": 211,
+          "y": 105
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_6butt4",
+          "image": "6butt.png",
+          "hoveredImage": "6butt.png",
+          "onClick": {
+            "name": "FiB6"
+          },
+          "x": 211,
+          "y": 121
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_6butt5",
+          "image": "6butt.png",
+          "hoveredImage": "6butt.png",
+          "onClick": {
+            "name": "SiB6"
+          },
+          "x": 211,
+          "y": 137
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_6butt6",
+          "image": "6butt.png",
+          "hoveredImage": "6butt.png",
+          "onClick": {
+            "name": "SeB6"
+          },
+          "x": 211,
+          "y": 153
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_6butt7",
+          "image": "6butt.png",
+          "hoveredImage": "6butt.png",
+          "onClick": {
+            "name": "EB6"
+          },
+          "x": 211,
+          "y": 169
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_7butt",
+          "image": "7butt.png",
+          "hoveredImage": "7butt.png",
+          "onClick": {
+            "name": "FB7"
+          },
+          "x": 227,
+          "y": 57
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_7butt1",
+          "image": "7butt.png",
+          "hoveredImage": "7butt.png",
+          "onClick": {
+            "name": "SB7"
+          },
+          "x": 227,
+          "y": 73
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_7butt2",
+          "image": "7butt.png",
+          "hoveredImage": "7butt.png",
+          "onClick": {
+            "name": "TB7"
+          },
+          "x": 227,
+          "y": 89
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_7butt3",
+          "image": "7butt.png",
+          "hoveredImage": "7butt.png",
+          "onClick": {
+            "name": "FoB7"
+          },
+          "x": 227,
+          "y": 105
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_7butt4",
+          "image": "7butt.png",
+          "hoveredImage": "7butt.png",
+          "onClick": {
+            "name": "FiB7"
+          },
+          "x": 227,
+          "y": 121
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_7butt5",
+          "image": "7butt.png",
+          "hoveredImage": "7butt.png",
+          "onClick": {
+            "name": "SiB7"
+          },
+          "x": 227,
+          "y": 137
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_7butt6",
+          "image": "7butt.png",
+          "hoveredImage": "7butt.png",
+          "onClick": {
+            "name": "SeB7"
+          },
+          "x": 227,
+          "y": 153
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_7butt7",
+          "image": "7butt.png",
+          "hoveredImage": "7butt.png",
+          "onClick": {
+            "name": "EB7"
+          },
+          "x": 227,
+          "y": 169
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_8butt",
+          "image": "8butt.png",
+          "hoveredImage": "8butt.png",
+          "onClick": {
+            "name": "FB8"
+          },
+          "x": 243,
+          "y": 57
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_8butt1",
+          "image": "8butt.png",
+          "hoveredImage": "",
+          "onClick": {
+            "name": "SB7"
+          },
+          "x": 243,
+          "y": 73
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_8butt2",
+          "image": "8butt.png",
+          "hoveredImage": "8butt.png",
+          "onClick": {
+            "name": "TB8"
+          },
+          "x": 243,
+          "y": 89
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_8butt3",
+          "image": "8butt.png",
+          "hoveredImage": "8butt.png",
+          "onClick": {
+            "name": "FoB8"
+          },
+          "x": 243,
+          "y": 105
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_8butt4",
+          "image": "8butt.png",
+          "hoveredImage": "8butt.png",
+          "onClick": {
+            "name": "FiB8"
+          },
+          "x": 243,
+          "y": 121
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_8butt5",
+          "image": "8butt.png",
+          "hoveredImage": "8butt.png",
+          "onClick": {
+            "name": "SiB8"
+          },
+          "x": 243,
+          "y": 137
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_8butt6",
+          "image": "8butt.png",
+          "hoveredImage": "8butt.png",
+          "onClick": {
+            "name": "SeB8"
+          },
+          "x": 243,
+          "y": 153
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_8butt7",
+          "image": "8butt.png",
+          "hoveredImage": "8butt.png",
+          "onClick": {
+            "name": "EB8"
+          },
+          "x": 243,
+          "y": 169
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_9butt",
+          "image": "9butt.png",
+          "hoveredImage": "9butt.png",
+          "onClick": {
+            "name": "FB9"
+          },
+          "x": 259,
+          "y": 57
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_9butt1",
+          "image": "9butt.png",
+          "hoveredImage": "9butt.png",
+          "onClick": {
+            "name": "SB9"
+          },
+          "x": 259,
+          "y": 73
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_9butt2",
+          "image": "9butt.png",
+          "hoveredImage": "9butt.png",
+          "onClick": {
+            "name": "TB9"
+          },
+          "x": 259,
+          "y": 89
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_9butt3",
+          "image": "9butt.png",
+          "hoveredImage": "9butt.png",
+          "onClick": {
+            "name": "FoB9"
+          },
+          "x": 259,
+          "y": 105
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_9butt4",
+          "image": "9butt.png",
+          "hoveredImage": "9butt.png",
+          "onClick": {
+            "name": "FiB9"
+          },
+          "x": 259,
+          "y": 121
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_9butt5",
+          "image": "9butt.png",
+          "hoveredImage": "9butt.png",
+          "onClick": {
+            "name": "SiB9"
+          },
+          "x": 259,
+          "y": 137
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_9butt6",
+          "image": "9butt.png",
+          "hoveredImage": "9butt.png",
+          "onClick": {
+            "name": "SeB9"
+          },
+          "x": 259,
+          "y": 153
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_9butt7",
+          "image": "9butt.png",
+          "hoveredImage": "9butt.png",
+          "onClick": {
+            "name": "EB9"
+          },
+          "x": 259,
+          "y": 169
+        }
+      },
+      {
+        "type": "imagebutton",
+        "data": {
+          "name": "imagebutton_exitbutton",
+          "image": "exitbutton.png",
+          "hoveredImage": "exitbutton.png",
+          "onClick": {
+            "name": "ExitButton"
+          },
+          "x": 275,
+          "y": 184
+        }
+      },
+      {
+        "type": "label",
+        "data": {
+          "name": "label_sosal",
+          "text": {
+            "fixedValue": "sosal",
+            "name": "ExampleOne"
+          },
+          "color": {
+            "value": -4475136,
+            "falpha": 0.0
+          },
+          "x": 286,
+          "y": 60
+        }
+      },
+      {
+        "type": "label",
+        "data": {
+          "name": "label_proc_example_two",
+          "text": {
+            "fixedValue": "",
+            "name": "ExampleTwo"
+          },
+          "color": {
+            "value": -4475136,
+            "falpha": 0.0
+          },
+          "x": 286,
+          "y": 76
+        }
+      },
+      {
+        "type": "label",
+        "data": {
+          "name": "label_proc_example_three",
+          "text": {
+            "fixedValue": "",
+            "name": "ExampleThree"
+          },
+          "color": {
+            "value": -4475136,
+            "falpha": 0.0
+          },
+          "x": 286,
+          "y": 92
+        }
+      },
+      {
+        "type": "label",
+        "data": {
+          "name": "label_proc_example_four",
+          "text": {
+            "fixedValue": "",
+            "name": "ExampleFour"
+          },
+          "color": {
+            "value": -4475136,
+            "falpha": 0.0
+          },
+          "x": 286,
+          "y": 108
+        }
+      },
+      {
+        "type": "label",
+        "data": {
+          "name": "label_proc_example_five",
+          "text": {
+            "fixedValue": "",
+            "name": "ExampleFive"
+          },
+          "color": {
+            "value": -4475136,
+            "falpha": 0.0
+          },
+          "x": 286,
+          "y": 124
+        }
+      },
+      {
+        "type": "label",
+        "data": {
+          "name": "label_proc_example_six",
+          "text": {
+            "fixedValue": "",
+            "name": "ExampleSix"
+          },
+          "color": {
+            "value": -4475136,
+            "falpha": 0.0
+          },
+          "x": 286,
+          "y": 140
+        }
+      },
+      {
+        "type": "label",
+        "data": {
+          "name": "label_proc_example_seven",
+          "text": {
+            "fixedValue": "",
+            "name": "ExampleSeven"
+          },
+          "color": {
+            "value": -4475136,
+            "falpha": 0.0
+          },
+          "x": 286,
+          "y": 156
+        }
+      },
+      {
+        "type": "label",
+        "data": {
+          "name": "label_proc_example_eight",
+          "text": {
+            "fixedValue": "",
+            "name": "ExampleEight"
+          },
+          "color": {
+            "value": -4475136,
+            "falpha": 0.0
+          },
+          "x": 286,
+          "y": 172
+        }
+      }
+    ],
+    "gridSettings": {
+      "sx": 18,
+      "sy": 18,
+      "ox": 11,
+      "oy": 15,
+      "snapOnGrid": false
+    }
+  }
+}

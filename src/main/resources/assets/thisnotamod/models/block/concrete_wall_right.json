@@ -1,0 +1,13 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "down": "thisnotamod:block/tex_concrete_0001",
+    "up": "thisnotamod:block/tex_concrete_0001",
+    "north": "thisnotamod:block/tex_concretewall_0001_right",
+    "east": "thisnotamod:block/tex_concretewall_0001_right",
+    "south": "thisnotamod:block/tex_concretewall_0006_var2",
+    "west": "thisnotamod:block/tex_concretewall_0001_right",
+    "particle": "thisnotamod:block/tex_concrete_0001"
+  },
+  "render_type": "solid"
+}

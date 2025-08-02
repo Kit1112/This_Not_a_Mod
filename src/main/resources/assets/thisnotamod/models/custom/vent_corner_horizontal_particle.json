@@ -1,0 +1,6 @@
+{
+  "parent": "thisnotamod:displaysettings/ventchitem",
+  "textures": {
+    "particle": "thisnotamod:block/vent_corner"
+  }
+}

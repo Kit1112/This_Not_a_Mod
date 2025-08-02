@@ -1,0 +1,42 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"0": {
+			"loop": true
+		},
+		"1": {
+			"loop": "hold_on_last_frame",
+			"animation_length": 5.4583,
+			"bones": {
+				"toggle": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.4583": {
+							"vector": [0, -0.75, 0],
+							"easing": "easeInBounce"
+						},
+						"4.1667": {
+							"vector": [0, -0.75, 0]
+						},
+						"5.0": {
+							"vector": [0, 0, 0],
+							"easing": "easeInBounce",
+							"easingArgs": [0.3]
+						}
+					}
+				}
+			},
+			"sound_effects": {
+				"0.3333": {
+					"effect": "zvuknajatiyaknopkipereklyuchatelya39649mp3cut.net.mp3"
+				},
+				"0.375": {
+					"effect": "smyivanietualetamp3cut.net.mp3"
+				}
+			}
+		}
+	},
+	"geckolib_format_version": 2
+}

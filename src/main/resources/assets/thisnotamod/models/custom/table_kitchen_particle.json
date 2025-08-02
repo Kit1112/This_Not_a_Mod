@@ -1,0 +1,6 @@
+{
+  "parent": "thisnotamod:displaysettings/tablekitchenitem",
+  "textures": {
+    "particle": "thisnotamod:block/table"
+  }
+}

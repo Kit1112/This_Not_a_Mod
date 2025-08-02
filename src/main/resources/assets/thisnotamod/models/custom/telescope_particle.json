@@ -1,0 +1,6 @@
+{
+  "parent": "thisnotamod:displaysettings/scopeitem",
+  "textures": {
+    "particle": "thisnotamod:block/scope"
+  }
+}
