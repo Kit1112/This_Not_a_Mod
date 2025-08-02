@@ -200,5 +200,14 @@
         "stream": true
       }
     ]
+  },
+  "alarm": {
+    "subtitle": "subtitles.alarm",
+    "sounds": [
+      {
+        "name": "thisnotamod:alarm_formatted",
+        "stream": false
+      }
+    ]
   }
 }

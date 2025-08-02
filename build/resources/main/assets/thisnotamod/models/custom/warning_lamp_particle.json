@@ -1,0 +1,7 @@
+
+{
+  "parent": "thisnotamod:displaysettings/red_lamp_item",
+  "textures": {
+    "particle": "thisnotamod:block/industrial_iron_lamp_own_off"
+  }
+}

@@ -13,6 +13,7 @@ import net.code.thisnotamod.block.renderer.WindowRightDTileRenderer;
 import net.code.thisnotamod.block.renderer.WindowAleftTTileRenderer;
 import net.code.thisnotamod.block.renderer.WindowAleftDTileRenderer;
 import net.code.thisnotamod.block.renderer.WindowARightTTileRenderer;
+import net.code.thisnotamod.block.renderer.WarningLampTileRenderer;
 import net.code.thisnotamod.block.renderer.WCanimTileRenderer;
 import net.code.thisnotamod.block.renderer.VotvLockerTopTileRenderer;
 import net.code.thisnotamod.block.renderer.VotvLockerTileRenderer;
@@ -94,5 +95,6 @@ public class ClientListener {
 		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.WINDOW_ALEFT_D.get(), context -> new WindowAleftDTileRenderer());
 		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.WINDOW_A_RIGHT_T.get(), context -> new WindowARightTTileRenderer());
 		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.WINDOW_ALEFT_T.get(), context -> new WindowAleftTTileRenderer());
+		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.WARNING_LAMP.get(), context -> new WarningLampTileRenderer());
 	}
 }

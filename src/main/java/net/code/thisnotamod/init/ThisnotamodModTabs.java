@@ -43,6 +43,7 @@ public class ThisnotamodModTabs {
 				tabData.accept(ThisnotamodModBlocks.LIGHT_SWITCH.get().asItem());
 				tabData.accept(ThisnotamodModBlocks.LAMP.get().asItem());
 				tabData.accept(ThisnotamodModBlocks.LAMP_ROUND.get().asItem());
+				tabData.accept(ThisnotamodModBlocks.WARNING_LAMP.get().asItem());
 				tabData.accept(ThisnotamodModBlocks.WORK_STAT.get().asItem());
 				tabData.accept(ThisnotamodModBlocks.VENT_CORNER.get().asItem());
 				tabData.accept(ThisnotamodModBlocks.VENT_CORNER_HORIZONTAL.get().asItem());

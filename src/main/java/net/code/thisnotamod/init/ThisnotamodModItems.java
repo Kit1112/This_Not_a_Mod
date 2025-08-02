@@ -28,6 +28,7 @@ import net.code.thisnotamod.block.display.WindowRightDDisplayItem;
 import net.code.thisnotamod.block.display.WindowAleftTDisplayItem;
 import net.code.thisnotamod.block.display.WindowAleftDDisplayItem;
 import net.code.thisnotamod.block.display.WindowARightTDisplayItem;
+import net.code.thisnotamod.block.display.WarningLampDisplayItem;
 import net.code.thisnotamod.block.display.WCanimDisplayItem;
 import net.code.thisnotamod.block.display.VotvLockerTopDisplayItem;
 import net.code.thisnotamod.block.display.VotvLockerMiddleDisplayItem;
@@ -139,6 +140,7 @@ public class ThisnotamodModItems {
 	public static final RegistryObject<Item> WINDOW_A_RIGHT_T = REGISTRY.register(ThisnotamodModBlocks.WINDOW_A_RIGHT_T.getId().getPath(), () -> new WindowARightTDisplayItem(ThisnotamodModBlocks.WINDOW_A_RIGHT_T.get(), new Item.Properties()));
 	public static final RegistryObject<Item> WINDOW_ALEFT_T = REGISTRY.register(ThisnotamodModBlocks.WINDOW_ALEFT_T.getId().getPath(), () -> new WindowAleftTDisplayItem(ThisnotamodModBlocks.WINDOW_ALEFT_T.get(), new Item.Properties()));
 	public static final RegistryObject<Item> MANNEQUIN_SPAWN_EGG = REGISTRY.register("mannequin_spawn_egg", () -> new ForgeSpawnEggItem(ThisnotamodModEntities.MANNEQUIN, -10337016, -7116523, new Item.Properties()));
+	public static final RegistryObject<Item> WARNING_LAMP = REGISTRY.register(ThisnotamodModBlocks.WARNING_LAMP.getId().getPath(), () -> new WarningLampDisplayItem(ThisnotamodModBlocks.WARNING_LAMP.get(), new Item.Properties()));
 
 	// Start of user code block custom items
 	// End of user code block custom items

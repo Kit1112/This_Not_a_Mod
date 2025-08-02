@@ -25,6 +25,8 @@ import net.code.thisnotamod.procedures.DebugAllTrueProcedure;
 import net.code.thisnotamod.procedures.DebugAllFalseProcedure;
 import net.code.thisnotamod.procedures.CleanProcedureProcedure;
 import net.code.thisnotamod.procedures.BreakAllServersProcedure;
+import net.code.thisnotamod.procedures.AlarmTrueProcedure;
+import net.code.thisnotamod.procedures.AlarmFalseProcedure;
 
 @Mod.EventBusSubscriber
 public class VotvComandCommand {
@@ -128,7 +130,7 @@ public class VotvComandCommand {
 
 			DebugFalseProcProcedure.execute(entity);
 			return 0;
-		})))).then(Commands.literal("servers").then(Commands.literal("break_all").executes(arguments -> {
+		}))).then(Commands.literal("servers").then(Commands.literal("break_all").executes(arguments -> {
 			Level world = arguments.getSource().getUnsidedLevel();
 			double x = arguments.getSource().getPosition().x();
 			double y = arguments.getSource().getPosition().y();
@@ -184,6 +186,34 @@ public class VotvComandCommand {
 
 			TimeDisplayFalseProcedure.execute(entity);
 			return 0;
-		}))));
+		}))).then(Commands.literal("alarm").then(Commands.literal("start").executes(arguments -> {
+			Level world = arguments.getSource().getUnsidedLevel();
+			double x = arguments.getSource().getPosition().x();
+			double y = arguments.getSource().getPosition().y();
+			double z = arguments.getSource().getPosition().z();
+			Entity entity = arguments.getSource().getEntity();
+			if (entity == null && world instanceof ServerLevel _servLevel)
+				entity = FakePlayerFactory.getMinecraft(_servLevel);
+			Direction direction = Direction.DOWN;
+			if (entity != null)
+				direction = entity.getDirection();
+
+			AlarmTrueProcedure.execute(world, entity);
+			return 0;
+		})).then(Commands.literal("stop").executes(arguments -> {
+			Level world = arguments.getSource().getUnsidedLevel();
+			double x = arguments.getSource().getPosition().x();
+			double y = arguments.getSource().getPosition().y();
+			double z = arguments.getSource().getPosition().z();
+			Entity entity = arguments.getSource().getEntity();
+			if (entity == null && world instanceof ServerLevel _servLevel)
+				entity = FakePlayerFactory.getMinecraft(_servLevel);
+			Direction direction = Direction.DOWN;
+			if (entity != null)
+				direction = entity.getDirection();
+
+			AlarmFalseProcedure.execute(world, entity);
+			return 0;
+		})))));
 	}
 }

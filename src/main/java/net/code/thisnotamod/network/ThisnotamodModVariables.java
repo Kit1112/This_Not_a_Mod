@@ -215,6 +215,13 @@ public class ThisnotamodModVariables {
 		public double breakCounter = 0;
 		public boolean autobreakExecutedToday = false;
 		public boolean worldDebug = false;
+		public boolean Alarm = false;
+		public CompoundTag WarnLamps = new CompoundTag();
+		public double warnLampX = 0;
+		public double warnLampY = 0;
+		public double warnLampZ = 0;
+		public boolean AlarmSoundIsPlayed = false;
+		public boolean warnLampIsActive = false;
 
 		public static MapVariables load(CompoundTag tag) {
 			MapVariables data = new MapVariables();
@@ -233,6 +240,13 @@ public class ThisnotamodModVariables {
 			breakCounter = nbt.getDouble("breakCounter");
 			autobreakExecutedToday = nbt.getBoolean("autobreakExecutedToday");
 			worldDebug = nbt.getBoolean("worldDebug");
+			Alarm = nbt.getBoolean("Alarm");
+			this.WarnLamps = nbt.get("WarnLamps") instanceof CompoundTag WarnLamps ? WarnLamps : new CompoundTag();
+			warnLampX = nbt.getDouble("warnLampX");
+			warnLampY = nbt.getDouble("warnLampY");
+			warnLampZ = nbt.getDouble("warnLampZ");
+			AlarmSoundIsPlayed = nbt.getBoolean("AlarmSoundIsPlayed");
+			warnLampIsActive = nbt.getBoolean("warnLampIsActive");
 		}
 
 		@Override
@@ -247,6 +261,13 @@ public class ThisnotamodModVariables {
 			nbt.putDouble("breakCounter", breakCounter);
 			nbt.putBoolean("autobreakExecutedToday", autobreakExecutedToday);
 			nbt.putBoolean("worldDebug", worldDebug);
+			nbt.putBoolean("Alarm", Alarm);
+			nbt.put("WarnLamps", this.WarnLamps);
+			nbt.putDouble("warnLampX", warnLampX);
+			nbt.putDouble("warnLampY", warnLampY);
+			nbt.putDouble("warnLampZ", warnLampZ);
+			nbt.putBoolean("AlarmSoundIsPlayed", AlarmSoundIsPlayed);
+			nbt.putBoolean("warnLampIsActive", warnLampIsActive);
 			return nbt;
 		}
 

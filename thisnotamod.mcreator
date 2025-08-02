@@ -178,7 +178,7 @@
           "src/main/resources/assets/thisnotamod/models/block/argemiablue.json"
         ]
       },
-      "path": "~/argemPlush"
+      "path": "~/VotVresources/Props/argemPlush"
     },
     {
       "name": "Argemiared",
@@ -195,7 +195,7 @@
           "src/main/java/net/code/thisnotamod/block/ArgemiaredBlock.java"
         ]
       },
-      "path": "~/argemPlush"
+      "path": "~/VotVresources/Props/argemPlush"
     },
     {
       "name": "Argemiacyan",
@@ -212,7 +212,7 @@
           "src/main/java/net/code/thisnotamod/block/ArgemiacyanBlock.java"
         ]
       },
-      "path": "~/argemPlush"
+      "path": "~/VotVresources/Props/argemPlush"
     },
     {
       "name": "Argemiagreen",
@@ -229,7 +229,7 @@
           "src/main/resources/assets/thisnotamod/blockstates/argemiagreen.json"
         ]
       },
-      "path": "~/argemPlush"
+      "path": "~/VotVresources/Props/argemPlush"
     },
     {
       "name": "Argemiapurple",
@@ -246,7 +246,7 @@
           "src/main/java/net/code/thisnotamod/block/ArgemiapurpleBlock.java"
         ]
       },
-      "path": "~/argemPlush"
+      "path": "~/VotVresources/Props/argemPlush"
     },
     {
       "name": "Argemiayellow",
@@ -263,7 +263,7 @@
           "src/main/resources/assets/thisnotamod/models/block/argemiayellow.json"
         ]
       },
-      "path": "~/argemPlush"
+      "path": "~/VotVresources/Props/argemPlush"
     },
     {
       "name": "Argemiawhite",
@@ -280,7 +280,7 @@
           "src/main/resources/assets/thisnotamod/models/item/argemiawhite.json"
         ]
       },
-      "path": "~/argemPlush"
+      "path": "~/VotVresources/Props/argemPlush"
     },
     {
       "name": "MusicDiskVotv",
@@ -7502,6 +7502,230 @@
         ]
       },
       "path": "~/VotVresources/Commands"
+    },
+    {
+      "name": "WarningLamp",
+      "type": "animatedblock",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "warning_lamp",
+      "metadata": {
+        "files": [
+          "src/main/resources/assets/thisnotamod/models/block/warning_lamp_blockstate_1.json",
+          "src/main/java/net/code/thisnotamod/block/renderer/WarningLampDisplayItemRenderer.java",
+          "src/main/resources/assets/thisnotamod/models/item/warning_lamp.json",
+          "src/main/java/net/code/thisnotamod/block/renderer/WarningLampTileRenderer.java",
+          "src/main/java/net/code/thisnotamod/block/display/WarningLampDisplayItem.java",
+          "src/main/resources/assets/thisnotamod/models/custom/warning_lamp_particle.json",
+          "src/main/resources/assets/thisnotamod/blockstates/warning_lamp.json",
+          "src/main/java/net/code/thisnotamod/block/model/WarningLampDisplayModel.java",
+          "src/main/java/net/code/thisnotamod/block/entity/WarningLampTileEntity.java",
+          "src/main/java/net/code/thisnotamod/block/WarningLampBlock.java",
+          "src/main/java/net/code/thisnotamod/block/model/WarningLampBlockModel.java",
+          "src/main/resources/assets/thisnotamod/models/block/warning_lamp_blockstate_0.json"
+        ]
+      },
+      "path": "~/VotVresources/Props/warning_lamp"
+    },
+    {
+      "name": "Alarmstart",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "alarmstart",
+      "metadata": {
+        "files": [
+          "src/main/java/net/code/thisnotamod/procedures/AlarmstartProcedure.java"
+        ],
+        "dependencies": [
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ]
+      },
+      "path": "~/VotVresources/Props/warning_lamp"
+    },
+    {
+      "name": "WarnLampPlaced",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "warn_lamp_placed",
+      "metadata": {
+        "files": [
+          "src/main/java/net/code/thisnotamod/procedures/WarnLampPlacedProcedure.java"
+        ],
+        "dependencies": [
+          {
+            "name": "x",
+            "type": "number"
+          },
+          {
+            "name": "y",
+            "type": "number"
+          },
+          {
+            "name": "z",
+            "type": "number"
+          },
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ]
+      },
+      "path": "~/VotVresources/Props/warning_lamp"
+    },
+    {
+      "name": "WarnLampDestr",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "warn_lamp_destr",
+      "metadata": {
+        "files": [
+          "src/main/java/net/code/thisnotamod/procedures/WarnLampDestrProcedure.java"
+        ],
+        "dependencies": [
+          {
+            "name": "x",
+            "type": "number"
+          },
+          {
+            "name": "y",
+            "type": "number"
+          },
+          {
+            "name": "z",
+            "type": "number"
+          },
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ]
+      },
+      "path": "~/VotVresources/Props/warning_lamp"
+    },
+    {
+      "name": "AlarmBlink",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "alarm_blink",
+      "metadata": {
+        "files": [
+          "src/main/java/net/code/thisnotamod/procedures/AlarmBlinkProcedure.java"
+        ],
+        "dependencies": [
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ]
+      },
+      "path": "~/VotVresources/Props/warning_lamp"
+    },
+    {
+      "name": "AlarmStop",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "alarm_stop",
+      "metadata": {
+        "files": [
+          "src/main/java/net/code/thisnotamod/procedures/AlarmStopProcedure.java"
+        ],
+        "dependencies": [
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ]
+      },
+      "path": "~/VotVresources/Props/warning_lamp"
+    },
+    {
+      "name": "AlarmTrue",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "alarm_true",
+      "metadata": {
+        "files": [
+          "src/main/java/net/code/thisnotamod/procedures/AlarmTrueProcedure.java"
+        ],
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          },
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ]
+      },
+      "path": "~/VotVresources/Commands"
+    },
+    {
+      "name": "AlarmFalse",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "alarm_false",
+      "metadata": {
+        "files": [
+          "src/main/java/net/code/thisnotamod/procedures/AlarmFalseProcedure.java"
+        ],
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          },
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ]
+      },
+      "path": "~/VotVresources/Commands"
+    },
+    {
+      "name": "WarningLampPriShchielchkiePKMPoBloku",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "warning_lamp_pri_shchielchkie_pkm_po_bloku",
+      "metadata": {
+        "files": [
+          "src/main/java/net/code/thisnotamod/procedures/WarningLampPriShchielchkiePKMPoBlokuProcedure.java"
+        ],
+        "dependencies": [
+          {
+            "name": "blockstate",
+            "type": "blockstate"
+          },
+          {
+            "name": "x",
+            "type": "number"
+          },
+          {
+            "name": "y",
+            "type": "number"
+          },
+          {
+            "name": "z",
+            "type": "number"
+          },
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ]
+      },
+      "path": "~/VotVresources/Props/warning_lamp"
     }
   ],
   "variable_elements": [
@@ -7906,6 +8130,48 @@
       "type": "logic",
       "scope": "player_persistent",
       "value": "false"
+    },
+    {
+      "name": "Alarm",
+      "type": "logic",
+      "scope": "map",
+      "value": "false"
+    },
+    {
+      "name": "WarnLamps",
+      "type": "datamap",
+      "scope": "map",
+      "value": "new CompoundTag()"
+    },
+    {
+      "name": "warnLampX",
+      "type": "number",
+      "scope": "map",
+      "value": "0"
+    },
+    {
+      "name": "warnLampY",
+      "type": "number",
+      "scope": "map",
+      "value": "0"
+    },
+    {
+      "name": "warnLampZ",
+      "type": "number",
+      "scope": "map",
+      "value": "0"
+    },
+    {
+      "name": "AlarmSoundIsPlayed",
+      "type": "logic",
+      "scope": "map",
+      "value": "false"
+    },
+    {
+      "name": "warnLampIsActive",
+      "type": "logic",
+      "scope": "map",
+      "value": "false"
     }
   ],
   "sound_elements": [
@@ -8108,6 +8374,14 @@
       ],
       "category": "music",
       "subtitle": ""
+    },
+    {
+      "name": "alarm",
+      "files": [
+        "alarm_formatted"
+      ],
+      "category": "block",
+      "subtitle": "ТРЕВОГА"
     }
   ],
   "tag_elements": {
@@ -8143,6 +8417,7 @@
       "LightSwitch",
       "Lamp",
       "LampRound",
+      "WarningLamp",
       "WorkStat",
       "VentCorner",
       "VentCornerHorizontal",
@@ -8161,6 +8436,7 @@
   "language_map": {
     "ru_ru": {
       "subtitles.radar_sound": "",
+      "block.thisnotamod.warning_lamp": "Аварийный светильник",
       "block.thisnotamod.votv_locker_top": "Шкафчик",
       "block.thisnotamod.server_top": "Server",
       "block.thisnotamod.w_canim": "Унитаз",
@@ -8185,6 +8461,7 @@
       "block.thisnotamod.light_switch": "Выключатель",
       "block.thisnotamod.lamp_middle_upped": "Электрическая лампа ",
       "item.tnam.minecells_guidebook": "Иконка гайдбука Minecells ",
+      "subtitles.alarm": "ТРЕВОГА",
       "block.thisnotamod.votv_door_top": "Votv Door Top",
       "gui.thisnotamod.kerfu_int.button_aktivirovat": "Активировать",
       "block.thisnotamod.window_right_d": "Окно с решётками",
@@ -8329,6 +8606,7 @@
     },
     "en_us": {
       "subtitles.radar_sound": "",
+      "block.thisnotamod.warning_lamp": "Аварийный светильник",
       "block.thisnotamod.votv_locker_top": "Votv Locker Top",
       "block.thisnotamod.server_top": "Server",
       "block.thisnotamod.w_canim": "Унитаз",
@@ -8353,6 +8631,7 @@
       "block.thisnotamod.light_switch": "Выключатель",
       "block.thisnotamod.lamp_middle_upped": "Электрическая лампа ",
       "item.tnam.minecells_guidebook": "Minecells Guidebook",
+      "subtitles.alarm": "ТРЕВОГА",
       "block.thisnotamod.votv_door_top": "Votv Door Top",
       "gui.thisnotamod.kerfu_int.button_aktivirovat": "Активировать",
       "block.thisnotamod.window_right_d": "Окно с решётками",
@@ -8512,10 +8791,6 @@
         "children": []
       },
       {
-        "name": "argemPlush",
-        "children": []
-      },
-      {
         "name": "VotVresources",
         "children": [
           {
@@ -8653,6 +8928,14 @@
               {
                 "name": "LampRound",
                 "children": []
+              },
+              {
+                "name": "warning_lamp",
+                "children": []
+              },
+              {
+                "name": "argemPlush",
+                "children": []
               }
             ]
           },
@@ -8675,7 +8958,7 @@
   "workspaceSettings": {
     "modid": "thisnotamod",
     "modName": "This (Not) a Mod",
-    "version": "1.8.7.1a",
+    "version": "1.8.7.2",
     "description": "Эксклюзивный мод для This (Not) a Modpack",
     "author": "Kit_1112",
     "websiteURL": "https://t.me/death_nick",

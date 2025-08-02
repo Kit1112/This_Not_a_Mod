@@ -40,4 +40,5 @@ public class ThisnotamodModSounds {
 	public static final RegistryObject<SoundEvent> BUTTON_SWITCH = REGISTRY.register("button_switch", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "button_switch")));
 	public static final RegistryObject<SoundEvent> AMB_MORNING = REGISTRY.register("amb_morning", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "amb_morning")));
 	public static final RegistryObject<SoundEvent> AMB_NIGHT = REGISTRY.register("amb_night", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "amb_night")));
+	public static final RegistryObject<SoundEvent> ALARM = REGISTRY.register("alarm", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "alarm")));
 }

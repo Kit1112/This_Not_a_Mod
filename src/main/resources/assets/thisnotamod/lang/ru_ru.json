@@ -1,5 +1,6 @@
 {
   "subtitles.radar_sound": "",
+  "block.thisnotamod.warning_lamp": "Аварийный светильник",
   "block.thisnotamod.votv_locker_top": "Шкафчик",
   "block.thisnotamod.server_top": "Server",
   "block.thisnotamod.w_canim": "Унитаз",
@@ -24,6 +25,7 @@
   "block.thisnotamod.light_switch": "Выключатель",
   "block.thisnotamod.lamp_middle_upped": "Электрическая лампа ",
   "item.tnam.minecells_guidebook": "Иконка гайдбука Minecells ",
+  "subtitles.alarm": "ТРЕВОГА",
   "block.thisnotamod.votv_door_top": "Votv Door Top",
   "gui.thisnotamod.kerfu_int.button_aktivirovat": "Активировать",
   "block.thisnotamod.window_right_d": "Окно с решётками",

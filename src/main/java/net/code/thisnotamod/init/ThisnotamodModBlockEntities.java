@@ -17,6 +17,7 @@ import net.code.thisnotamod.block.entity.WindowRightDTileEntity;
 import net.code.thisnotamod.block.entity.WindowAleftTTileEntity;
 import net.code.thisnotamod.block.entity.WindowAleftDTileEntity;
 import net.code.thisnotamod.block.entity.WindowARightTTileEntity;
+import net.code.thisnotamod.block.entity.WarningLampTileEntity;
 import net.code.thisnotamod.block.entity.WCanimTileEntity;
 import net.code.thisnotamod.block.entity.VotvLockerTopTileEntity;
 import net.code.thisnotamod.block.entity.VotvLockerTileEntity;
@@ -110,6 +111,7 @@ public class ThisnotamodModBlockEntities {
 			() -> BlockEntityType.Builder.of(WindowARightTTileEntity::new, ThisnotamodModBlocks.WINDOW_A_RIGHT_T.get()).build(null));
 	public static final RegistryObject<BlockEntityType<WindowAleftTTileEntity>> WINDOW_ALEFT_T = REGISTRY.register("window_aleft_t",
 			() -> BlockEntityType.Builder.of(WindowAleftTTileEntity::new, ThisnotamodModBlocks.WINDOW_ALEFT_T.get()).build(null));
+	public static final RegistryObject<BlockEntityType<WarningLampTileEntity>> WARNING_LAMP = REGISTRY.register("warning_lamp", () -> BlockEntityType.Builder.of(WarningLampTileEntity::new, ThisnotamodModBlocks.WARNING_LAMP.get()).build(null));
 
 	private static RegistryObject<BlockEntityType<?>> register(String registryname, RegistryObject<Block> block, BlockEntityType.BlockEntitySupplier<?> supplier) {
 		return REGISTRY.register(registryname, () -> BlockEntityType.Builder.of(supplier, block.get()).build(null));

@@ -16,6 +16,7 @@ import net.code.thisnotamod.block.WindowRightDBlock;
 import net.code.thisnotamod.block.WindowAleftTBlock;
 import net.code.thisnotamod.block.WindowAleftDBlock;
 import net.code.thisnotamod.block.WindowARightTBlock;
+import net.code.thisnotamod.block.WarningLampBlock;
 import net.code.thisnotamod.block.WCanimBlock;
 import net.code.thisnotamod.block.VotvLockerTopBlock;
 import net.code.thisnotamod.block.VotvLockerMiddleBlock;
@@ -126,6 +127,7 @@ public class ThisnotamodModBlocks {
 	public static final RegistryObject<Block> WINDOW_ALEFT_D = REGISTRY.register("window_aleft_d", () -> new WindowAleftDBlock());
 	public static final RegistryObject<Block> WINDOW_A_RIGHT_T = REGISTRY.register("window_a_right_t", () -> new WindowARightTBlock());
 	public static final RegistryObject<Block> WINDOW_ALEFT_T = REGISTRY.register("window_aleft_t", () -> new WindowAleftTBlock());
+	public static final RegistryObject<Block> WARNING_LAMP = REGISTRY.register("warning_lamp", () -> new WarningLampBlock());
 	// Start of user code block custom blocks
 	// End of user code block custom blocks
 }
