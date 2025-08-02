@@ -356,9 +356,9 @@ public class ThisnotamodModVariables {
 		public double LampXcoord = 0;
 		public double LampYcoord = 0;
 		public double LampZcoord = 0.0;
-		public String linkedDoors = "\"\"";
-		public String LinkedLamps = "\"\"";
-		public String linkedPasslocks = "\"\"";
+		public String linkedDoors = "";
+		public String LinkedLamps = "";
+		public String linkedPasslocks = "";
 		public double passArrIndex = 0;
 		public String passText = "";
 		public double PassXCoord = 0;
