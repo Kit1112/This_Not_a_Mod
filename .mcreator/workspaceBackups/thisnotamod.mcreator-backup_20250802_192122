@@ -178,7 +178,7 @@
           "src/main/resources/assets/thisnotamod/models/block/argemiablue.json"
         ]
       },
-      "path": "~/argemPlush"
+      "path": "~/VotVresources/Props/argemPlush"
     },
     {
       "name": "Argemiared",
@@ -195,7 +195,7 @@
           "src/main/java/net/code/thisnotamod/block/ArgemiaredBlock.java"
         ]
       },
-      "path": "~/argemPlush"
+      "path": "~/VotVresources/Props/argemPlush"
     },
     {
       "name": "Argemiacyan",
@@ -212,7 +212,7 @@
           "src/main/java/net/code/thisnotamod/block/ArgemiacyanBlock.java"
         ]
       },
-      "path": "~/argemPlush"
+      "path": "~/VotVresources/Props/argemPlush"
     },
     {
       "name": "Argemiagreen",
@@ -229,7 +229,7 @@
           "src/main/resources/assets/thisnotamod/blockstates/argemiagreen.json"
         ]
       },
-      "path": "~/argemPlush"
+      "path": "~/VotVresources/Props/argemPlush"
     },
     {
       "name": "Argemiapurple",
@@ -246,7 +246,7 @@
           "src/main/java/net/code/thisnotamod/block/ArgemiapurpleBlock.java"
         ]
       },
-      "path": "~/argemPlush"
+      "path": "~/VotVresources/Props/argemPlush"
     },
     {
       "name": "Argemiayellow",
@@ -263,7 +263,7 @@
           "src/main/resources/assets/thisnotamod/models/block/argemiayellow.json"
         ]
       },
-      "path": "~/argemPlush"
+      "path": "~/VotVresources/Props/argemPlush"
     },
     {
       "name": "Argemiawhite",
@@ -280,7 +280,7 @@
           "src/main/resources/assets/thisnotamod/models/item/argemiawhite.json"
         ]
       },
-      "path": "~/argemPlush"
+      "path": "~/VotVresources/Props/argemPlush"
     },
     {
       "name": "MusicDiskVotv",
@@ -8791,10 +8791,6 @@
         "children": []
       },
       {
-        "name": "argemPlush",
-        "children": []
-      },
-      {
         "name": "VotVresources",
         "children": [
           {
@@ -8936,6 +8932,10 @@
               {
                 "name": "warning_lamp",
                 "children": []
+              },
+              {
+                "name": "argemPlush",
+                "children": []
               }
             ]
           },
@@ -8958,7 +8958,7 @@
   "workspaceSettings": {
     "modid": "thisnotamod",
     "modName": "This (Not) a Mod",
-    "version": "1.8.7.1a",
+    "version": "1.8.7.2",
     "description": "Эксклюзивный мод для This (Not) a Modpack",
     "author": "Kit_1112",
     "websiteURL": "https://t.me/death_nick",
