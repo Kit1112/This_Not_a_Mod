@@ -1,0 +1,7 @@
+{
+    "overlay": {
+        "texture": "thisnotamod:textures/block/server_new_e.png",
+        "emissive": true,
+        "transparency": "translucent"
+    }
+}

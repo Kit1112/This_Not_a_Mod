@@ -26,8 +26,6 @@ public class PasslockPlaceProcedure {
 			if (_bs.getBlock().getStateDefinition().getProperty("blockstate") instanceof IntegerProperty _integerProp && _integerProp.getPossibleValues().contains(_value))
 				world.setBlock(_pos, _bs.setValue(_integerProp, _value), 3);
 		}
-		if (entity instanceof Player _player && !_player.level().isClientSide())
-			_player.displayClientMessage(Component.literal(((entity.getCapability(ThisnotamodModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new ThisnotamodModVariables.PlayerVariables())).linkedDoors)), false);
 		if (((entity.getCapability(ThisnotamodModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new ThisnotamodModVariables.PlayerVariables())).linkedDoors).equals("")) {
 			{
 				BlockPos _pos = BlockPos.containing(x, y, z);

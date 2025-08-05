@@ -26,122 +26,130 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.ArrayList;
 
+/**
+ * Обработчик "автополомки" серверов VotV.
+ * Работает строго на стороне сервера и только в Overworld.
+ */
 @Mod.EventBusSubscriber
 public class AutoBreakProcedure {
-	@SubscribeEvent
-	public static void onWorldTick(TickEvent.LevelTickEvent event) {
-		if (event.phase == TickEvent.Phase.END) {
-			// Только в Overworld
-			if (event.level.dimension().location().toString().equals("minecraft:overworld")) {
-				execute(event, event.level);
-			}
-		}
-	}
+    @SubscribeEvent
+    public static void onWorldTick(TickEvent.LevelTickEvent event) {
+        // Выполняем только в конце серверного тика в Overworld
+        if (event.phase != TickEvent.Phase.END) return;
+        if (event.level.isClientSide()) return;
+        if (!event.level.dimension().location().equals(new ResourceLocation("minecraft", "overworld"))) return;
 
-	public static void execute(LevelAccessor world) {
-		execute(null, world);
-	}
+        execute(event, event.level);
+    }
 
-	private static void execute(@Nullable Event event, LevelAccessor world) {
-		// 📌 Проверяем наличие игроков в измерении votv_questing
-		ServerLevel votvWorld = ServerLifecycleHooks.getCurrentServer().getLevel(
-			ResourceKey.create(Registries.DIMENSION, new ResourceLocation("thisnotamod", "votv_questing"))
-		);
-		if (votvWorld == null || votvWorld.players().isEmpty()) {
-			return; // ⛔ Никого нет — не выполняем вообще ничего
-		}
+    public static void execute(LevelAccessor world) {
+        execute(null, world);
+    }
 
-		List<Object> servCoords = new ArrayList<>();
+    private static void execute(@Nullable Event event, LevelAccessor world) {
+        /* Получаем сервер. На самых ранних тиках он может быть ещё не инициализирован,
+           поэтому сразу выходим, если server == null. */
+        var server = ServerLifecycleHooks.getCurrentServer();
+        if (server == null) return;
 
-		long timeOfDay = world.dayTime() % 24000;
+        // 📌 Измерение, где стоят сервера VotV
+        ServerLevel votvWorld = server.getLevel(
+            ResourceKey.create(Registries.DIMENSION, new ResourceLocation("thisnotamod", "votv_questing"))
+        );
+        if (votvWorld == null || votvWorld.players().isEmpty()) return; // Никого нет – нет смысла работать
 
-		// ⏱ Сброс флага в конце суток
-		if (timeOfDay >= 23990) {
-			ThisnotamodModVariables.MapVariables.get(world).autobreakExecutedToday = false;
-			ThisnotamodModVariables.MapVariables.get(world).syncData(world);
-		}
+        long timeOfDay = world.dayTime() % 24000;
 
-		// ✅ Выполняем автополомку только 1 раз в начале суток
-		if (timeOfDay == 1 && !ThisnotamodModVariables.MapVariables.get(world).autobreakExecutedToday) {
-			ThisnotamodModVariables.MapVariables.get(world).autobreakExecutedToday = true;
-			ThisnotamodModVariables.MapVariables.get(world).syncData(world);
+        // ⏱ Сброс флага в конце суток
+        if (timeOfDay >= 23990) {
+            ThisnotamodModVariables.MapVariables.get(world).autobreakExecutedToday = false;
+            ThisnotamodModVariables.MapVariables.get(world).syncData(world);
+        }
 
-			ThisnotamodModVariables.autoBreakServList.clear();
-			ThisnotamodModVariables.MapVariables.get(world).random = Mth.nextInt(RandomSource.create(), 1, 3);
-			ThisnotamodModVariables.MapVariables.get(world).syncData(world);
+        // ✅ Запускаем процедуру только один раз в начале игровых суток
+        if (timeOfDay == 1 && !ThisnotamodModVariables.MapVariables.get(world).autobreakExecutedToday) {
+            ThisnotamodModVariables.MapVariables.get(world).autobreakExecutedToday = true;
+            ThisnotamodModVariables.MapVariables.get(world).syncData(world);
 
-			if (!world.isClientSide() && world.getServer() != null &&
-				ThisnotamodModVariables.MapVariables.get(world).worldDebug) {
-				world.getServer().getPlayerList().broadcastSystemMessage(
-					Component.literal("Будет сломано " + ThisnotamodModVariables.MapVariables.get(world).random + " серверов сегодня."),
-					false
-				);
-			}
+            // Определяем, сколько серверов "сломать" сегодня (от 1 до 3)
+            ThisnotamodModVariables.autoBreakServList.clear();
+            ThisnotamodModVariables.MapVariables.get(world).random = Mth.nextInt(RandomSource.create(), 1, 3);
+            ThisnotamodModVariables.MapVariables.get(world).syncData(world);
 
-			for (String keyiterator : ThisnotamodModVariables.MapVariables.get(world).datamap1.getAllKeys()) {
-				ThisnotamodModVariables.autoBreakServList.add("" + keyiterator);
-			}
+            if (ThisnotamodModVariables.MapVariables.get(world).worldDebug) {
+                server.getPlayerList().broadcastSystemMessage(
+                    Component.literal("Будет сломано " + ThisnotamodModVariables.MapVariables.get(world).random + " серверов сегодня."),
+                    false
+                );
+            }
 
-			// 🧠 Создаём копию списка серверов
-			List<String> remainingServers = new ArrayList<>();
-			for (Object obj : ThisnotamodModVariables.autoBreakServList) {
-				remainingServers.add(String.valueOf(obj));
-			}
+            // Заполняем общий список всех серверов
+            for (String key : ThisnotamodModVariables.MapVariables.get(world).datamap1.getAllKeys()) {
+                ThisnotamodModVariables.autoBreakServList.add(key);
+            }
 
-			for (int index0 = 0; index0 < (int) ThisnotamodModVariables.MapVariables.get(world).random; index0++) {
-				if (remainingServers.isEmpty()) break;
+            // 🧠 Делаем копию – будем из неё случайно выбирать
+            List<String> remainingServers = new ArrayList<>();
+            for (Object obj : ThisnotamodModVariables.autoBreakServList) {
+                remainingServers.add(String.valueOf(obj));
+            }
 
-				int index = Mth.nextInt(RandomSource.create(), 0, remainingServers.size() - 1);
-				String key = remainingServers.get(index);
-				remainingServers.remove(index);
+            int breaksToDo = (int) ThisnotamodModVariables.MapVariables.get(world).random;
+            for (int i = 0; i < breaksToDo; i++) {
+                if (remainingServers.isEmpty()) break;
 
-				StringTag tag = ThisnotamodModVariables.MapVariables.get(world).datamap1.get(key) instanceof StringTag _s ? _s : null;
+                int index = Mth.nextInt(RandomSource.create(), 0, remainingServers.size() - 1);
+                String key = remainingServers.remove(index);
 
-				if (tag != null && tag.getAsString().equals("enabled")) {
-					String[] coords = key.split(",");
-					List<String> coordsList = new ArrayList<>();
-					for (String c : coords) coordsList.add(c.trim());
+                // Проверяем, что сервер в состоянии "enabled"
+                StringTag tag = ThisnotamodModVariables.MapVariables.get(world).datamap1.get(key) instanceof StringTag _s ? _s : null;
+                if (tag == null || !"enabled".equals(tag.getAsString())) continue;
 
-					ThisnotamodModVariables.servCoordsForAutobreak.clear();
-					ThisnotamodModVariables.servCoordsForAutobreak.addAll(coordsList);
+                // Координаты блока‑сервера
+                String[] coords = key.split(",");
+                List<String> coordsList = new ArrayList<>();
+                for (String c : coords) coordsList.add(c.trim());
 
-					// Копия координат для лямбды
-					List<String> coordsCopy = new ArrayList<>(coordsList);
+                ThisnotamodModVariables.servCoordsForAutobreak.clear();
+                ThisnotamodModVariables.servCoordsForAutobreak.addAll(coordsList);
 
-					ThisnotamodMod.queueServerWork(Mth.nextInt(RandomSource.create(), 1, 23999), () -> {
-						int _value = 2;
+                // Копия для лямбды
+                List<String> coordsCopy = new ArrayList<>(coordsList);
 
-						double x = parse(coordsCopy.get(0));
-						double y = parse(coordsCopy.get(1));
-						double z = parse(coordsCopy.get(2));
+                // Планируем "поломку" в случайный тик сегодняшнего дня
+                ThisnotamodMod.queueServerWork(Mth.nextInt(RandomSource.create(), 1, 23999), () -> {
+                    int brokenState = 2; // значение IntegerProperty "blockstate", обозначающее сломанный сервер
 
-						BlockPos _pos = BlockPos.containing(x, y, z);
-						BlockState _bs = votvWorld.getBlockState(_pos);
+                    double x = parse(coordsCopy.get(0));
+                    double y = parse(coordsCopy.get(1));
+                    double z = parse(coordsCopy.get(2));
 
-						if (_bs.getBlock().getStateDefinition().getProperty("blockstate") instanceof IntegerProperty _integerProp &&
-							_integerProp.getPossibleValues().contains(_value)) {
-							votvWorld.setBlock(_pos, _bs.setValue(_integerProp, _value), 3);
-						}
+                    BlockPos pos = BlockPos.containing(x, y, z);
+                    BlockState bs = votvWorld.getBlockState(pos);
 
-						if (ThisnotamodModVariables.MapVariables.get(votvWorld).worldDebug) {
-							votvWorld.getServer().getPlayerList().broadcastSystemMessage(
-								Component.literal("Должен был сломаться сервер по координатам X:" + coordsCopy.get(0) +
-												  " Y:" + coordsCopy.get(1) +
-												  " Z:" + coordsCopy.get(2)),
-								false
-							);
-						}
-					});
-				}
-			}
-		}
-	}
+                    if (bs.getBlock().getStateDefinition().getProperty("blockstate") instanceof IntegerProperty prop &&
+                        prop.getPossibleValues().contains(brokenState)) {
+                        votvWorld.setBlock(pos, bs.setValue(prop, brokenState), 3);
+                    }
 
-	private static double parse(String s) {
-		try {
-			return Double.parseDouble(s.trim());
-		} catch (Exception e) {
-			return 0;
-		}
-	}
+                    if (ThisnotamodModVariables.MapVariables.get(votvWorld).worldDebug) {
+                        server.getPlayerList().broadcastSystemMessage(
+                            Component.literal("Должен был сломаться сервер по координатам X:" + coordsCopy.get(0) +
+                                              " Y:" + coordsCopy.get(1) +
+                                              " Z:" + coordsCopy.get(2)),
+                            false
+                        );
+                    }
+                });
+            }
+        }
+    }
+
+    private static double parse(String s) {
+        try {
+            return Double.parseDouble(s.trim());
+        } catch (Exception e) {
+            return 0;
+        }
+    }
 }
