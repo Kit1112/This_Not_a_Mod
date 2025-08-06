@@ -52,7 +52,7 @@ public class PasslockRBMProcedure {
 					}
 				}, _bpos);
 			}
-		} else if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == ThisnotamodModBlocks.PASSLOCK.get().asItem()) {
+		} else if ((entity instanceof LivingEntity _livEnt ? _livEnt.getMainHandItem() : ItemStack.EMPTY).getItem() == ThisnotamodModBlocks.PASSLOCK_B.get().asItem()) {
 			PassLinkPProcedure.execute(x, y, z, entity);
 		} else {
 			if (entity instanceof ServerPlayer _ent) {

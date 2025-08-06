@@ -1,0 +1,35 @@
+{
+  "_fv": 66,
+  "_type": "blockstates",
+  "definition": {
+    "block": "ServerBTop",
+    "blockstateList": [
+      {
+        "texture": "server_new",
+        "textureTop": "",
+        "textureLeft": "",
+        "textureFront": "",
+        "textureRight": "",
+        "textureBack": "",
+        "particleTexture": "",
+        "renderType": 2,
+        "customModelName": "server:default",
+        "luminance": 0,
+        "boundingBoxes": []
+      },
+      {
+        "texture": "server_new_red",
+        "textureTop": "",
+        "textureLeft": "",
+        "textureFront": "",
+        "textureRight": "",
+        "textureBack": "",
+        "particleTexture": "",
+        "renderType": 2,
+        "customModelName": "server:default",
+        "luminance": 0,
+        "boundingBoxes": []
+      }
+    ]
+  }
+}

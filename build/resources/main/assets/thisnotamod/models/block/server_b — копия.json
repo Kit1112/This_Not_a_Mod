@@ -1,0 +1,9 @@
+{
+  "parent": "thisnotamod:custom/server",
+  "textures": {
+    "all": "thisnotamod:block/transparent",
+    "particle": "thisnotamod:block/transparent",
+    "0": "thisnotamod:block/transparent"
+  },
+  "render_type": "translucent"
+}

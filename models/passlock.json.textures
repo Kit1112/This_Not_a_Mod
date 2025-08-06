@@ -1,0 +1,10 @@
+{
+  "mappings": {
+    "default": {
+      "map": {
+        "0": "passlock_access"
+      },
+      "name": "default"
+    }
+  }
+}

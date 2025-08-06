@@ -33,11 +33,11 @@ import net.code.thisnotamod.block.TelescopeBlock;
 import net.code.thisnotamod.block.TableRBlock;
 import net.code.thisnotamod.block.TableLBlock;
 import net.code.thisnotamod.block.TableKitchenBlock;
-import net.code.thisnotamod.block.ServerTopBlock;
-import net.code.thisnotamod.block.ServerBlock;
+import net.code.thisnotamod.block.ServerBTopBlock;
+import net.code.thisnotamod.block.ServerBBlock;
 import net.code.thisnotamod.block.RadiotielieskopBlock;
 import net.code.thisnotamod.block.RadarBlock;
-import net.code.thisnotamod.block.PasslockBlock;
+import net.code.thisnotamod.block.PasslockBBlock;
 import net.code.thisnotamod.block.MannequinTopBlock;
 import net.code.thisnotamod.block.MannequinDownBlock;
 import net.code.thisnotamod.block.LightSwitchBlock;
@@ -98,7 +98,6 @@ public class ThisnotamodModBlocks {
 	public static final RegistryObject<Block> MANNEQUIN_TOP = REGISTRY.register("mannequin_top", () -> new MannequinTopBlock());
 	public static final RegistryObject<Block> MANNEQUIN_DOWN = REGISTRY.register("mannequin_down", () -> new MannequinDownBlock());
 	public static final RegistryObject<Block> TERMINAL = REGISTRY.register("terminal", () -> new TerminalBlock());
-	public static final RegistryObject<Block> SERVER = REGISTRY.register("server", () -> new ServerBlock());
 	public static final RegistryObject<Block> RADAR = REGISTRY.register("radar", () -> new RadarBlock());
 	public static final RegistryObject<Block> TABLE_KITCHEN = REGISTRY.register("table_kitchen", () -> new TableKitchenBlock());
 	public static final RegistryObject<Block> TERM_RT = REGISTRY.register("term_rt", () -> new TermRTBlock());
@@ -106,7 +105,6 @@ public class ThisnotamodModBlocks {
 	public static final RegistryObject<Block> TERM_LT = REGISTRY.register("term_lt", () -> new TermLTBlock());
 	public static final RegistryObject<Block> CHESS_ANDESIT = REGISTRY.register("chess_andesit", () -> new ChessAndesitBlock());
 	public static final RegistryObject<Block> ZIGA = REGISTRY.register("ziga", () -> new ZigaBlock());
-	public static final RegistryObject<Block> PASSLOCK = REGISTRY.register("passlock", () -> new PasslockBlock());
 	public static final RegistryObject<Block> LAMPPLUS_1 = REGISTRY.register("lampplus_1", () -> new Lampplus1Block());
 	public static final RegistryObject<Block> LAMPPLUS_1_UPPED = REGISTRY.register("lampplus_1_upped", () -> new Lampplus1UppedBlock());
 	public static final RegistryObject<Block> LAMP_UPPED = REGISTRY.register("lamp_upped", () -> new LampUppedBlock());
@@ -116,7 +114,6 @@ public class ThisnotamodModBlocks {
 	public static final RegistryObject<Block> LAMP_MIDDLE_PLUS_1_UPPED = REGISTRY.register("lamp_middle_plus_1_upped", () -> new LampMiddlePlus1UppedBlock());
 	public static final RegistryObject<Block> VENT_CORNER = REGISTRY.register("vent_corner", () -> new VentCornerBlock());
 	public static final RegistryObject<Block> VENT_CORNER_HORIZONTAL = REGISTRY.register("vent_corner_horizontal", () -> new VentCornerHorizontalBlock());
-	public static final RegistryObject<Block> SERVER_TOP = REGISTRY.register("server_top", () -> new ServerTopBlock());
 	public static final RegistryObject<Block> W_CANIM = REGISTRY.register("w_canim", () -> new WCanimBlock());
 	public static final RegistryObject<Block> LIGHT_SWITCH = REGISTRY.register("light_switch", () -> new LightSwitchBlock());
 	public static final RegistryObject<Block> LAMP_ROUND = REGISTRY.register("lamp_round", () -> new LampRoundBlock());
@@ -128,6 +125,9 @@ public class ThisnotamodModBlocks {
 	public static final RegistryObject<Block> WINDOW_A_RIGHT_T = REGISTRY.register("window_a_right_t", () -> new WindowARightTBlock());
 	public static final RegistryObject<Block> WINDOW_ALEFT_T = REGISTRY.register("window_aleft_t", () -> new WindowAleftTBlock());
 	public static final RegistryObject<Block> WARNING_LAMP = REGISTRY.register("warning_lamp", () -> new WarningLampBlock());
+	public static final RegistryObject<Block> PASSLOCK_B = REGISTRY.register("passlock_b", () -> new PasslockBBlock());
+	public static final RegistryObject<Block> SERVER_B = REGISTRY.register("server_b", () -> new ServerBBlock());
+	public static final RegistryObject<Block> SERVER_B_TOP = REGISTRY.register("server_b_top", () -> new ServerBTopBlock());
 	// Start of user code block custom blocks
 	// End of user code block custom blocks
 }

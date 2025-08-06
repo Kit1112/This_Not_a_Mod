@@ -35,9 +35,9 @@ public class ThisnotamodModTabs {
 				tabData.accept(ThisnotamodModBlocks.TELESCOPE.get().asItem());
 				tabData.accept(ThisnotamodModBlocks.RADIOTIELIESKOP.get().asItem());
 				tabData.accept(ThisnotamodModBlocks.RADAR.get().asItem());
-				tabData.accept(ThisnotamodModBlocks.SERVER.get().asItem());
+				tabData.accept(ThisnotamodModBlocks.SERVER_B.get().asItem());
 				tabData.accept(ThisnotamodModBlocks.TERMINAL.get().asItem());
-				tabData.accept(ThisnotamodModBlocks.PASSLOCK.get().asItem());
+				tabData.accept(ThisnotamodModBlocks.PASSLOCK_B.get().asItem());
 				tabData.accept(ThisnotamodModItems.PASS_CHANGE.get());
 				tabData.accept(ThisnotamodModBlocks.W_CANIM.get().asItem());
 				tabData.accept(ThisnotamodModBlocks.LIGHT_SWITCH.get().asItem());

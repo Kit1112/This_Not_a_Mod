@@ -1,7 +1,0 @@
-
-{
-  "parent": "thisnotamod:displaysettings/serveritem",
-  "textures": {
-    "particle": "thisnotamod:block/server_new"
-  }
-}

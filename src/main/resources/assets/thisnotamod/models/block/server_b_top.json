@@ -1,0 +1,9 @@
+{
+  "parent": "thisnotamod:custom/server",
+  "textures": {
+    "all": "thisnotamod:block/server_new",
+    "particle": "thisnotamod:block/server_new",
+    "0": "thisnotamod:block/server_new"
+  },
+  "render_type": "solid"
+}

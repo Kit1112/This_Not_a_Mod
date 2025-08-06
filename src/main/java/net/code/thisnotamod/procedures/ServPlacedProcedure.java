@@ -27,7 +27,7 @@ public class ServPlacedProcedure {
 					_prop = _bs.getBlock().getStateDefinition().getProperty("axis");
 					return _prop instanceof EnumProperty _ep && _ep.getPossibleValues().contains(newValue.getAxis()) ? _bs.setValue(_ep, newValue.getAxis()) : _bs;
 				}
-			}.with(ThisnotamodModBlocks.SERVER_TOP.get().defaultBlockState(), (new Object() {
+			}.with(ThisnotamodModBlocks.SERVER_B_TOP.get().defaultBlockState(), (new Object() {
 				public Direction getDirection(BlockState _bs) {
 					Property<?> _prop = _bs.getBlock().getStateDefinition().getProperty("facing");
 					if (_prop instanceof DirectionProperty _dp)

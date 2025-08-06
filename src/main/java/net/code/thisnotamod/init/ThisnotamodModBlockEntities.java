@@ -32,11 +32,9 @@ import net.code.thisnotamod.block.entity.TermLTTileEntity;
 import net.code.thisnotamod.block.entity.TermLDTileEntity;
 import net.code.thisnotamod.block.entity.TelescopeTileEntity;
 import net.code.thisnotamod.block.entity.TableKitchenTileEntity;
-import net.code.thisnotamod.block.entity.ServerTopTileEntity;
-import net.code.thisnotamod.block.entity.ServerTileEntity;
 import net.code.thisnotamod.block.entity.RadiotielieskopTileEntity;
 import net.code.thisnotamod.block.entity.RadarTileEntity;
-import net.code.thisnotamod.block.entity.PasslockTileEntity;
+import net.code.thisnotamod.block.entity.PasslockBBlockEntity;
 import net.code.thisnotamod.block.entity.MannequinTopTileEntity;
 import net.code.thisnotamod.block.entity.MannequinDownTileEntity;
 import net.code.thisnotamod.block.entity.LightSwitchTileEntity;
@@ -72,14 +70,12 @@ public class ThisnotamodModBlockEntities {
 	public static final RegistryObject<BlockEntityType<MannequinDownTileEntity>> MANNEQUIN_DOWN = REGISTRY.register("mannequin_down",
 			() -> BlockEntityType.Builder.of(MannequinDownTileEntity::new, ThisnotamodModBlocks.MANNEQUIN_DOWN.get()).build(null));
 	public static final RegistryObject<BlockEntityType<TerminalTileEntity>> TERMINAL = REGISTRY.register("terminal", () -> BlockEntityType.Builder.of(TerminalTileEntity::new, ThisnotamodModBlocks.TERMINAL.get()).build(null));
-	public static final RegistryObject<BlockEntityType<ServerTileEntity>> SERVER = REGISTRY.register("server", () -> BlockEntityType.Builder.of(ServerTileEntity::new, ThisnotamodModBlocks.SERVER.get()).build(null));
 	public static final RegistryObject<BlockEntityType<RadarTileEntity>> RADAR = REGISTRY.register("radar", () -> BlockEntityType.Builder.of(RadarTileEntity::new, ThisnotamodModBlocks.RADAR.get()).build(null));
 	public static final RegistryObject<BlockEntityType<TableKitchenTileEntity>> TABLE_KITCHEN = REGISTRY.register("table_kitchen", () -> BlockEntityType.Builder.of(TableKitchenTileEntity::new, ThisnotamodModBlocks.TABLE_KITCHEN.get()).build(null));
 	public static final RegistryObject<BlockEntityType<TermRTTileEntity>> TERM_RT = REGISTRY.register("term_rt", () -> BlockEntityType.Builder.of(TermRTTileEntity::new, ThisnotamodModBlocks.TERM_RT.get()).build(null));
 	public static final RegistryObject<BlockEntityType<TermLDTileEntity>> TERM_LD = REGISTRY.register("term_ld", () -> BlockEntityType.Builder.of(TermLDTileEntity::new, ThisnotamodModBlocks.TERM_LD.get()).build(null));
 	public static final RegistryObject<BlockEntityType<TermLTTileEntity>> TERM_LT = REGISTRY.register("term_lt", () -> BlockEntityType.Builder.of(TermLTTileEntity::new, ThisnotamodModBlocks.TERM_LT.get()).build(null));
 	public static final RegistryObject<BlockEntityType<ZigaTileEntity>> ZIGA = REGISTRY.register("ziga", () -> BlockEntityType.Builder.of(ZigaTileEntity::new, ThisnotamodModBlocks.ZIGA.get()).build(null));
-	public static final RegistryObject<BlockEntityType<PasslockTileEntity>> PASSLOCK = REGISTRY.register("passlock", () -> BlockEntityType.Builder.of(PasslockTileEntity::new, ThisnotamodModBlocks.PASSLOCK.get()).build(null));
 	public static final RegistryObject<BlockEntityType<Lampplus1TileEntity>> LAMPPLUS_1 = REGISTRY.register("lampplus_1", () -> BlockEntityType.Builder.of(Lampplus1TileEntity::new, ThisnotamodModBlocks.LAMPPLUS_1.get()).build(null));
 	public static final RegistryObject<BlockEntityType<Lampplus1UppedTileEntity>> LAMPPLUS_1_UPPED = REGISTRY.register("lampplus_1_upped",
 			() -> BlockEntityType.Builder.of(Lampplus1UppedTileEntity::new, ThisnotamodModBlocks.LAMPPLUS_1_UPPED.get()).build(null));
@@ -94,7 +90,6 @@ public class ThisnotamodModBlockEntities {
 	public static final RegistryObject<BlockEntityType<VentCornerTileEntity>> VENT_CORNER = REGISTRY.register("vent_corner", () -> BlockEntityType.Builder.of(VentCornerTileEntity::new, ThisnotamodModBlocks.VENT_CORNER.get()).build(null));
 	public static final RegistryObject<BlockEntityType<VentCornerHorizontalTileEntity>> VENT_CORNER_HORIZONTAL = REGISTRY.register("vent_corner_horizontal",
 			() -> BlockEntityType.Builder.of(VentCornerHorizontalTileEntity::new, ThisnotamodModBlocks.VENT_CORNER_HORIZONTAL.get()).build(null));
-	public static final RegistryObject<BlockEntityType<ServerTopTileEntity>> SERVER_TOP = REGISTRY.register("server_top", () -> BlockEntityType.Builder.of(ServerTopTileEntity::new, ThisnotamodModBlocks.SERVER_TOP.get()).build(null));
 	public static final RegistryObject<BlockEntityType<WCanimTileEntity>> W_CANIM = REGISTRY.register("w_canim", () -> BlockEntityType.Builder.of(WCanimTileEntity::new, ThisnotamodModBlocks.W_CANIM.get()).build(null));
 	public static final RegistryObject<BlockEntityType<LightSwitchTileEntity>> LIGHT_SWITCH = REGISTRY.register("light_switch", () -> BlockEntityType.Builder.of(LightSwitchTileEntity::new, ThisnotamodModBlocks.LIGHT_SWITCH.get()).build(null));
 	public static final RegistryObject<BlockEntityType<LampRoundTileEntity>> LAMP_ROUND = REGISTRY.register("lamp_round", () -> BlockEntityType.Builder.of(LampRoundTileEntity::new, ThisnotamodModBlocks.LAMP_ROUND.get()).build(null));
@@ -112,6 +107,7 @@ public class ThisnotamodModBlockEntities {
 	public static final RegistryObject<BlockEntityType<WindowAleftTTileEntity>> WINDOW_ALEFT_T = REGISTRY.register("window_aleft_t",
 			() -> BlockEntityType.Builder.of(WindowAleftTTileEntity::new, ThisnotamodModBlocks.WINDOW_ALEFT_T.get()).build(null));
 	public static final RegistryObject<BlockEntityType<WarningLampTileEntity>> WARNING_LAMP = REGISTRY.register("warning_lamp", () -> BlockEntityType.Builder.of(WarningLampTileEntity::new, ThisnotamodModBlocks.WARNING_LAMP.get()).build(null));
+	public static final RegistryObject<BlockEntityType<?>> PASSLOCK_B = register("passlock_b", ThisnotamodModBlocks.PASSLOCK_B, PasslockBBlockEntity::new);
 
 	private static RegistryObject<BlockEntityType<?>> register(String registryname, RegistryObject<Block> block, BlockEntityType.BlockEntitySupplier<?> supplier) {
 		return REGISTRY.register(registryname, () -> BlockEntityType.Builder.of(supplier, block.get()).build(null));

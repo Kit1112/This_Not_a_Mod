@@ -1,0 +1,9 @@
+{
+  "parent": "thisnotamod:custom/passlock",
+  "textures": {
+    "all": "thisnotamod:block/passlock_access",
+    "particle": "thisnotamod:block/passlock_access",
+    "0": "thisnotamod:block/passlock_access"
+  },
+  "render_type": "solid"
+}
