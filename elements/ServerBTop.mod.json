@@ -80,7 +80,7 @@
     "creativeTabs": [],
     "destroyTool": "Not specified",
     "customDrop": {
-      "value": ""
+      "value": "CUSTOM:ServerB"
     },
     "dropAmount": 1,
     "useLootTableForDrops": false,
@@ -101,7 +101,7 @@
     },
     "colorOnMap": "DEFAULT",
     "creativePickItem": {
-      "value": ""
+      "value": "CUSTOM:ServerB"
     },
     "offsetType": "NONE",
     "aiPathNodeType": "DEFAULT",

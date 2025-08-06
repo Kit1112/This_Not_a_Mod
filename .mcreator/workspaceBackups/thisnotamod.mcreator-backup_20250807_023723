@@ -1909,28 +1909,6 @@
       "path": "~/VotVresources/Props/Terminal"
     },
     {
-      "name": "Server",
-      "type": "animatedblock",
-      "compiles": true,
-      "locked_code": false,
-      "registry_name": "server",
-      "metadata": {
-        "files": [
-          "src/main/java/net/code/thisnotamod/block/ServerBlock.java",
-          "src/main/java/net/code/thisnotamod/block/entity/ServerTileEntity.java",
-          "src/main/java/net/code/thisnotamod/block/model/ServerDisplayModel.java",
-          "src/main/java/net/code/thisnotamod/block/model/ServerBlockModel.java",
-          "src/main/java/net/code/thisnotamod/block/display/ServerDisplayItem.java",
-          "src/main/resources/assets/thisnotamod/models/item/server.json",
-          "src/main/java/net/code/thisnotamod/block/renderer/ServerTileRenderer.java",
-          "src/main/resources/assets/thisnotamod/models/custom/server_particle.json",
-          "src/main/java/net/code/thisnotamod/block/renderer/ServerDisplayItemRenderer.java",
-          "src/main/resources/assets/thisnotamod/blockstates/server.json"
-        ]
-      },
-      "path": "~/VotVresources/Props/server"
-    },
-    {
       "name": "TermWorkSoundPlay",
       "type": "procedure",
       "compiles": true,
@@ -4106,30 +4084,6 @@
         ]
       },
       "path": "~/VotVresources/Props/Door"
-    },
-    {
-      "name": "ServerTop",
-      "type": "animatedblock",
-      "compiles": true,
-      "locked_code": false,
-      "registry_name": "server_top",
-      "metadata": {
-        "files": [
-          "src/main/java/net/code/thisnotamod/block/display/ServerTopDisplayItem.java",
-          "src/main/resources/assets/thisnotamod/models/block/server_top_blockstate_1.json",
-          "src/main/resources/assets/thisnotamod/models/custom/server_top_particle.json",
-          "src/main/java/net/code/thisnotamod/block/model/ServerTopBlockModel.java",
-          "src/main/java/net/code/thisnotamod/block/renderer/ServerTopTileRenderer.java",
-          "src/main/java/net/code/thisnotamod/block/entity/ServerTopTileEntity.java",
-          "src/main/resources/assets/thisnotamod/blockstates/server_top.json",
-          "src/main/java/net/code/thisnotamod/block/model/ServerTopDisplayModel.java",
-          "src/main/resources/assets/thisnotamod/models/item/server_top.json",
-          "src/main/resources/assets/thisnotamod/models/block/server_top_blockstate_0.json",
-          "src/main/java/net/code/thisnotamod/block/ServerTopBlock.java",
-          "src/main/java/net/code/thisnotamod/block/renderer/ServerTopDisplayItemRenderer.java"
-        ]
-      },
-      "path": "~/VotVresources/Props/server"
     },
     {
       "name": "ServDdestr",
@@ -7759,7 +7713,7 @@
       "name": "ServerTblockstates",
       "type": "blockstates",
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "server_tblockstates",
       "metadata": {
         "files": [
@@ -8451,8 +8405,9 @@
       "Telescope",
       "Radiotielieskop",
       "Radar",
-      "Server",
+      "ServerB",
       "Terminal",
+      "PasslockB",
       "PassChange",
       "WCanim",
       "LightSwitch",
@@ -8471,9 +8426,7 @@
       "ChessAndesit",
       "KerfuOmega",
       "Kerfu",
-      "Mannequin",
-      "PasslockB",
-      "ServerB"
+      "Mannequin"
     ]
   },
   "language_map": {
@@ -8481,7 +8434,6 @@
       "subtitles.radar_sound": "",
       "block.thisnotamod.warning_lamp": "Аварийный светильник",
       "block.thisnotamod.votv_locker_top": "Шкафчик",
-      "block.thisnotamod.server_top": "Server",
       "block.thisnotamod.w_canim": "Унитаз",
       "subtitles.passchange_start": "",
       "block.thisnotamod.lamp_middle_plus_1_upped": "Электрическая лампа ",
@@ -8616,7 +8568,6 @@
       "block.thisnotamod.kripoghus": "Крипогусь",
       "block.thisnotamod.passlock_b": "Кодовый замок",
       "subtitles.loshara": "",
-      "block.thisnotamod.server": "Сервер",
       "subtitles.morning_ambient_votv": "amb2_morning",
       "gui.thisnotamod.passlock_gui.password": "",
       "subtitles.votv_theme": "VotV Title theme - Wolfeni",
@@ -8653,7 +8604,6 @@
       "subtitles.radar_sound": "",
       "block.thisnotamod.warning_lamp": "Аварийный светильник",
       "block.thisnotamod.votv_locker_top": "Votv Locker Top",
-      "block.thisnotamod.server_top": "Server",
       "block.thisnotamod.w_canim": "Унитаз",
       "subtitles.passchange_start": "",
       "block.thisnotamod.lamp_middle_plus_1_upped": "Электрическая лампа ",
@@ -8788,7 +8738,6 @@
       "block.thisnotamod.kripoghus": "Крипогусь",
       "block.thisnotamod.passlock_b": "Кодовый замок",
       "subtitles.loshara": "",
-      "block.thisnotamod.server": "Сервер",
       "subtitles.morning_ambient_votv": "amb2_morning",
       "gui.thisnotamod.passlock_gui.password": "",
       "subtitles.votv_theme": "VotV Title theme - Wolfeni",
@@ -9005,14 +8954,16 @@
   "workspaceSettings": {
     "modid": "thisnotamod",
     "modName": "This (Not) a Mod",
-    "version": "1.8.7.2a",
+    "version": "1.8.7.2b",
     "description": "Эксклюзивный мод для This (Not) a Modpack",
     "author": "Kit_1112",
     "websiteURL": "https://t.me/death_nick",
     "license": "Not specified",
     "serverSideOnly": true,
     "modPicture": "logo",
-    "requiredMods": [],
+    "requiredMods": [
+      "moremcmeta"
+    ],
     "dependencies": [],
     "dependants": [],
     "mcreatorDependencies": [
