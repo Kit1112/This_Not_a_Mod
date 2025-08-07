@@ -7,6 +7,7 @@ import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.network.chat.Component;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.core.BlockPos;
 
 import net.code.thisnotamod.network.ThisnotamodModVariables;
@@ -29,8 +30,10 @@ public class ServerTrbmProcedure {
 					if (_bs.getBlock().getStateDefinition().getProperty("blockstate") instanceof IntegerProperty _integerProp && _integerProp.getPossibleValues().contains(_value))
 						world.setBlock(_pos, _bs.setValue(_integerProp, _value), 3);
 				}
-			} else if (((world.getBlockState(BlockPos.containing(x, y + 1, z))).getBlock().getStateDefinition().getProperty("blockstate") instanceof IntegerProperty _getip6
-					? (world.getBlockState(BlockPos.containing(x, y + 1, z))).getValue(_getip6)
+				ThisnotamodModVariables.MapVariables.get(world).datamap1.remove(((("" + new Vec3(x, (y + 1), z)).replace(")", "")).replace("(", "")));
+				ThisnotamodModVariables.MapVariables.get(world).datamap1.put(((("" + new Vec3(x, (y + 1), z)).replace(")", "")).replace("(", "")), StringTag.valueOf("disabled"));
+			} else if (((world.getBlockState(BlockPos.containing(x, y + 1, z))).getBlock().getStateDefinition().getProperty("blockstate") instanceof IntegerProperty _getip11
+					? (world.getBlockState(BlockPos.containing(x, y + 1, z))).getValue(_getip11)
 					: -1) == 2) {
 				{
 					int _value = 1;
@@ -39,6 +42,8 @@ public class ServerTrbmProcedure {
 					if (_bs.getBlock().getStateDefinition().getProperty("blockstate") instanceof IntegerProperty _integerProp && _integerProp.getPossibleValues().contains(_value))
 						world.setBlock(_pos, _bs.setValue(_integerProp, _value), 3);
 				}
+				ThisnotamodModVariables.MapVariables.get(world).datamap1.remove(((("" + new Vec3(x, (y + 1), z)).replace(")", "")).replace("(", "")));
+				ThisnotamodModVariables.MapVariables.get(world).datamap1.put(((("" + new Vec3(x, (y + 1), z)).replace(")", "")).replace("(", "")), StringTag.valueOf("enabled"));
 			}
 			if (entity instanceof Player _player && !_player.level().isClientSide())
 				_player.displayClientMessage(Component.literal(("\u0412\u0435\u043A\u0442\u043E\u0440 " + (("" + new Vec3(x, y, z)).replace(")", "")).replace("(", ""))), false);

@@ -3,7 +3,7 @@
   "textures": {
     "all": "thisnotamod:block/transparent",
     "particle": "thisnotamod:block/transparent",
-    "0": "thisnotamod:block/transparent"
+    "0": "thisnotamod:block/server_new"
   },
   "render_type": "translucent"
 }

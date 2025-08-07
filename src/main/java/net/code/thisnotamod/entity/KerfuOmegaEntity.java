@@ -14,6 +14,11 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.network.PlayMessages;
 import net.minecraftforge.network.NetworkHooks;
 
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.level.pathfinder.Path;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.projectile.ThrownPotion;
@@ -43,16 +48,22 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.BlockPos;
 
 import net.code.thisnotamod.procedures.KerfuRBMProcedure;
+import net.code.thisnotamod.network.ThisnotamodModVariables;
 import net.code.thisnotamod.init.ThisnotamodModEntities;
+
+import java.util.EnumSet;
 
 public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 	public static final EntityDataAccessor<Boolean> SHOOT = SynchedEntityData.defineId(KerfuOmegaEntity.class, EntityDataSerializers.BOOLEAN);
 	public static final EntityDataAccessor<String> ANIMATION = SynchedEntityData.defineId(KerfuOmegaEntity.class, EntityDataSerializers.STRING);
 	public static final EntityDataAccessor<String> TEXTURE = SynchedEntityData.defineId(KerfuOmegaEntity.class, EntityDataSerializers.STRING);
 	public static final EntityDataAccessor<String> DATA_kerfu = SynchedEntityData.defineId(KerfuOmegaEntity.class, EntityDataSerializers.STRING);
+	public static final EntityDataAccessor<String> DATA_serverList = SynchedEntityData.defineId(KerfuOmegaEntity.class, EntityDataSerializers.STRING);
 	private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 	private boolean swinging;
 	private boolean lastloop;
@@ -78,6 +89,7 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 		this.entityData.define(ANIMATION, "undefined");
 		this.entityData.define(TEXTURE, "omega_kerfu_blue");
 		this.entityData.define(DATA_kerfu, "kerfu");
+		this.entityData.define(DATA_serverList, "");
 	}
 
 	public void setTexture(String texture) {
@@ -96,18 +108,191 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 	@Override
 	protected void registerGoals() {
 		super.registerGoals();
-		this.goalSelector.addGoal(1, new Goal() {
-			private final Mob mob = (Mob) KerfuOmegaEntity.this;
-			private Player target;
+		this.goalSelector.addGoal(0, new Goal() {
+			private final KerfuOmegaEntity mob = KerfuOmegaEntity.this;
+			private BlockPos currentTarget = null;
+			private boolean lastHadTarget = false;
+			private String lastServerList = "";
+			private int repairCooldownTicks = 0;
+			{
+				this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
+			}
+
+			@Override
+			public boolean isInterruptable() {
+				return true;
+			}
+
+			@Override
+			public boolean requiresUpdateEveryTick() {
+				return true;
+			}
 
 			@Override
 			public boolean canUse() {
+				String list = mob.getEntityData().get(KerfuOmegaEntity.DATA_serverList);
+				if (list != null && !list.equals(lastServerList)) {
+					lastServerList = list;
+					/*
+					if (!mob.level().isClientSide() && mob.level().getServer() != null) {
+						mob.level().getServer().getPlayerList().broadcastSystemMessage(
+							Component.literal("[KERFU DEBUG] canUse() → " + list), false);
+					}
+					*/
+				}
+				return list != null && !list.isEmpty();
+			}
+
+			@Override
+			public boolean canContinueToUse() {
+				String list = mob.getEntityData().get(KerfuOmegaEntity.DATA_serverList);
+				// System.out.println("[KERFU DEBUG] canContinueToUse(): " + list);
+				return list != null && !list.isEmpty();
+			}
+
+			@Override
+			public void start() {
+				// System.out.println("[KERFU DEBUG] start() был вызван");
+				selectNextTarget();
+				/*
+				System.out.println("[KERFU DEBUG] Navigation class: " + mob.getNavigation().getClass().getName());
+				System.out.println("[KERFU DEBUG] onGround=" + mob.onGround() +
+					", speed=" + mob.getAttributeValue(Attributes.MOVEMENT_SPEED));
+				*/
+				/*
+				if (currentTarget != null && !mob.level().isClientSide() && mob.level().getServer() != null) {
+					mob.level().getServer().getPlayerList().broadcastSystemMessage(
+						Component.literal("[KERFU DEBUG] start() → иду к " + currentTarget.toShortString()), false);
+				}
+				*/
+			}
+
+			@Override
+			public void tick() {
+				// System.out.println("[KERFU DEBUG] tick() вызывается");
+				if (repairCooldownTicks > 0) {
+					repairCooldownTicks--;
+					mob.getNavigation().stop();
+					if (repairCooldownTicks == 59) {
+						mob.setAnimation("sits");
+					}
+					if (repairCooldownTicks == 0) {
+						mob.setAnimation("empty");
+						selectNextTarget();
+					}
+					return;
+				}
+				if (currentTarget == null) {
+					if (lastHadTarget) {
+						lastHadTarget = false;
+						/*
+						if (!mob.level().isClientSide() && mob.level().getServer() != null) {
+							mob.level().getServer().getPlayerList().broadcastSystemMessage(
+								Component.literal("[KERFU DEBUG] tick() → цель потеряна"), false);
+						}
+						*/
+					}
+					return;
+				} else if (!lastHadTarget) {
+					lastHadTarget = true;
+					/*
+					if (!mob.level().isClientSide() && mob.level().getServer() != null) {
+						mob.level().getServer().getPlayerList().broadcastSystemMessage(
+							Component.literal("[KERFU DEBUG] tick() → цель получена: " + currentTarget.toShortString()), false);
+					}
+					*/
+				}
+				Path path = mob.getNavigation().createPath(currentTarget, 0);
+				/*
+				System.out.println("[KERFU DEBUG] created path = " + path);
+				System.out.println("BLOCK UNDER MOB: " + mob.level().getBlockState(mob.blockPosition().below()));
+				System.out.println("BLOCK UNDER TARGET: " + mob.level().getBlockState(currentTarget.below()));
+				*/
+				mob.getNavigation().moveTo(currentTarget.getX() + 0.5, currentTarget.getY(), currentTarget.getZ() + 0.5, 1.0);
+				if (!mob.getNavigation().isInProgress() && !mob.level().isClientSide() && mob.level().getServer() != null) {
+					/*
+					mob.level().getServer().getPlayerList().broadcastSystemMessage(
+						Component.literal("[KERFU DEBUG] ❌ Навигация не стартовала к " + currentTarget.toShortString()), false);
+					*/
+				}
+				if (mob.blockPosition().closerThan(currentTarget, 1.5)) {
+					LevelAccessor world = mob.level();
+					if (world instanceof Level level) {
+						int x = currentTarget.getX();
+						int y = currentTarget.getY();
+						int z = currentTarget.getZ();
+						int _value = 1;
+						BlockPos _pos = new BlockPos(x, y, z);
+						BlockState _bs = level.getBlockState(_pos);
+						if (_bs.getBlock().getStateDefinition().getProperty("blockstate") instanceof IntegerProperty _prop && _prop.getPossibleValues().contains(_value)) {
+							level.setBlock(_pos, _bs.setValue(_prop, _value), 3);
+						}
+						String key = new Vec3(x, y, z).toString().replace("(", "").replace(")", "");
+						ThisnotamodModVariables.MapVariables.get(level).datamap1.remove(key);
+						ThisnotamodModVariables.MapVariables.get(level).datamap1.put(key, StringTag.valueOf("enabled"));
+						ThisnotamodModVariables.MapVariables.get(level).syncData(level);
+						/*
+						if (!level.isClientSide() && level.getServer() != null) {
+							level.getServer().getPlayerList().broadcastSystemMessage(
+								Component.literal("[KERFU DEBUG] ✅ Починил сервер по координатам: " + key), false);
+						}
+						*/
+					}
+					String list = mob.getEntityData().get(KerfuOmegaEntity.DATA_serverList);
+					String target = "(" + currentTarget.getX() + ".0, " + currentTarget.getY() + ".0, " + currentTarget.getZ() + ".0)";
+					String newList = list.replace(target, "").replace(")(", ")(");
+					mob.getEntityData().set(KerfuOmegaEntity.DATA_serverList, newList);
+					repairCooldownTicks = 60;
+					currentTarget = null;
+					lastHadTarget = false;
+				}
+			}
+
+			private void selectNextTarget() {
+				String list = mob.getEntityData().get(KerfuOmegaEntity.DATA_serverList);
+				if (list == null || list.isEmpty()) {
+					currentTarget = null;
+					return;
+				}
+				java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("\\(([^)]+)\\)").matcher(list);
+				if (matcher.find()) {
+					String[] xyz = matcher.group(1).split(",");
+					if (xyz.length == 3) {
+						try {
+							int x = (int) Double.parseDouble(xyz[0].trim());
+							int y = (int) Double.parseDouble(xyz[1].trim());
+							int z = (int) Double.parseDouble(xyz[2].trim());
+							currentTarget = new BlockPos(x, y, z);
+							return;
+						} catch (NumberFormatException ignored) {
+						}
+					}
+				}
+				currentTarget = null;
+			}
+		});
+		this.goalSelector.addGoal(1, new Goal() {
+			private final KerfuOmegaEntity mob = KerfuOmegaEntity.this;
+			private Player target;
+			{
+				this.setFlags(EnumSet.of(Goal.Flag.MOVE));
+			}
+
+			@Override
+			public boolean canUse() {
+				// Не использовать эту цель, если есть задачи на ремонт
+				String list = mob.getEntityData().get(KerfuOmegaEntity.DATA_serverList);
+				if (list != null && !list.isEmpty())
+					return false;
 				target = mob.level().getNearestPlayer(mob, 128); // огромная дистанция
 				return target != null;
 			}
 
 			@Override
 			public boolean canContinueToUse() {
+				String list = mob.getEntityData().get(KerfuOmegaEntity.DATA_serverList);
+				if (list != null && !list.isEmpty())
+					return false;
 				return target != null && target.isAlive() && mob.distanceToSqr(target) > 4;
 			}
 
@@ -178,8 +363,6 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 			return false;
 		if (source.is(DamageTypes.FALLING_ANVIL))
 			return false;
-		if (source.is(DamageTypes.DRAGON_BREATH))
-			return false;
 		if (source.is(DamageTypes.WITHER))
 			return false;
 		if (source.is(DamageTypes.WITHER_SKULL))
@@ -192,6 +375,7 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 		super.addAdditionalSaveData(compound);
 		compound.putString("Texture", this.getTexture());
 		compound.putString("Datakerfu", this.entityData.get(DATA_kerfu));
+		compound.putString("DataserverList", this.entityData.get(DATA_serverList));
 	}
 
 	@Override
@@ -201,6 +385,8 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 			this.setTexture(compound.getString("Texture"));
 		if (compound.contains("Datakerfu"))
 			this.entityData.set(DATA_kerfu, compound.getString("Datakerfu"));
+		if (compound.contains("DataserverList"))
+			this.entityData.set(DATA_serverList, compound.getString("DataserverList"));
 	}
 
 	@Override
@@ -214,7 +400,7 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 		Entity entity = this;
 		Level world = this.level();
 
-		KerfuRBMProcedure.execute(world, x, y, z, sourceentity);
+		KerfuRBMProcedure.execute(world, x, y, z, entity, sourceentity);
 		return retval;
 	}
 

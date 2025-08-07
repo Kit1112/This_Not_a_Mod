@@ -18,8 +18,8 @@ import net.code.thisnotamod.world.inventory.KerfuIntMenu;
 import io.netty.buffer.Unpooled;
 
 public class KerfuRBMProcedure {
-	public static void execute(LevelAccessor world, double x, double y, double z, Entity sourceentity) {
-		if (sourceentity == null)
+	public static void execute(LevelAccessor world, double x, double y, double z, Entity entity, Entity sourceentity) {
+		if (entity == null || sourceentity == null)
 			return;
 		if (sourceentity instanceof ServerPlayer _ent) {
 			BlockPos _bpos = BlockPos.containing(x, y, z);
@@ -35,5 +35,8 @@ public class KerfuRBMProcedure {
 				}
 			}, _bpos);
 		}
+		entity.getPersistentData().putString("kerfPosX", ("" + x));
+		entity.getPersistentData().putString("kerfPosY", ("" + y));
+		entity.getPersistentData().putString("kerfPosZ", ("" + z));
 	}
 }

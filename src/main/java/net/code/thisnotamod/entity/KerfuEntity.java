@@ -195,7 +195,7 @@ public class KerfuEntity extends PathfinderMob implements GeoEntity {
 		Entity entity = this;
 		Level world = this.level();
 
-		KerfuRBMProcedure.execute(world, x, y, z, sourceentity);
+		KerfuRBMProcedure.execute(world, x, y, z, entity, sourceentity);
 		return retval;
 	}
 

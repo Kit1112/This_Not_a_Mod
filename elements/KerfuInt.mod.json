@@ -16,6 +16,9 @@
           "name": "button_aktivirovat",
           "text": "Активировать",
           "isUndecorated": false,
+          "onClick": {
+            "name": "FindBrokenServers"
+          },
           "width": 88,
           "height": 20,
           "x": 170,

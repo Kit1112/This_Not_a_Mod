@@ -23,6 +23,7 @@ import net.code.thisnotamod.procedures.DebugTrueProcProcedure;
 import net.code.thisnotamod.procedures.DebugFalseProcProcedure;
 import net.code.thisnotamod.procedures.DebugAllTrueProcedure;
 import net.code.thisnotamod.procedures.DebugAllFalseProcedure;
+import net.code.thisnotamod.procedures.ClearListProcedure;
 import net.code.thisnotamod.procedures.CleanProcedureProcedure;
 import net.code.thisnotamod.procedures.BreakAllServersProcedure;
 import net.code.thisnotamod.procedures.AlarmTrueProcedure;
@@ -157,6 +158,20 @@ public class VotvComandCommand {
 				direction = entity.getDirection();
 
 			RepairAllServersProcedure.execute(world, entity);
+			return 0;
+		})).then(Commands.literal("clear_list").executes(arguments -> {
+			Level world = arguments.getSource().getUnsidedLevel();
+			double x = arguments.getSource().getPosition().x();
+			double y = arguments.getSource().getPosition().y();
+			double z = arguments.getSource().getPosition().z();
+			Entity entity = arguments.getSource().getEntity();
+			if (entity == null && world instanceof ServerLevel _servLevel)
+				entity = FakePlayerFactory.getMinecraft(_servLevel);
+			Direction direction = Direction.DOWN;
+			if (entity != null)
+				direction = entity.getDirection();
+
+			ClearListProcedure.execute(world, entity);
 			return 0;
 		}))).then(Commands.literal("time_display").then(Commands.literal("true").executes(arguments -> {
 			Level world = arguments.getSource().getUnsidedLevel();

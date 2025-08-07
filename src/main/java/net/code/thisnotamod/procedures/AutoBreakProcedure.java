@@ -26,15 +26,10 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.ArrayList;
 
-/**
- * Обработчик "автополомки" серверов VotV.
- * Работает строго на стороне сервера и только в Overworld.
- */
 @Mod.EventBusSubscriber
 public class AutoBreakProcedure {
     @SubscribeEvent
     public static void onWorldTick(TickEvent.LevelTickEvent event) {
-        // Выполняем только в конце серверного тика в Overworld
         if (event.phase != TickEvent.Phase.END) return;
         if (event.level.isClientSide()) return;
         if (!event.level.dimension().location().equals(new ResourceLocation("minecraft", "overworld"))) return;
@@ -47,31 +42,25 @@ public class AutoBreakProcedure {
     }
 
     private static void execute(@Nullable Event event, LevelAccessor world) {
-        /* Получаем сервер. На самых ранних тиках он может быть ещё не инициализирован,
-           поэтому сразу выходим, если server == null. */
         var server = ServerLifecycleHooks.getCurrentServer();
         if (server == null) return;
 
-        // 📌 Измерение, где стоят сервера VotV
         ServerLevel votvWorld = server.getLevel(
             ResourceKey.create(Registries.DIMENSION, new ResourceLocation("thisnotamod", "votv_questing"))
         );
-        if (votvWorld == null || votvWorld.players().isEmpty()) return; // Никого нет – нет смысла работать
+        if (votvWorld == null || votvWorld.players().isEmpty()) return;
 
         long timeOfDay = world.dayTime() % 24000;
 
-        // ⏱ Сброс флага в конце суток
         if (timeOfDay >= 23990) {
             ThisnotamodModVariables.MapVariables.get(world).autobreakExecutedToday = false;
             ThisnotamodModVariables.MapVariables.get(world).syncData(world);
         }
 
-        // ✅ Запускаем процедуру только один раз в начале игровых суток
         if (timeOfDay == 1 && !ThisnotamodModVariables.MapVariables.get(world).autobreakExecutedToday) {
             ThisnotamodModVariables.MapVariables.get(world).autobreakExecutedToday = true;
             ThisnotamodModVariables.MapVariables.get(world).syncData(world);
 
-            // Определяем, сколько серверов "сломать" сегодня (от 1 до 3)
             ThisnotamodModVariables.autoBreakServList.clear();
             ThisnotamodModVariables.MapVariables.get(world).random = Mth.nextInt(RandomSource.create(), 1, 3);
             ThisnotamodModVariables.MapVariables.get(world).syncData(world);
@@ -81,14 +70,16 @@ public class AutoBreakProcedure {
                     Component.literal("Будет сломано " + ThisnotamodModVariables.MapVariables.get(world).random + " серверов сегодня."),
                     false
                 );
+                server.getPlayerList().broadcastSystemMessage(
+                    Component.literal("Всего ключей в datamap1: " + ThisnotamodModVariables.MapVariables.get(world).datamap1.getAllKeys().size()),
+                    false
+                );
             }
 
-            // Заполняем общий список всех серверов
             for (String key : ThisnotamodModVariables.MapVariables.get(world).datamap1.getAllKeys()) {
                 ThisnotamodModVariables.autoBreakServList.add(key);
             }
 
-            // 🧠 Делаем копию – будем из неё случайно выбирать
             List<String> remainingServers = new ArrayList<>();
             for (Object obj : ThisnotamodModVariables.autoBreakServList) {
                 remainingServers.add(String.valueOf(obj));
@@ -101,11 +92,17 @@ public class AutoBreakProcedure {
                 int index = Mth.nextInt(RandomSource.create(), 0, remainingServers.size() - 1);
                 String key = remainingServers.remove(index);
 
-                // Проверяем, что сервер в состоянии "enabled"
                 StringTag tag = ThisnotamodModVariables.MapVariables.get(world).datamap1.get(key) instanceof StringTag _s ? _s : null;
-                if (tag == null || !"enabled".equals(tag.getAsString())) continue;
+                if (tag == null || !"enabled".equalsIgnoreCase(tag.getAsString().trim())) {
+                    if (ThisnotamodModVariables.MapVariables.get(world).worldDebug) {
+                        server.getPlayerList().broadcastSystemMessage(
+                            Component.literal("Пропущен ключ " + key + " (состояние: " + (tag != null ? tag.getAsString() : "null") + ")"),
+                            false
+                        );
+                    }
+                    continue;
+                }
 
-                // Координаты блока‑сервера
                 String[] coords = key.split(",");
                 List<String> coordsList = new ArrayList<>();
                 for (String c : coords) coordsList.add(c.trim());
@@ -113,12 +110,20 @@ public class AutoBreakProcedure {
                 ThisnotamodModVariables.servCoordsForAutobreak.clear();
                 ThisnotamodModVariables.servCoordsForAutobreak.addAll(coordsList);
 
-                // Копия для лямбды
                 List<String> coordsCopy = new ArrayList<>(coordsList);
 
-                // Планируем "поломку" в случайный тик сегодняшнего дня
-                ThisnotamodMod.queueServerWork(Mth.nextInt(RandomSource.create(), 1, 23999), () -> {
-                    int brokenState = 2; // значение IntegerProperty "blockstate", обозначающее сломанный сервер
+                int delay = Mth.nextInt(RandomSource.create(), 1, 23999);
+
+                // 🔔 Перемещённый лог: теперь выводится сразу
+                if (ThisnotamodModVariables.MapVariables.get(world).worldDebug) {
+                    server.getPlayerList().broadcastSystemMessage(
+                        Component.literal("⏳ Отложенная поломка сервера: " + coordsCopy + " через " + delay + " тиков"),
+                        false
+                    );
+                }
+
+                ThisnotamodMod.queueServerWork(delay, () -> {
+                    int brokenState = 2;
 
                     double x = parse(coordsCopy.get(0));
                     double y = parse(coordsCopy.get(1));
@@ -127,18 +132,32 @@ public class AutoBreakProcedure {
                     BlockPos pos = BlockPos.containing(x, y, z);
                     BlockState bs = votvWorld.getBlockState(pos);
 
+                    if (ThisnotamodModVariables.MapVariables.get(world).worldDebug) {
+                        server.getPlayerList().broadcastSystemMessage(
+                            Component.literal("🔍 Проверка блока на позиции " + pos + ": " + bs),
+                            false
+                        );
+                    }
+
                     if (bs.getBlock().getStateDefinition().getProperty("blockstate") instanceof IntegerProperty prop &&
                         prop.getPossibleValues().contains(brokenState)) {
                         votvWorld.setBlock(pos, bs.setValue(prop, brokenState), 3);
-                    }
 
-                    if (ThisnotamodModVariables.MapVariables.get(votvWorld).worldDebug) {
-                        server.getPlayerList().broadcastSystemMessage(
-                            Component.literal("Должен был сломаться сервер по координатам X:" + coordsCopy.get(0) +
-                                              " Y:" + coordsCopy.get(1) +
-                                              " Z:" + coordsCopy.get(2)),
-                            false
-                        );
+                        if (ThisnotamodModVariables.MapVariables.get(votvWorld).worldDebug) {
+                            server.getPlayerList().broadcastSystemMessage(
+                                Component.literal("💥 Сломан сервер по координатам X:" + coordsCopy.get(0) +
+                                                  " Y:" + coordsCopy.get(1) +
+                                                  " Z:" + coordsCopy.get(2)),
+                                false
+                            );
+                        }
+                    } else {
+                        if (ThisnotamodModVariables.MapVariables.get(votvWorld).worldDebug) {
+                            server.getPlayerList().broadcastSystemMessage(
+                                Component.literal("⚠ Не удалось сломать блок: нет свойства blockstate или нет значения 2"),
+                                false
+                            );
+                        }
                     }
                 });
             }

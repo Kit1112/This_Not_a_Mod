@@ -34,7 +34,7 @@ gamma:0.5
 renderDistance:5
 simulationDistance:12
 entityDistanceScaling:1.0
-guiScale:0
+guiScale:2
 particles:0
 maxFps:260
 graphicsMode:0
@@ -61,7 +61,7 @@ chatHeightFocused:1.0
 chatDelay:0.0
 chatHeightUnfocused:0.4375
 chatScale:1.0
-chatWidth:0.2517605633802817
+chatWidth:0.3908450704225352
 notificationDisplayTime:1.0
 mipmapLevels:2
 useNativeTransport:true
@@ -75,7 +75,7 @@ glDebugVerbosity:1
 skipMultiplayerWarning:false
 skipRealms32bitWarning:false
 hideMatchedNames:true
-joinedFirstServer:false
+joinedFirstServer:true
 hideBundleTutorial:false
 syncChunkWrites:true
 showAutosaveIndicator:true

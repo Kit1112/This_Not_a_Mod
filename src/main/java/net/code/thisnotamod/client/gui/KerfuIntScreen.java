@@ -9,6 +9,8 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.GuiGraphics;
 
 import net.code.thisnotamod.world.inventory.KerfuIntMenu;
+import net.code.thisnotamod.network.KerfuIntButtonMessage;
+import net.code.thisnotamod.ThisnotamodMod;
 
 import java.util.HashMap;
 
@@ -67,6 +69,10 @@ public class KerfuIntScreen extends AbstractContainerScreen<KerfuIntMenu> {
 	public void init() {
 		super.init();
 		button_aktivirovat = Button.builder(Component.translatable("gui.thisnotamod.kerfu_int.button_aktivirovat"), e -> {
+			if (true) {
+				ThisnotamodMod.PACKET_HANDLER.sendToServer(new KerfuIntButtonMessage(0, x, y, z, textstate));
+				KerfuIntButtonMessage.handleButtonAction(entity, 0, x, y, z, textstate);
+			}
 		}).bounds(this.leftPos + -1, this.topPos + 107, 88, 20).build();
 		guistate.put("button:button_aktivirovat", button_aktivirovat);
 		this.addRenderableWidget(button_aktivirovat);

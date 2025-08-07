@@ -4,7 +4,7 @@ license="Not specified"
 
 [[mods]]
 modId="thisnotamod"
-version="1.8.7.2"
+version="1.8.7.3"
 displayName="This (Not) a Mod"
 displayURL="https://t.me/death_nick"
 logoFile="logo.png"
@@ -23,12 +23,6 @@ displayTest="IGNORE_SERVER_VERSION"
     ordering="AFTER"
     side="BOTH"
 
-[[dependencies.thisnotamod]]
-    modId="moremcmeta"
-    mandatory=true
-    versionRange="[0,)"
-    ordering="NONE"
-    side="BOTH"
 
 [[dependencies.thisnotamod]]
     modId="curios_api"

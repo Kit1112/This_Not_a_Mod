@@ -12,7 +12,7 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "thisnotamod:server_b_top"
+          "name": "thisnotamod:server_b"
         }
       ]
     }
