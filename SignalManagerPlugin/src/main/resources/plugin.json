@@ -1,0 +1,14 @@
+{
+  "id": "signal_manager",
+  "weight": 0,
+  "javaplugin": "com.example.signalmanager.SignalManagerPlugin",
+  "supportedversions": [
+    2024002
+  ],
+  "info": {
+    "name": "SignalManager",
+    "version": "1.0.0",
+    "description": "Adds editable signals datatable UI and generates runtime registry for Forge 47.3.0 / MC 1.20.1.",
+    "author": "SignalManager Team"
+  }
+}

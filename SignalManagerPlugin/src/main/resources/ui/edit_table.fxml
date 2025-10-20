@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.*?>
+
+<AnchorPane fx:controller="com.example.signalmanager.ui.EditTableController" xmlns="http://javafx.com/javafx/21.0.1" xmlns:fx="http://javafx.com/fxml/1">
+  <children>
+    <BorderPane AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0">
+      <top>
+        <ToolBar>
+          <items>
+            <TextField fx:id="searchField" promptText="%signalmanager.search" onKeyReleased="#onSearchOrFilter" prefWidth="300"/>
+            <Label text="%signalmanager.filter.type"/>
+            <ComboBox fx:id="typeFilter" onAction="#onSearchOrFilter"/>
+            <Pane HBox.hgrow="ALWAYS"/>
+            <Button text="%signalmanager.menu.create" onAction="#onCreateNew"/>
+            <Button text="%signalmanager.menu.export" onAction="#onExport"/>
+            <Button text="%signalmanager.menu.import" onAction="#onImport"/>
+          </items>
+        </ToolBar>
+      </top>
+      <center>
+        <TableView fx:id="table" AnchorPane.topAnchor="0" AnchorPane.leftAnchor="0" AnchorPane.rightAnchor="0" AnchorPane.bottomAnchor="0">
+          <columns>
+            <TableColumn fx:id="colId" text="ID" prefWidth="80"/>
+            <TableColumn fx:id="colName" text="%signalmanager.name" prefWidth="220"/>
+            <TableColumn fx:id="colType" text="%signalmanager.type" prefWidth="140"/>
+            <TableColumn fx:id="colSize" text="%signalmanager.size" prefWidth="120"/>
+            <TableColumn fx:id="colSpecial" text="%signalmanager.special" prefWidth="120"/>
+            <TableColumn fx:id="colEdit" text="%signalmanager.table.edit" prefWidth="100"/>
+            <TableColumn fx:id="colDelete" text="%signalmanager.table.delete" prefWidth="120"/>
+          </columns>
+        </TableView>
+      </center>
+    </BorderPane>
+  </children>
+</AnchorPane>

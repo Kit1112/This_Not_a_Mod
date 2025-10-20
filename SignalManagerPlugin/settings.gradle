@@ -1,0 +1,14 @@
+rootProject.name = 'SignalManager'
+
+/**
+ * You must create gradle.properties next to this file with:
+ *   mcreator_path=<absolute path to cloned MCreator source root>  (where build.gradle of MCreator lives)
+ * The DemoJavaPlugin uses the same pattern. We reuse it here.
+ */
+def mcreator_path = hasProperty('mcreator_path') ? mcreator_path : System.getenv('MCREATOR_SRC')
+if (mcreator_path == null) {
+    throw new GradleException("Please provide 'mcreator_path' in gradle.properties or set MCREATOR_SRC env var to MCreator source folder")
+}
+
+include ":MCreator"
+project(":MCreator").projectDir = file(mcreator_path)

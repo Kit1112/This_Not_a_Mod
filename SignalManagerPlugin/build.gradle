@@ -1,0 +1,73 @@
+import groovy.json.JsonSlurper
+
+plugins {
+    id "java"
+}
+
+repositories {
+    mavenCentral()
+    // Tooling API used by some run tasks; safe to keep
+    maven { url "https://repo.gradle.org/gradle/libs-releases" }
+    // Compile against MCreator classes from your local MCreator sources
+    flatDir { dirs mcreator_path + '/lib' }
+}
+
+group = 'com.example.signalmanager'
+version = new JsonSlurper().parse(file('src/main/resources/plugin.json'))['info']['version']
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+// We compile against MCreator classes but don't package them
+dependencies {
+    compileOnly project(':MCreator')
+    // Gson is provided by MCreator at runtime; keep as compileOnly
+    compileOnly 'com.google.code.gson:gson:2.10.1'
+	compileOnly project(':MCreator')
+    compileOnly 'com.google.code.gson:gson:2.10.1'
+
+    // JavaFX для компиляции (MCreator тянет их в рантайме сам)
+    compileOnly "org.openjfx:javafx-base:22.0.1:win"
+    compileOnly "org.openjfx:javafx-graphics:22.0.1:win"
+    compileOnly "org.openjfx:javafx-controls:22.0.1:win"
+    compileOnly "org.openjfx:javafx-swing:22.0.1:win"
+    compileOnly "org.openjfx:javafx-fxml:22.0.1:win"
+	compileOnly project(':MCreator')
+    compileOnly 'com.google.code.gson:gson:2.10.1'
+    // никаких javafx-зависимостей
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+jar {
+    // MCreator expects a ZIP with plugin.json at the root and classes/resources inside
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    archiveBaseName = 'SignalManager'
+    archiveExtension = 'zip'
+    from('src/main/resources') { include '**/*' }
+    from(sourceSets.main.output) { include '**/*' }
+    manifest {
+        attributes 'Implementation-Title': 'SignalManager', 'Implementation-Version': project.version
+    }
+}
+
+// Quick task to run MCreator with the plugin loaded (optional)
+tasks.register('runMCreatorWithPlugin', JavaExec) {
+    dependsOn jar
+    description = "Runs MCreator with this plugin loaded. Provide mcreator_path in gradle.properties."
+    group = "mcreator"
+    workingDir = file(mcreator_path)
+    environment("MCREATOR_PLUGINS_FOLDER", file("$buildDir/libs"))
+    environment("MCREATOR_PLUGINS_DEV", "")
+    // If MCreator core jar exists, run it; else try running the built classes
+    def coreJar = file(mcreator_path + '/MCreator.jar')
+    if (coreJar.exists()) {
+        classpath = files(coreJar)
+        mainClass = 'net.mcreator.ui.MCreatorApplication'
+    } else {
+        // fallback to executing from classes; requires the core to be built
+        classpath = files(mcreator_path + '/build/classes/java/main', mcreator_path + '/build/resources/main')
+        mainClass = 'net.mcreator.ui.MCreatorApplication'
+    }
+}
