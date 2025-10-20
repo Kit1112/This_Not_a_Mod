@@ -12,16 +12,10 @@ Also generates a runtime helper **SignalRegistry** for your Forge 47.3.0 / MC 1.
 2) Run:
 
 ```
-./gradlew jar
+gradlew.bat clean jar
 ```
 
 The plugin ZIP will be at `build/libs/SignalManager-<version>.zip`.
-
-## Run MCreator with plugin (optional)
-
-```
-./gradlew runMCreatorWithPlugin
-```
 
 ## Install
 
