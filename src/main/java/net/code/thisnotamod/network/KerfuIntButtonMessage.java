@@ -13,6 +13,11 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.core.BlockPos;
 
 import net.code.thisnotamod.world.inventory.KerfuIntMenu;
+import net.code.thisnotamod.procedures.PatroulProcedure;
+import net.code.thisnotamod.procedures.OKerfoffProcedure;
+import net.code.thisnotamod.procedures.MeowProcedure;
+import net.code.thisnotamod.procedures.IdleModeProcedure;
+import net.code.thisnotamod.procedures.FollowProcedure;
 import net.code.thisnotamod.procedures.FindBrokenServersProcedure;
 import net.code.thisnotamod.ThisnotamodMod;
 
@@ -77,7 +82,27 @@ public class KerfuIntButtonMessage {
 			return;
 		if (buttonID == 0) {
 
-			FindBrokenServersProcedure.execute(world, x, y, z);
+			FindBrokenServersProcedure.execute(world, x, y, z, entity);
+		}
+		if (buttonID == 1) {
+
+			PatroulProcedure.execute(world, x, y, z, entity);
+		}
+		if (buttonID == 2) {
+
+			FollowProcedure.execute(world, x, y, z, entity);
+		}
+		if (buttonID == 3) {
+
+			MeowProcedure.execute(world, x, y, z);
+		}
+		if (buttonID == 4) {
+
+			IdleModeProcedure.execute(world, x, y, z);
+		}
+		if (buttonID == 5) {
+
+			OKerfoffProcedure.execute(world, x, y, z, entity);
 		}
 	}
 

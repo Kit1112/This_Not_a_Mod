@@ -3,9 +3,10 @@ package net.code.thisnotamod.client.gui;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.ImageButton;
 import net.minecraft.client.gui.GuiGraphics;
 
 import net.code.thisnotamod.world.inventory.KerfuIntMenu;
@@ -22,9 +23,12 @@ public class KerfuIntScreen extends AbstractContainerScreen<KerfuIntMenu> {
 	private final int x, y, z;
 	private final Player entity;
 	private final static HashMap<String, String> textstate = new HashMap<>();
-	Button button_aktivirovat;
-	Button button_ispolzovat;
-	Button button_ispolzovat1;
+	ImageButton imagebutton_button_kerfu;
+	ImageButton imagebutton_button_kerfu1;
+	ImageButton imagebutton_button_kerfu2;
+	ImageButton imagebutton_button_kerfu3;
+	ImageButton imagebutton_button_kerfu4;
+	ImageButton imagebutton_button_kerfu5;
 
 	public KerfuIntScreen(KerfuIntMenu container, Inventory inventory, Component text) {
 		super(container, inventory, text);
@@ -63,26 +67,64 @@ public class KerfuIntScreen extends AbstractContainerScreen<KerfuIntMenu> {
 
 	@Override
 	protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+		guiGraphics.drawString(this.font, Component.translatable("gui.thisnotamod.kerfu_int.label_riemont"), 26, 75, -14935783, false);
+		guiGraphics.drawString(this.font, Component.translatable("gui.thisnotamod.kerfu_int.label_patrulirovaniie"), 24, 94, -15133162, false);
+		guiGraphics.drawString(this.font, Component.translatable("gui.thisnotamod.kerfu_int.label_sliedovaniie"), 14, 113, -15133162, false);
+		guiGraphics.drawString(this.font, Component.translatable("gui.thisnotamod.kerfu_int.label_poghladit"), 18, 132, -15133162, false);
+		guiGraphics.drawString(this.font, Component.translatable("gui.thisnotamod.kerfu_int.label_ozhidaniie"), 20, 56, -15133162, false);
+		guiGraphics.drawString(this.font, Component.translatable("gui.thisnotamod.kerfu_int.label_vykliuchit"), 17, 151, -15133162, false);
 	}
 
 	@Override
 	public void init() {
 		super.init();
-		button_aktivirovat = Button.builder(Component.translatable("gui.thisnotamod.kerfu_int.button_aktivirovat"), e -> {
+		imagebutton_button_kerfu = new ImageButton(this.leftPos + 0, this.topPos + 70, 86, 19, 0, 0, 19, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_button_kerfu.png"), 86, 38, e -> {
 			if (true) {
 				ThisnotamodMod.PACKET_HANDLER.sendToServer(new KerfuIntButtonMessage(0, x, y, z, textstate));
 				KerfuIntButtonMessage.handleButtonAction(entity, 0, x, y, z, textstate);
 			}
-		}).bounds(this.leftPos + -1, this.topPos + 107, 88, 20).build();
-		guistate.put("button:button_aktivirovat", button_aktivirovat);
-		this.addRenderableWidget(button_aktivirovat);
-		button_ispolzovat = Button.builder(Component.translatable("gui.thisnotamod.kerfu_int.button_ispolzovat"), e -> {
-		}).bounds(this.leftPos + -1, this.topPos + 127, 88, 20).build();
-		guistate.put("button:button_ispolzovat", button_ispolzovat);
-		this.addRenderableWidget(button_ispolzovat);
-		button_ispolzovat1 = Button.builder(Component.translatable("gui.thisnotamod.kerfu_int.button_ispolzovat1"), e -> {
-		}).bounds(this.leftPos + -1, this.topPos + 147, 88, 20).build();
-		guistate.put("button:button_ispolzovat1", button_ispolzovat1);
-		this.addRenderableWidget(button_ispolzovat1);
+		});
+		guistate.put("button:imagebutton_button_kerfu", imagebutton_button_kerfu);
+		this.addRenderableWidget(imagebutton_button_kerfu);
+		imagebutton_button_kerfu1 = new ImageButton(this.leftPos + 0, this.topPos + 89, 86, 19, 0, 0, 19, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_button_kerfu1.png"), 86, 38, e -> {
+			if (true) {
+				ThisnotamodMod.PACKET_HANDLER.sendToServer(new KerfuIntButtonMessage(1, x, y, z, textstate));
+				KerfuIntButtonMessage.handleButtonAction(entity, 1, x, y, z, textstate);
+			}
+		});
+		guistate.put("button:imagebutton_button_kerfu1", imagebutton_button_kerfu1);
+		this.addRenderableWidget(imagebutton_button_kerfu1);
+		imagebutton_button_kerfu2 = new ImageButton(this.leftPos + 0, this.topPos + 108, 86, 19, 0, 0, 19, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_button_kerfu2.png"), 86, 38, e -> {
+			if (true) {
+				ThisnotamodMod.PACKET_HANDLER.sendToServer(new KerfuIntButtonMessage(2, x, y, z, textstate));
+				KerfuIntButtonMessage.handleButtonAction(entity, 2, x, y, z, textstate);
+			}
+		});
+		guistate.put("button:imagebutton_button_kerfu2", imagebutton_button_kerfu2);
+		this.addRenderableWidget(imagebutton_button_kerfu2);
+		imagebutton_button_kerfu3 = new ImageButton(this.leftPos + 0, this.topPos + 127, 86, 19, 0, 0, 19, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_button_kerfu3.png"), 86, 38, e -> {
+			if (true) {
+				ThisnotamodMod.PACKET_HANDLER.sendToServer(new KerfuIntButtonMessage(3, x, y, z, textstate));
+				KerfuIntButtonMessage.handleButtonAction(entity, 3, x, y, z, textstate);
+			}
+		});
+		guistate.put("button:imagebutton_button_kerfu3", imagebutton_button_kerfu3);
+		this.addRenderableWidget(imagebutton_button_kerfu3);
+		imagebutton_button_kerfu4 = new ImageButton(this.leftPos + 0, this.topPos + 51, 86, 19, 0, 0, 19, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_button_kerfu4.png"), 86, 38, e -> {
+			if (true) {
+				ThisnotamodMod.PACKET_HANDLER.sendToServer(new KerfuIntButtonMessage(4, x, y, z, textstate));
+				KerfuIntButtonMessage.handleButtonAction(entity, 4, x, y, z, textstate);
+			}
+		});
+		guistate.put("button:imagebutton_button_kerfu4", imagebutton_button_kerfu4);
+		this.addRenderableWidget(imagebutton_button_kerfu4);
+		imagebutton_button_kerfu5 = new ImageButton(this.leftPos + 0, this.topPos + 146, 86, 19, 0, 0, 19, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_button_kerfu5.png"), 86, 38, e -> {
+			if (true) {
+				ThisnotamodMod.PACKET_HANDLER.sendToServer(new KerfuIntButtonMessage(5, x, y, z, textstate));
+				KerfuIntButtonMessage.handleButtonAction(entity, 5, x, y, z, textstate);
+			}
+		});
+		guistate.put("button:imagebutton_button_kerfu5", imagebutton_button_kerfu5);
+		this.addRenderableWidget(imagebutton_button_kerfu5);
 	}
 }

@@ -11,6 +11,10 @@ import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.Minecraft;
 
 import net.code.thisnotamod.item.PassChangeItem;
+import net.code.thisnotamod.item.KerfuWombItem;
+import net.code.thisnotamod.item.KerfuLegItem;
+import net.code.thisnotamod.item.KerfuHandItem;
+import net.code.thisnotamod.item.KerfuBodyItem;
 
 @Mod.EventBusSubscriber
 public class ItemAnimationFactory {
@@ -50,6 +54,86 @@ public class ItemAnimationFactory {
 					event.player.getOffhandItem().getOrCreateTag().putString("geckoAnim", "");
 					if (event.player.level().isClientSide()) {
 						((PassChangeItem) event.player.getOffhandItem().getItem()).animationprocedure = animation;
+						disableUseAnim("left");
+					}
+				}
+			}
+			if (mainhandItem.getItem() instanceof KerfuWombItem animatable) {
+				animation = mainhandItem.getOrCreateTag().getString("geckoAnim");
+				if (!animation.isEmpty()) {
+					event.player.getMainHandItem().getOrCreateTag().putString("geckoAnim", "");
+					if (event.player.level().isClientSide()) {
+						((KerfuWombItem) event.player.getMainHandItem().getItem()).animationprocedure = animation;
+						disableUseAnim("right");
+					}
+				}
+			}
+			if (offhandItem.getItem() instanceof KerfuWombItem animatable) {
+				animation = offhandItem.getOrCreateTag().getString("geckoAnim");
+				if (!animation.isEmpty()) {
+					event.player.getOffhandItem().getOrCreateTag().putString("geckoAnim", "");
+					if (event.player.level().isClientSide()) {
+						((KerfuWombItem) event.player.getOffhandItem().getItem()).animationprocedure = animation;
+						disableUseAnim("left");
+					}
+				}
+			}
+			if (mainhandItem.getItem() instanceof KerfuHandItem animatable) {
+				animation = mainhandItem.getOrCreateTag().getString("geckoAnim");
+				if (!animation.isEmpty()) {
+					event.player.getMainHandItem().getOrCreateTag().putString("geckoAnim", "");
+					if (event.player.level().isClientSide()) {
+						((KerfuHandItem) event.player.getMainHandItem().getItem()).animationprocedure = animation;
+						disableUseAnim("right");
+					}
+				}
+			}
+			if (offhandItem.getItem() instanceof KerfuHandItem animatable) {
+				animation = offhandItem.getOrCreateTag().getString("geckoAnim");
+				if (!animation.isEmpty()) {
+					event.player.getOffhandItem().getOrCreateTag().putString("geckoAnim", "");
+					if (event.player.level().isClientSide()) {
+						((KerfuHandItem) event.player.getOffhandItem().getItem()).animationprocedure = animation;
+						disableUseAnim("left");
+					}
+				}
+			}
+			if (mainhandItem.getItem() instanceof KerfuLegItem animatable) {
+				animation = mainhandItem.getOrCreateTag().getString("geckoAnim");
+				if (!animation.isEmpty()) {
+					event.player.getMainHandItem().getOrCreateTag().putString("geckoAnim", "");
+					if (event.player.level().isClientSide()) {
+						((KerfuLegItem) event.player.getMainHandItem().getItem()).animationprocedure = animation;
+						disableUseAnim("right");
+					}
+				}
+			}
+			if (offhandItem.getItem() instanceof KerfuLegItem animatable) {
+				animation = offhandItem.getOrCreateTag().getString("geckoAnim");
+				if (!animation.isEmpty()) {
+					event.player.getOffhandItem().getOrCreateTag().putString("geckoAnim", "");
+					if (event.player.level().isClientSide()) {
+						((KerfuLegItem) event.player.getOffhandItem().getItem()).animationprocedure = animation;
+						disableUseAnim("left");
+					}
+				}
+			}
+			if (mainhandItem.getItem() instanceof KerfuBodyItem animatable) {
+				animation = mainhandItem.getOrCreateTag().getString("geckoAnim");
+				if (!animation.isEmpty()) {
+					event.player.getMainHandItem().getOrCreateTag().putString("geckoAnim", "");
+					if (event.player.level().isClientSide()) {
+						((KerfuBodyItem) event.player.getMainHandItem().getItem()).animationprocedure = animation;
+						disableUseAnim("right");
+					}
+				}
+			}
+			if (offhandItem.getItem() instanceof KerfuBodyItem animatable) {
+				animation = offhandItem.getOrCreateTag().getString("geckoAnim");
+				if (!animation.isEmpty()) {
+					event.player.getOffhandItem().getOrCreateTag().putString("geckoAnim", "");
+					if (event.player.level().isClientSide()) {
+						((KerfuBodyItem) event.player.getOffhandItem().getItem()).animationprocedure = animation;
 						disableUseAnim("left");
 					}
 				}

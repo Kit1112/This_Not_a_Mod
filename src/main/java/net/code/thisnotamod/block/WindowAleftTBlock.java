@@ -7,6 +7,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
@@ -27,6 +28,7 @@ import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
 
@@ -114,6 +116,11 @@ public class WindowAleftTBlock extends BaseEntityBlock implements EntityBlock {
 	@Override
 	public ItemStack getCloneItemStack(BlockState state, HitResult target, BlockGetter world, BlockPos pos, Player player) {
 		return new ItemStack(ThisnotamodModBlocks.WINDOW_RIGHT_D.get());
+	}
+
+	@Override
+	public BlockPathTypes getBlockPathType(BlockState state, BlockGetter world, BlockPos pos, Mob entity) {
+		return BlockPathTypes.BLOCKED;
 	}
 
 	@Override

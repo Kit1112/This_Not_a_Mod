@@ -27,7 +27,6 @@ public class ThisnotamodModTabs {
 				tabData.accept(ThisnotamodModBlocks.ARGEMIAWHITE.get().asItem());
 				tabData.accept(ThisnotamodModItems.MUSIC_DISK_VOTV.get());
 				tabData.accept(ThisnotamodModItems.MUSIC_DISK_VOTV_WINTER.get());
-				tabData.accept(ThisnotamodModBlocks.MANNEQUIN_DOWN.get().asItem());
 				tabData.accept(ThisnotamodModBlocks.VOTV_DOOR.get().asItem());
 				tabData.accept(ThisnotamodModBlocks.VOTV_LOCKER.get().asItem());
 				tabData.accept(ThisnotamodModBlocks.TABLE_L.get().asItem());
@@ -57,6 +56,18 @@ public class ThisnotamodModTabs {
 				tabData.accept(ThisnotamodModItems.KERFU_OMEGA_SPAWN_EGG.get());
 				tabData.accept(ThisnotamodModItems.KERFU_SPAWN_EGG.get());
 				tabData.accept(ThisnotamodModItems.MANNEQUIN_SPAWN_EGG.get());
+				tabData.accept(ThisnotamodModItems.DRONE_1_SPAWN_EGG.get());
+				tabData.accept(ThisnotamodModBlocks.START_POINT.get().asItem());
+				tabData.accept(ThisnotamodModBlocks.END_POINT.get().asItem());
+				tabData.accept(ThisnotamodModBlocks.SHOP_INT_TEST.get().asItem());
+				tabData.accept(ThisnotamodModBlocks.CRAFTING_TABLE_VOTV.get().asItem());
+				tabData.accept(ThisnotamodModItems.KERFU_WOMB.get());
+				tabData.accept(ThisnotamodModItems.KERFU_HAND.get());
+				tabData.accept(ThisnotamodModItems.KERFU_LEG.get());
+				tabData.accept(ThisnotamodModItems.KERFU_BODY.get());
+				tabData.accept(ThisnotamodModBlocks.KERFU_HEAD.get().asItem());
+				tabData.accept(ThisnotamodModBlocks.KERFU_BLOCK.get().asItem());
+				tabData.accept(ThisnotamodModItems.KERFU_BLUEPRINT.get());
 			})
 
 					.build());

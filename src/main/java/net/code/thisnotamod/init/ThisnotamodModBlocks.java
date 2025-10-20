@@ -10,7 +10,6 @@ import net.minecraftforge.registries.DeferredRegister;
 
 import net.minecraft.world.level.block.Block;
 
-import net.code.thisnotamod.block.ZigaBlock;
 import net.code.thisnotamod.block.WorkStatBlock;
 import net.code.thisnotamod.block.WindowRightDBlock;
 import net.code.thisnotamod.block.WindowAleftTBlock;
@@ -25,6 +24,7 @@ import net.code.thisnotamod.block.VotvDoorTopBlock;
 import net.code.thisnotamod.block.VotvDoorBlock;
 import net.code.thisnotamod.block.VentCornerHorizontalBlock;
 import net.code.thisnotamod.block.VentCornerBlock;
+import net.code.thisnotamod.block.TestSignalBlock;
 import net.code.thisnotamod.block.TerminalBlock;
 import net.code.thisnotamod.block.TermRTBlock;
 import net.code.thisnotamod.block.TermLTBlock;
@@ -33,13 +33,13 @@ import net.code.thisnotamod.block.TelescopeBlock;
 import net.code.thisnotamod.block.TableRBlock;
 import net.code.thisnotamod.block.TableLBlock;
 import net.code.thisnotamod.block.TableKitchenBlock;
+import net.code.thisnotamod.block.StartPointBlock;
+import net.code.thisnotamod.block.ShopIntTestBlock;
 import net.code.thisnotamod.block.ServerBTopBlock;
 import net.code.thisnotamod.block.ServerBBlock;
 import net.code.thisnotamod.block.RadiotielieskopBlock;
 import net.code.thisnotamod.block.RadarBlock;
 import net.code.thisnotamod.block.PasslockBBlock;
-import net.code.thisnotamod.block.MannequinTopBlock;
-import net.code.thisnotamod.block.MannequinDownBlock;
 import net.code.thisnotamod.block.LightSwitchBlock;
 import net.code.thisnotamod.block.Lampplus1UppedBlock;
 import net.code.thisnotamod.block.Lampplus1Block;
@@ -54,6 +54,12 @@ import net.code.thisnotamod.block.LampMiddlePlus1Block;
 import net.code.thisnotamod.block.LampMiddleBlock;
 import net.code.thisnotamod.block.LampBlock;
 import net.code.thisnotamod.block.KripoghusBlock;
+import net.code.thisnotamod.block.KerfuHeadBlock;
+import net.code.thisnotamod.block.KerfuBlockBlock;
+import net.code.thisnotamod.block.FridgeDownBlock;
+import net.code.thisnotamod.block.EndPointBlock;
+import net.code.thisnotamod.block.CraftingTableVotvBlock;
+import net.code.thisnotamod.block.CraftingTableRBlock;
 import net.code.thisnotamod.block.ConcreteWallSideBlock;
 import net.code.thisnotamod.block.ConcreteWallRightBlock;
 import net.code.thisnotamod.block.ConcreteWallRBlock;
@@ -95,8 +101,6 @@ public class ThisnotamodModBlocks {
 	public static final RegistryObject<Block> CONCRETE_WALL_N = REGISTRY.register("concrete_wall_n", () -> new ConcreteWallNBlock());
 	public static final RegistryObject<Block> CONCRETE_WALL_R = REGISTRY.register("concrete_wall_r", () -> new ConcreteWallRBlock());
 	public static final RegistryObject<Block> WORK_STAT = REGISTRY.register("work_stat", () -> new WorkStatBlock());
-	public static final RegistryObject<Block> MANNEQUIN_TOP = REGISTRY.register("mannequin_top", () -> new MannequinTopBlock());
-	public static final RegistryObject<Block> MANNEQUIN_DOWN = REGISTRY.register("mannequin_down", () -> new MannequinDownBlock());
 	public static final RegistryObject<Block> TERMINAL = REGISTRY.register("terminal", () -> new TerminalBlock());
 	public static final RegistryObject<Block> RADAR = REGISTRY.register("radar", () -> new RadarBlock());
 	public static final RegistryObject<Block> TABLE_KITCHEN = REGISTRY.register("table_kitchen", () -> new TableKitchenBlock());
@@ -104,7 +108,6 @@ public class ThisnotamodModBlocks {
 	public static final RegistryObject<Block> TERM_LD = REGISTRY.register("term_ld", () -> new TermLDBlock());
 	public static final RegistryObject<Block> TERM_LT = REGISTRY.register("term_lt", () -> new TermLTBlock());
 	public static final RegistryObject<Block> CHESS_ANDESIT = REGISTRY.register("chess_andesit", () -> new ChessAndesitBlock());
-	public static final RegistryObject<Block> ZIGA = REGISTRY.register("ziga", () -> new ZigaBlock());
 	public static final RegistryObject<Block> LAMPPLUS_1 = REGISTRY.register("lampplus_1", () -> new Lampplus1Block());
 	public static final RegistryObject<Block> LAMPPLUS_1_UPPED = REGISTRY.register("lampplus_1_upped", () -> new Lampplus1UppedBlock());
 	public static final RegistryObject<Block> LAMP_UPPED = REGISTRY.register("lamp_upped", () -> new LampUppedBlock());
@@ -128,6 +131,15 @@ public class ThisnotamodModBlocks {
 	public static final RegistryObject<Block> PASSLOCK_B = REGISTRY.register("passlock_b", () -> new PasslockBBlock());
 	public static final RegistryObject<Block> SERVER_B = REGISTRY.register("server_b", () -> new ServerBBlock());
 	public static final RegistryObject<Block> SERVER_B_TOP = REGISTRY.register("server_b_top", () -> new ServerBTopBlock());
+	public static final RegistryObject<Block> FRIDGE_DOWN = REGISTRY.register("fridge_down", () -> new FridgeDownBlock());
+	public static final RegistryObject<Block> START_POINT = REGISTRY.register("start_point", () -> new StartPointBlock());
+	public static final RegistryObject<Block> END_POINT = REGISTRY.register("end_point", () -> new EndPointBlock());
+	public static final RegistryObject<Block> SHOP_INT_TEST = REGISTRY.register("shop_int_test", () -> new ShopIntTestBlock());
+	public static final RegistryObject<Block> TEST_SIGNAL = REGISTRY.register("test_signal", () -> new TestSignalBlock());
+	public static final RegistryObject<Block> CRAFTING_TABLE_VOTV = REGISTRY.register("crafting_table_votv", () -> new CraftingTableVotvBlock());
+	public static final RegistryObject<Block> CRAFTING_TABLE_R = REGISTRY.register("crafting_table_r", () -> new CraftingTableRBlock());
+	public static final RegistryObject<Block> KERFU_HEAD = REGISTRY.register("kerfu_head", () -> new KerfuHeadBlock());
+	public static final RegistryObject<Block> KERFU_BLOCK = REGISTRY.register("kerfu_block", () -> new KerfuBlockBlock());
 	// Start of user code block custom blocks
 	// End of user code block custom blocks
 }

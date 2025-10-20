@@ -1,10 +1,14 @@
 package net.code.thisnotamod.procedures;
 
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
+import net.minecraft.client.Minecraft;
 
 import net.code.thisnotamod.network.ThisnotamodModVariables;
+import net.code.thisnotamod.init.ThisnotamodModItems;
+import net.code.thisnotamod.CustomTipOverlay;
 
 public class TimeDisplayTrueProcedure {
 	public static void execute(Entity entity) {
@@ -17,9 +21,9 @@ public class TimeDisplayTrueProcedure {
 				capability.syncPlayerVariables(entity);
 			});
 		}
-		if (entity instanceof Player _player && !_player.level().isClientSide())
-			_player.displayClientMessage(Component.literal(
-					"\u0412\u043A\u043B\u044E\u0447\u0435\u043D\u043E \u043E\u0442\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u0435 \u0442\u0435\u043A\u0443\u0449\u0435\u0433\u043E \u0432\u0440\u0435\u043C\u0435\u043D\u0438 \u0432 \u0442\u0438\u043A\u0430\u0445 \u0434\u043B\u044F \u0434\u0430\u043D\u043D\u043E\u0433\u043E \u0438\u0433\u0440\u043E\u043A\u0430."),
-					false);
+		Minecraft mc = Minecraft.getInstance();
+		if (mc != null && mc.level != null && mc.player != null) {
+			CustomTipOverlay.queueTip(Component.literal("Включено отображение текущего времени в тиках."), new ItemStack(ThisnotamodModItems.INFOICON.get()), new ResourceLocation("thisnotamod", "hint"));
+		}
 	}
 }

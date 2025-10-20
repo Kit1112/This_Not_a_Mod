@@ -7,6 +7,7 @@ import net.minecraftforge.event.entity.living.LivingEvent;
 import net.code.thisnotamod.entity.MannequinEntity;
 import net.code.thisnotamod.entity.KerfuOmegaEntity;
 import net.code.thisnotamod.entity.KerfuEntity;
+import net.code.thisnotamod.entity.Drone1Entity;
 
 @Mod.EventBusSubscriber
 public class EntityAnimationFactory {
@@ -28,6 +29,13 @@ public class EntityAnimationFactory {
 				}
 			}
 			if (event.getEntity() instanceof MannequinEntity syncable) {
+				String animation = syncable.getSyncedAnimation();
+				if (!animation.equals("undefined")) {
+					syncable.setAnimation("undefined");
+					syncable.animationprocedure = animation;
+				}
+			}
+			if (event.getEntity() instanceof Drone1Entity syncable) {
 				String animation = syncable.getSyncedAnimation();
 				if (!animation.equals("undefined")) {
 					syncable.setAnimation("undefined");

@@ -209,5 +209,87 @@
         "stream": false
       }
     ]
+  },
+  "drone_sound": {
+    "subtitle": "subtitles.drone_sound",
+    "sounds": [
+      {
+        "name": "thisnotamod:blades_formatted",
+        "stream": false
+      }
+    ]
+  },
+  "hint": {
+    "sounds": [
+      {
+        "name": "thisnotamod:notif_n3",
+        "stream": false
+      }
+    ]
+  },
+  "deny": {
+    "sounds": [
+      {
+        "name": "thisnotamod:button_computer_deny",
+        "stream": false
+      }
+    ]
+  },
+  "signal_error": {
+    "sounds": [
+      {
+        "name": "thisnotamod:signalerror",
+        "stream": false
+      }
+    ]
+  },
+  "scanner_move": {
+    "sounds": [
+      {
+        "name": "thisnotamod:scanner_move",
+        "stream": false
+      }
+    ]
+  },
+  "scanner_deny": {
+    "sounds": [
+      {
+        "name": "thisnotamod:scanner_deny",
+        "stream": false
+      }
+    ]
+  },
+  "pinger": {
+    "sounds": [
+      {
+        "name": "thisnotamod:ping",
+        "stream": false
+      }
+    ]
+  },
+  "scanner_turn": {
+    "subtitle": "subtitles.scanner_turn",
+    "sounds": [
+      {
+        "name": "thisnotamod:scanner_turn",
+        "stream": false
+      }
+    ]
+  },
+  "notif_warning": {
+    "sounds": [
+      {
+        "name": "thisnotamod:warning",
+        "stream": false
+      }
+    ]
+  },
+  "notif_error": {
+    "sounds": [
+      {
+        "name": "thisnotamod:notif_error",
+        "stream": false
+      }
+    ]
   }
 }

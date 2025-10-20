@@ -7,7 +7,6 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.api.distmarker.Dist;
 
 import net.code.thisnotamod.init.ThisnotamodModBlockEntities;
-import net.code.thisnotamod.block.renderer.ZigaTileRenderer;
 import net.code.thisnotamod.block.renderer.WorkStatTileRenderer;
 import net.code.thisnotamod.block.renderer.WindowRightDTileRenderer;
 import net.code.thisnotamod.block.renderer.WindowAleftTTileRenderer;
@@ -28,10 +27,10 @@ import net.code.thisnotamod.block.renderer.TermLTTileRenderer;
 import net.code.thisnotamod.block.renderer.TermLDTileRenderer;
 import net.code.thisnotamod.block.renderer.TelescopeTileRenderer;
 import net.code.thisnotamod.block.renderer.TableKitchenTileRenderer;
+import net.code.thisnotamod.block.renderer.StartPointTileRenderer;
+import net.code.thisnotamod.block.renderer.ShopIntTestTileRenderer;
 import net.code.thisnotamod.block.renderer.RadiotielieskopTileRenderer;
 import net.code.thisnotamod.block.renderer.RadarTileRenderer;
-import net.code.thisnotamod.block.renderer.MannequinTopTileRenderer;
-import net.code.thisnotamod.block.renderer.MannequinDownTileRenderer;
 import net.code.thisnotamod.block.renderer.LightSwitchTileRenderer;
 import net.code.thisnotamod.block.renderer.Lampplus1UppedTileRenderer;
 import net.code.thisnotamod.block.renderer.Lampplus1TileRenderer;
@@ -45,6 +44,12 @@ import net.code.thisnotamod.block.renderer.LampMiddleUppedTileRenderer;
 import net.code.thisnotamod.block.renderer.LampMiddleTileRenderer;
 import net.code.thisnotamod.block.renderer.LampMiddlePlus1UppedTileRenderer;
 import net.code.thisnotamod.block.renderer.LampMiddlePlus1TileRenderer;
+import net.code.thisnotamod.block.renderer.KerfuHeadTileRenderer;
+import net.code.thisnotamod.block.renderer.KerfuBlockTileRenderer;
+import net.code.thisnotamod.block.renderer.FridgeDownTileRenderer;
+import net.code.thisnotamod.block.renderer.EndPointTileRenderer;
+import net.code.thisnotamod.block.renderer.CraftingTableVotvTileRenderer;
+import net.code.thisnotamod.block.renderer.CraftingTableRTileRenderer;
 import net.code.thisnotamod.ThisnotamodMod;
 
 @Mod.EventBusSubscriber(modid = ThisnotamodMod.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
@@ -61,15 +66,12 @@ public class ClientListener {
 		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.TELESCOPE.get(), context -> new TelescopeTileRenderer());
 		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.RADIOTIELIESKOP.get(), context -> new RadiotielieskopTileRenderer());
 		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.WORK_STAT.get(), context -> new WorkStatTileRenderer());
-		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.MANNEQUIN_TOP.get(), context -> new MannequinTopTileRenderer());
-		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.MANNEQUIN_DOWN.get(), context -> new MannequinDownTileRenderer());
 		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.TERMINAL.get(), context -> new TerminalTileRenderer());
 		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.RADAR.get(), context -> new RadarTileRenderer());
 		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.TABLE_KITCHEN.get(), context -> new TableKitchenTileRenderer());
 		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.TERM_RT.get(), context -> new TermRTTileRenderer());
 		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.TERM_LD.get(), context -> new TermLDTileRenderer());
 		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.TERM_LT.get(), context -> new TermLTTileRenderer());
-		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.ZIGA.get(), context -> new ZigaTileRenderer());
 		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.LAMPPLUS_1.get(), context -> new Lampplus1TileRenderer());
 		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.LAMPPLUS_1_UPPED.get(), context -> new Lampplus1UppedTileRenderer());
 		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.LAMP_UPPED.get(), context -> new LampUppedTileRenderer());
@@ -90,5 +92,13 @@ public class ClientListener {
 		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.WINDOW_A_RIGHT_T.get(), context -> new WindowARightTTileRenderer());
 		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.WINDOW_ALEFT_T.get(), context -> new WindowAleftTTileRenderer());
 		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.WARNING_LAMP.get(), context -> new WarningLampTileRenderer());
+		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.FRIDGE_DOWN.get(), context -> new FridgeDownTileRenderer());
+		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.START_POINT.get(), context -> new StartPointTileRenderer());
+		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.END_POINT.get(), context -> new EndPointTileRenderer());
+		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.SHOP_INT_TEST.get(), context -> new ShopIntTestTileRenderer());
+		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.CRAFTING_TABLE_VOTV.get(), context -> new CraftingTableVotvTileRenderer());
+		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.CRAFTING_TABLE_R.get(), context -> new CraftingTableRTileRenderer());
+		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.KERFU_HEAD.get(), context -> new KerfuHeadTileRenderer());
+		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.KERFU_BLOCK.get(), context -> new KerfuBlockTileRenderer());
 	}
 }

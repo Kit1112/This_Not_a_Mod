@@ -15,6 +15,7 @@ import net.minecraftforge.common.capabilities.CapabilityToken;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.capabilities.Capability;
 
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.ServerLevelAccessor;
 import net.minecraft.world.level.LevelAccessor;
@@ -26,6 +27,8 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.DoubleTag;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.Direction;
 import net.minecraft.client.multiplayer.ServerList;
@@ -49,6 +52,7 @@ public class ThisnotamodModVariables {
 	public static List<Object> daramapIterator = new ArrayList<>();
 	public static List<Object> autoBreakServList = new ArrayList<>();
 	public static List<Object> servCoordsForAutobreak = new ArrayList<>();
+	public static List<Object> OrderList = new ArrayList<>();
 
 	@SubscribeEvent
 	public static void init(FMLCommonSetupEvent event) {
@@ -128,6 +132,15 @@ public class ThisnotamodModVariables {
 			clone.Example7 = original.Example7;
 			clone.Example8 = original.Example8;
 			clone.TimeDisplay = original.TimeDisplay;
+			clone.EndCoord = original.EndCoord;
+			clone.Order_list = original.Order_list;
+			clone.SignalScanerSpeedMod = original.SignalScanerSpeedMod;
+			clone.PingerCooldown = original.PingerCooldown;
+			clone.PingerSpeed = original.PingerSpeed;
+			clone.pingerSuccesChance = original.pingerSuccesChance;
+			clone.KerfCraftTrueList = original.KerfCraftTrueList;
+			clone.DetectorSpeed = original.DetectorSpeed;
+			clone.downloadSpeed = original.downloadSpeed;
 			if (!event.isWasDeath()) {
 			}
 		}
@@ -222,6 +235,7 @@ public class ThisnotamodModVariables {
 		public double warnLampZ = 0;
 		public boolean AlarmSoundIsPlayed = false;
 		public boolean warnLampIsActive = false;
+		public String placeholderString = "\"\"";
 
 		public static MapVariables load(CompoundTag tag) {
 			MapVariables data = new MapVariables();
@@ -247,6 +261,7 @@ public class ThisnotamodModVariables {
 			warnLampZ = nbt.getDouble("warnLampZ");
 			AlarmSoundIsPlayed = nbt.getBoolean("AlarmSoundIsPlayed");
 			warnLampIsActive = nbt.getBoolean("warnLampIsActive");
+			placeholderString = nbt.getString("placeholderString");
 		}
 
 		@Override
@@ -268,6 +283,7 @@ public class ThisnotamodModVariables {
 			nbt.putDouble("warnLampZ", warnLampZ);
 			nbt.putBoolean("AlarmSoundIsPlayed", AlarmSoundIsPlayed);
 			nbt.putBoolean("warnLampIsActive", warnLampIsActive);
+			nbt.putString("placeholderString", placeholderString);
 			return nbt;
 		}
 
@@ -402,6 +418,15 @@ public class ThisnotamodModVariables {
 		public String Example7 = "\"\"";
 		public String Example8 = "\"\"";
 		public boolean TimeDisplay = false;
+		public Vec3 EndCoord = Vec3.ZERO;
+		public CompoundTag Order_list = new CompoundTag();
+		public double SignalScanerSpeedMod = 0.3;
+		public double PingerCooldown = 15.0;
+		public double PingerSpeed = 0.1;
+		public double pingerSuccesChance = 0.5;
+		public ListTag KerfCraftTrueList = new ListTag();
+		public double DetectorSpeed = 1.0;
+		public double downloadSpeed = 0.0;
 
 		public void syncPlayerVariables(Entity entity) {
 			if (entity instanceof ServerPlayer serverPlayer)
@@ -452,6 +477,22 @@ public class ThisnotamodModVariables {
 			nbt.putString("Example7", Example7);
 			nbt.putString("Example8", Example8);
 			nbt.putBoolean("TimeDisplay", TimeDisplay);
+			{
+				this.EndCoord = this.EndCoord == null ? Vec3.ZERO : this.EndCoord;
+				ListTag listTag = new ListTag();
+				listTag.addTag(0, DoubleTag.valueOf(this.EndCoord.x()));
+				listTag.addTag(1, DoubleTag.valueOf(this.EndCoord.y()));
+				listTag.addTag(2, DoubleTag.valueOf(this.EndCoord.z()));
+				nbt.put("EndCoord", listTag);
+			}
+			nbt.put("Order_list", this.Order_list);
+			nbt.putDouble("SignalScanerSpeedMod", SignalScanerSpeedMod);
+			nbt.putDouble("PingerCooldown", PingerCooldown);
+			nbt.putDouble("PingerSpeed", PingerSpeed);
+			nbt.putDouble("pingerSuccesChance", pingerSuccesChance);
+			nbt.put("KerfCraftTrueList", this.KerfCraftTrueList);
+			nbt.putDouble("DetectorSpeed", DetectorSpeed);
+			nbt.putDouble("downloadSpeed", downloadSpeed);
 			return nbt;
 		}
 
@@ -499,6 +540,18 @@ public class ThisnotamodModVariables {
 			Example7 = nbt.getString("Example7");
 			Example8 = nbt.getString("Example8");
 			TimeDisplay = nbt.getBoolean("TimeDisplay");
+			{
+				ListTag listTag = nbt.getList("EndCoord", 6);
+				this.EndCoord = new Vec3(listTag.getDouble(0), listTag.getDouble(1), listTag.getDouble(2));
+			}
+			this.Order_list = nbt.get("Order_list") instanceof CompoundTag Order_list ? Order_list : new CompoundTag();
+			SignalScanerSpeedMod = nbt.getDouble("SignalScanerSpeedMod");
+			PingerCooldown = nbt.getDouble("PingerCooldown");
+			PingerSpeed = nbt.getDouble("PingerSpeed");
+			pingerSuccesChance = nbt.getDouble("pingerSuccesChance");
+			this.KerfCraftTrueList = nbt.get("KerfCraftTrueList") instanceof ListTag KerfCraftTrueList ? KerfCraftTrueList : new ListTag();
+			DetectorSpeed = nbt.getDouble("DetectorSpeed");
+			downloadSpeed = nbt.getDouble("downloadSpeed");
 		}
 	}
 
@@ -565,6 +618,15 @@ public class ThisnotamodModVariables {
 					variables.Example7 = message.data.Example7;
 					variables.Example8 = message.data.Example8;
 					variables.TimeDisplay = message.data.TimeDisplay;
+					variables.EndCoord = message.data.EndCoord;
+					variables.Order_list = message.data.Order_list;
+					variables.SignalScanerSpeedMod = message.data.SignalScanerSpeedMod;
+					variables.PingerCooldown = message.data.PingerCooldown;
+					variables.PingerSpeed = message.data.PingerSpeed;
+					variables.pingerSuccesChance = message.data.pingerSuccesChance;
+					variables.KerfCraftTrueList = message.data.KerfCraftTrueList;
+					variables.DetectorSpeed = message.data.DetectorSpeed;
+					variables.downloadSpeed = message.data.downloadSpeed;
 				}
 			});
 			context.setPacketHandled(true);

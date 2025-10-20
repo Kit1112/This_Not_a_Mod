@@ -15,7 +15,7 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.PoseStack;
 
 public class KerfuOmegaLayer extends GeoRenderLayer<KerfuOmegaEntity> {
-	private static final ResourceLocation LAYER = new ResourceLocation("thisnotamod", "textures/entities/omega_kefu_blue_glowmask.png");
+	private static final ResourceLocation LAYER = new ResourceLocation("thisnotamod", "textures/entities/omega_kerfu_blue_e.png");
 
 	public KerfuOmegaLayer(GeoRenderer<KerfuOmegaEntity> entityRenderer) {
 		super(entityRenderer);

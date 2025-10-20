@@ -4,6 +4,7 @@ import org.checkerframework.checker.units.qual.s;
 
 import net.minecraftforge.registries.ForgeRegistries;
 
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.LevelAccessor;
@@ -13,6 +14,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.core.BlockPos;
 
 import net.code.thisnotamod.network.ThisnotamodModVariables;
@@ -72,6 +74,8 @@ public class EB0Procedure {
 					_level.playLocalSound(x, y, z, ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("thisnotamod:passlock_success")), SoundSource.BLOCKS, 1, 1, false);
 				}
 			}
+			ThisnotamodModVariables.MapVariables.get(world).datamap1.remove(((("" + new Vec3(x, y, z)).replace(")", "")).replace("(", "")));
+			ThisnotamodModVariables.MapVariables.get(world).datamap1.put("enabled", StringTag.valueOf(((("" + new Vec3(x, y, z)).replace(")", "")).replace("(", ""))));
 		} else {
 			if (entity instanceof Player _player)
 				_player.closeContainer();

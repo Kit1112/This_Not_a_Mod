@@ -1,0 +1,7 @@
+{
+  "_fv": 66,
+  "_type": "procedure",
+  "definition": {
+    "procedurexml": "<xml xmlns=\"https://developers.google.com/blockly/xml\"><block type=\"event_trigger\" deletable=\"false\" x=\"-35\" y=\"-77\"><field name=\"trigger\">no_ext_trigger</field><next><block type=\"entity_data_logic_set\"><field name=\"customEntity\">CUSTOM:KerfuOmega</field><field name=\"accessor\">patroul</field><value name=\"entity\"><block type=\"world_entity_inrange\"><field name=\"entity\">CUSTOM:KerfuOmega</field><value name=\"x\"><block type=\"coord_x\"></block></value><value name=\"y\"><block type=\"coord_y\"></block></value><value name=\"z\"><block type=\"coord_z\"></block></value><value name=\"range\"><block type=\"math_number\"><field name=\"NUM\">3</field></block></value></block></value><value name=\"value\"><block type=\"logic_boolean\"><field name=\"BOOL\">TRUE</field></block></value><next><block type=\"java_code\"><field name=\"CODE\">Minecraft mc = Minecraft.getInstance();&amp;#10;if (mc != null &amp;&amp; mc.level != null &amp;&amp; mc.player != null) {&amp;#10;    CustomTipOverlay.queueTip(&amp;#10;        Component.literal(\"Патрулирую ближайшую территорию\"),&amp;#10;        new ItemStack(ThisnotamodModItems.INFOICON.get()),&amp;#10;        new ResourceLocation(\"thisnotamod\", \"hint\")&amp;#10;    );&amp;#10;}&amp;#10;</field><next><block type=\"entity_close_gui\"><value name=\"entity\"><block type=\"entity_from_deps\"></block></value></block></next></block></next></block></next></block></xml>"
+  }
+}

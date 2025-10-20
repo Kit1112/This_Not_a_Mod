@@ -13,16 +13,23 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.BlockItem;
 
+import net.code.thisnotamod.item.WarningiconItem;
 import net.code.thisnotamod.item.SuperGlock17Item;
 import net.code.thisnotamod.item.SimplyGuidebookItem;
 import net.code.thisnotamod.item.PassChangeItem;
 import net.code.thisnotamod.item.MusicDiskVotvWinterItem;
 import net.code.thisnotamod.item.MusicDiskVotvItem;
 import net.code.thisnotamod.item.MinecellsGuidebookItem;
+import net.code.thisnotamod.item.KerfuWombItem;
+import net.code.thisnotamod.item.KerfuLegItem;
+import net.code.thisnotamod.item.KerfuHandItem;
+import net.code.thisnotamod.item.KerfuBodyItem;
+import net.code.thisnotamod.item.KerfuBlueprintItem;
+import net.code.thisnotamod.item.InfoiconItem;
+import net.code.thisnotamod.item.ErroriconItem;
 import net.code.thisnotamod.item.BloodGuidebookItem;
 import net.code.thisnotamod.item.ArsGuidebookItem;
 import net.code.thisnotamod.item.ApotheosisGuidebookItem;
-import net.code.thisnotamod.block.display.ZigaDisplayItem;
 import net.code.thisnotamod.block.display.WorkStatDisplayItem;
 import net.code.thisnotamod.block.display.WindowRightDDisplayItem;
 import net.code.thisnotamod.block.display.WindowAleftTDisplayItem;
@@ -43,10 +50,10 @@ import net.code.thisnotamod.block.display.TermLTDisplayItem;
 import net.code.thisnotamod.block.display.TermLDDisplayItem;
 import net.code.thisnotamod.block.display.TelescopeDisplayItem;
 import net.code.thisnotamod.block.display.TableKitchenDisplayItem;
+import net.code.thisnotamod.block.display.StartPointDisplayItem;
+import net.code.thisnotamod.block.display.ShopIntTestDisplayItem;
 import net.code.thisnotamod.block.display.RadiotielieskopDisplayItem;
 import net.code.thisnotamod.block.display.RadarDisplayItem;
-import net.code.thisnotamod.block.display.MannequinTopDisplayItem;
-import net.code.thisnotamod.block.display.MannequinDownDisplayItem;
 import net.code.thisnotamod.block.display.LightSwitchDisplayItem;
 import net.code.thisnotamod.block.display.Lampplus1UppedDisplayItem;
 import net.code.thisnotamod.block.display.Lampplus1DisplayItem;
@@ -60,6 +67,12 @@ import net.code.thisnotamod.block.display.LampMiddlePlus1UppedDisplayItem;
 import net.code.thisnotamod.block.display.LampMiddlePlus1DisplayItem;
 import net.code.thisnotamod.block.display.LampMiddleDisplayItem;
 import net.code.thisnotamod.block.display.LampDisplayItem;
+import net.code.thisnotamod.block.display.KerfuHeadDisplayItem;
+import net.code.thisnotamod.block.display.KerfuBlockDisplayItem;
+import net.code.thisnotamod.block.display.FridgeDownDisplayItem;
+import net.code.thisnotamod.block.display.EndPointDisplayItem;
+import net.code.thisnotamod.block.display.CraftingTableVotvDisplayItem;
+import net.code.thisnotamod.block.display.CraftingTableRDisplayItem;
 import net.code.thisnotamod.ThisnotamodMod;
 
 public class ThisnotamodModItems {
@@ -97,8 +110,6 @@ public class ThisnotamodModItems {
 	public static final RegistryObject<Item> CONCRETE_WALL_N = block(ThisnotamodModBlocks.CONCRETE_WALL_N);
 	public static final RegistryObject<Item> CONCRETE_WALL_R = block(ThisnotamodModBlocks.CONCRETE_WALL_R);
 	public static final RegistryObject<Item> WORK_STAT = REGISTRY.register(ThisnotamodModBlocks.WORK_STAT.getId().getPath(), () -> new WorkStatDisplayItem(ThisnotamodModBlocks.WORK_STAT.get(), new Item.Properties()));
-	public static final RegistryObject<Item> MANNEQUIN_TOP = REGISTRY.register(ThisnotamodModBlocks.MANNEQUIN_TOP.getId().getPath(), () -> new MannequinTopDisplayItem(ThisnotamodModBlocks.MANNEQUIN_TOP.get(), new Item.Properties()));
-	public static final RegistryObject<Item> MANNEQUIN_DOWN = REGISTRY.register(ThisnotamodModBlocks.MANNEQUIN_DOWN.getId().getPath(), () -> new MannequinDownDisplayItem(ThisnotamodModBlocks.MANNEQUIN_DOWN.get(), new Item.Properties()));
 	public static final RegistryObject<Item> TERMINAL = REGISTRY.register(ThisnotamodModBlocks.TERMINAL.getId().getPath(), () -> new TerminalDisplayItem(ThisnotamodModBlocks.TERMINAL.get(), new Item.Properties()));
 	public static final RegistryObject<Item> RADAR = REGISTRY.register(ThisnotamodModBlocks.RADAR.getId().getPath(), () -> new RadarDisplayItem(ThisnotamodModBlocks.RADAR.get(), new Item.Properties()));
 	public static final RegistryObject<Item> TABLE_KITCHEN = REGISTRY.register(ThisnotamodModBlocks.TABLE_KITCHEN.getId().getPath(), () -> new TableKitchenDisplayItem(ThisnotamodModBlocks.TABLE_KITCHEN.get(), new Item.Properties()));
@@ -106,7 +117,6 @@ public class ThisnotamodModItems {
 	public static final RegistryObject<Item> TERM_LD = REGISTRY.register(ThisnotamodModBlocks.TERM_LD.getId().getPath(), () -> new TermLDDisplayItem(ThisnotamodModBlocks.TERM_LD.get(), new Item.Properties()));
 	public static final RegistryObject<Item> TERM_LT = REGISTRY.register(ThisnotamodModBlocks.TERM_LT.getId().getPath(), () -> new TermLTDisplayItem(ThisnotamodModBlocks.TERM_LT.get(), new Item.Properties()));
 	public static final RegistryObject<Item> CHESS_ANDESIT = block(ThisnotamodModBlocks.CHESS_ANDESIT);
-	public static final RegistryObject<Item> ZIGA = REGISTRY.register(ThisnotamodModBlocks.ZIGA.getId().getPath(), () -> new ZigaDisplayItem(ThisnotamodModBlocks.ZIGA.get(), new Item.Properties()));
 	public static final RegistryObject<Item> PASS_CHANGE = REGISTRY.register("pass_change", () -> new PassChangeItem());
 	public static final RegistryObject<Item> LAMPPLUS_1 = REGISTRY.register(ThisnotamodModBlocks.LAMPPLUS_1.getId().getPath(), () -> new Lampplus1DisplayItem(ThisnotamodModBlocks.LAMPPLUS_1.get(), new Item.Properties()));
 	public static final RegistryObject<Item> LAMPPLUS_1_UPPED = REGISTRY.register(ThisnotamodModBlocks.LAMPPLUS_1_UPPED.getId().getPath(), () -> new Lampplus1UppedDisplayItem(ThisnotamodModBlocks.LAMPPLUS_1_UPPED.get(), new Item.Properties()));
@@ -128,7 +138,7 @@ public class ThisnotamodModItems {
 	public static final RegistryObject<Item> LAMP_ROUND_UP_MIDDLE = REGISTRY.register(ThisnotamodModBlocks.LAMP_ROUND_UP_MIDDLE.getId().getPath(),
 			() -> new LampRoundUpMiddleDisplayItem(ThisnotamodModBlocks.LAMP_ROUND_UP_MIDDLE.get(), new Item.Properties()));
 	public static final RegistryObject<Item> LAMP_ROUND_MIDDLE = REGISTRY.register(ThisnotamodModBlocks.LAMP_ROUND_MIDDLE.getId().getPath(), () -> new LampRoundMiddleDisplayItem(ThisnotamodModBlocks.LAMP_ROUND_MIDDLE.get(), new Item.Properties()));
-	public static final RegistryObject<Item> KERFU_OMEGA_SPAWN_EGG = REGISTRY.register("kerfu_omega_spawn_egg", () -> new ForgeSpawnEggItem(ThisnotamodModEntities.KERFU_OMEGA, -65485, -1, new Item.Properties()));
+	public static final RegistryObject<Item> KERFU_OMEGA_SPAWN_EGG = REGISTRY.register("kerfu_omega_spawn_egg", () -> new ForgeSpawnEggItem(ThisnotamodModEntities.KERFU_OMEGA, -13987916, -10592674, new Item.Properties()));
 	public static final RegistryObject<Item> WINDOW_RIGHT_D = REGISTRY.register(ThisnotamodModBlocks.WINDOW_RIGHT_D.getId().getPath(), () -> new WindowRightDDisplayItem(ThisnotamodModBlocks.WINDOW_RIGHT_D.get(), new Item.Properties()));
 	public static final RegistryObject<Item> WINDOW_ALEFT_D = REGISTRY.register(ThisnotamodModBlocks.WINDOW_ALEFT_D.getId().getPath(), () -> new WindowAleftDDisplayItem(ThisnotamodModBlocks.WINDOW_ALEFT_D.get(), new Item.Properties()));
 	public static final RegistryObject<Item> WINDOW_A_RIGHT_T = REGISTRY.register(ThisnotamodModBlocks.WINDOW_A_RIGHT_T.getId().getPath(), () -> new WindowARightTDisplayItem(ThisnotamodModBlocks.WINDOW_A_RIGHT_T.get(), new Item.Properties()));
@@ -138,6 +148,25 @@ public class ThisnotamodModItems {
 	public static final RegistryObject<Item> PASSLOCK_B = block(ThisnotamodModBlocks.PASSLOCK_B);
 	public static final RegistryObject<Item> SERVER_B = block(ThisnotamodModBlocks.SERVER_B);
 	public static final RegistryObject<Item> SERVER_B_TOP = block(ThisnotamodModBlocks.SERVER_B_TOP);
+	public static final RegistryObject<Item> FRIDGE_DOWN = REGISTRY.register(ThisnotamodModBlocks.FRIDGE_DOWN.getId().getPath(), () -> new FridgeDownDisplayItem(ThisnotamodModBlocks.FRIDGE_DOWN.get(), new Item.Properties()));
+	public static final RegistryObject<Item> START_POINT = REGISTRY.register(ThisnotamodModBlocks.START_POINT.getId().getPath(), () -> new StartPointDisplayItem(ThisnotamodModBlocks.START_POINT.get(), new Item.Properties()));
+	public static final RegistryObject<Item> DRONE_1_SPAWN_EGG = REGISTRY.register("drone_1_spawn_egg", () -> new ForgeSpawnEggItem(ThisnotamodModEntities.DRONE_1, -26368, -6684775, new Item.Properties()));
+	public static final RegistryObject<Item> END_POINT = REGISTRY.register(ThisnotamodModBlocks.END_POINT.getId().getPath(), () -> new EndPointDisplayItem(ThisnotamodModBlocks.END_POINT.get(), new Item.Properties()));
+	public static final RegistryObject<Item> SHOP_INT_TEST = REGISTRY.register(ThisnotamodModBlocks.SHOP_INT_TEST.getId().getPath(), () -> new ShopIntTestDisplayItem(ThisnotamodModBlocks.SHOP_INT_TEST.get(), new Item.Properties()));
+	public static final RegistryObject<Item> INFOICON = REGISTRY.register("infoicon", () -> new InfoiconItem());
+	public static final RegistryObject<Item> ERRORICON = REGISTRY.register("erroricon", () -> new ErroriconItem());
+	public static final RegistryObject<Item> TEST_SIGNAL = block(ThisnotamodModBlocks.TEST_SIGNAL);
+	public static final RegistryObject<Item> WARNINGICON = REGISTRY.register("warningicon", () -> new WarningiconItem());
+	public static final RegistryObject<Item> CRAFTING_TABLE_VOTV = REGISTRY.register(ThisnotamodModBlocks.CRAFTING_TABLE_VOTV.getId().getPath(),
+			() -> new CraftingTableVotvDisplayItem(ThisnotamodModBlocks.CRAFTING_TABLE_VOTV.get(), new Item.Properties()));
+	public static final RegistryObject<Item> CRAFTING_TABLE_R = REGISTRY.register(ThisnotamodModBlocks.CRAFTING_TABLE_R.getId().getPath(), () -> new CraftingTableRDisplayItem(ThisnotamodModBlocks.CRAFTING_TABLE_R.get(), new Item.Properties()));
+	public static final RegistryObject<Item> KERFU_WOMB = REGISTRY.register("kerfu_womb", () -> new KerfuWombItem());
+	public static final RegistryObject<Item> KERFU_HAND = REGISTRY.register("kerfu_hand", () -> new KerfuHandItem());
+	public static final RegistryObject<Item> KERFU_LEG = REGISTRY.register("kerfu_leg", () -> new KerfuLegItem());
+	public static final RegistryObject<Item> KERFU_BODY = REGISTRY.register("kerfu_body", () -> new KerfuBodyItem());
+	public static final RegistryObject<Item> KERFU_HEAD = REGISTRY.register(ThisnotamodModBlocks.KERFU_HEAD.getId().getPath(), () -> new KerfuHeadDisplayItem(ThisnotamodModBlocks.KERFU_HEAD.get(), new Item.Properties()));
+	public static final RegistryObject<Item> KERFU_BLOCK = REGISTRY.register(ThisnotamodModBlocks.KERFU_BLOCK.getId().getPath(), () -> new KerfuBlockDisplayItem(ThisnotamodModBlocks.KERFU_BLOCK.get(), new Item.Properties()));
+	public static final RegistryObject<Item> KERFU_BLUEPRINT = REGISTRY.register("kerfu_blueprint", () -> new KerfuBlueprintItem());
 
 	// Start of user code block custom items
 	// End of user code block custom items

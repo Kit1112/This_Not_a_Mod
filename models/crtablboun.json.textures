@@ -1,0 +1,10 @@
+{
+  "mappings": {
+    "default": {
+      "map": {
+        "missing": "default_block_tex"
+      },
+      "name": "default"
+    }
+  }
+}

@@ -1,0 +1,176 @@
+{
+  "_fv": 66,
+  "_type": "animatedentity",
+  "definition": {
+    "mobName": "Drone",
+    "mobLabel": "",
+    "mobModelTexture": "drone.png",
+    "mobModelGlowTexture": "",
+    "visualScale": {
+      "fixedValue": 1.0
+    },
+    "boundingBoxScale": {
+      "fixedValue": 1.0
+    },
+    "entityDataEntries": [
+      {
+        "name": "StartPoint",
+        "type": "string",
+        "value": ""
+      },
+      {
+        "name": "EnndPoint",
+        "type": "string",
+        "value": ""
+      }
+    ],
+    "modelWidth": 0.6,
+    "modelHeight": 1.8,
+    "modelShadowSize": 0.5,
+    "mountedYOffset": 0.0,
+    "stepHeight": 0.6,
+    "hasSpawnEgg": true,
+    "spawnEggBaseColor": {
+      "value": -26368,
+      "falpha": 0.0
+    },
+    "spawnEggDotColor": {
+      "value": -6684775,
+      "falpha": 0.0
+    },
+    "creativeTabs": [
+      {
+        "value": "CUSTOM:VotV"
+      }
+    ],
+    "isBoss": false,
+    "bossBarColor": "PINK",
+    "bossBarType": "PROGRESS",
+    "equipmentMainHand": {
+      "value": ""
+    },
+    "equipmentOffHand": {
+      "value": ""
+    },
+    "equipmentHelmet": {
+      "value": ""
+    },
+    "equipmentBody": {
+      "value": ""
+    },
+    "equipmentLeggings": {
+      "value": ""
+    },
+    "equipmentBoots": {
+      "value": ""
+    },
+    "mobBehaviourType": "Mob",
+    "mobCreatureType": "UNDEFINED",
+    "attackStrength": 3,
+    "attackKnockback": 0.0,
+    "knockbackResistance": 0.0,
+    "movementSpeed": 1.0,
+    "armorBaseValue": 0.0,
+    "trackingRange": 64,
+    "followRange": 16,
+    "health": 10,
+    "xpAmount": 0,
+    "waterMob": false,
+    "flyingMob": true,
+    "guiBoundTo": "<NONE>",
+    "inventorySize": 9,
+    "inventoryStackSize": 64,
+    "deathTime": 20,
+    "lerp": 4,
+    "disableCollisions": false,
+    "ridable": false,
+    "canControlForward": false,
+    "canControlStrafe": false,
+    "immuneToFire": true,
+    "immuneToArrows": true,
+    "immuneToFallDamage": true,
+    "immuneToCactus": true,
+    "immuneToDrowning": true,
+    "immuneToLightning": true,
+    "immuneToPotions": true,
+    "immuneToPlayer": true,
+    "immuneToExplosion": true,
+    "immuneToTrident": true,
+    "immuneToAnvil": true,
+    "immuneToWither": true,
+    "immuneToDragonBreath": true,
+    "mobDrop": {
+      "value": ""
+    },
+    "livingSound": {
+      "value": "CUSTOM:drone_sound"
+    },
+    "hurtSound": {
+      "value": "entity.generic.hurt"
+    },
+    "deathSound": {
+      "value": "entity.generic.death"
+    },
+    "stepSound": {
+      "value": ""
+    },
+    "raidCelebrationSound": {
+      "value": ""
+    },
+    "hasAI": true,
+    "aiBase": "(none)",
+    "aixml": "<xml xmlns=\"https://developers.google.com/blockly/xml\"><block type=\"aitasks_container\" deletable=\"false\" x=\"40\" y=\"40\"><next><block type=\"java_code\"><field name=\"CODE\">this.goalSelector.addGoal(0, new Goal() {&amp;#10;    private final Drone1Entity mob = Drone1Entity.this;&amp;#10;&amp;#10;    private enum Stage {&amp;#10;        IDLE, ASCEND, CRUISE_TO_END, DROP, WAIT, RETURN_TO_START_ALT, DESCEND_TO_PAD&amp;#10;    }&amp;#10;&amp;#10;    // состояние&amp;#10;    private Stage stage = Stage.IDLE;&amp;#10;    private Stage lastLoggedStage = Stage.IDLE;&amp;#10;    private BlockPos startPos = null;&amp;#10;    private BlockPos endPos = null;&amp;#10;    private int waitTicks = 0;&amp;#10;    // зафиксированная высота крейсерского полёта&amp;#10;    private double cruiseY = Double.NaN;&amp;#10;&amp;#10;    // === ЗВУК ДРОНА (луп 9 секунд) ===&amp;#10;    private int droneHumCooldown = 0; // тиков до следующего запуска&amp;#10;    private static final net.minecraft.resources.ResourceLocation DRONE_HUM_ID =&amp;#10;            new net.minecraft.resources.ResourceLocation(\"thisnotamod\", \"drone_sound\");&amp;#10;    private static final int DRONE_HUM_PERIOD = 9 * 20; // 9с * 20 т/с&amp;#10;&amp;#10;    // заказ&amp;#10;    private Player orderOwner = null;&amp;#10;    private String orderKey = null; // ключ в CompoundTag (строка \"1\",\"2\",...)&amp;#10;    private String orderStr = null; // строка \"0, 1, 2, \"&amp;#10;&amp;#10;    // логгирование&amp;#10;    private int lastTickLog = 0; // чтобы не спамить каждую миллисекунду&amp;#10;    private static final int LOG_COOLDOWN_TICKS = 20; // раз в секунду для «текущих» логов&amp;#10;    {&amp;#10;        this.setFlags(java.util.EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));&amp;#10;    }&amp;#10;&amp;#10;    @Override&amp;#10;    public boolean isInterruptable() {&amp;#10;        return false;&amp;#10;    }&amp;#10;&amp;#10;    @Override&amp;#10;    public boolean requiresUpdateEveryTick() {&amp;#10;        return true;&amp;#10;    }&amp;#10;&amp;#10;    @Override&amp;#10;    public boolean canUse() {&amp;#10;        if (stage != Stage.IDLE) {&amp;#10;            return false;&amp;#10;        }&amp;#10;        // читаем точки старта/финиша из entity data&amp;#10;        String sp = mob.getEntityData().get(Drone1Entity.DATA_StartPoint);&amp;#10;        String ep = mob.getEntityData().get(Drone1Entity.DATA_EnndPoint);&amp;#10;        // парсим без фолбэка&amp;#10;        startPos = parsePoint(sp);&amp;#10;        endPos = parsePoint(ep);&amp;#10;        if (startPos == null || endPos == null) {&amp;#10;            return false;&amp;#10;        }&amp;#10;        if (startPos.equals(endPos)) {&amp;#10;            return false;&amp;#10;        }&amp;#10;        // ищем ближайшего игрока с непустым CompoundTag заказов&amp;#10;        orderOwner = findNearestPlayerWithOrders(128.0);&amp;#10;        if (orderOwner == null) {&amp;#10;            return false;&amp;#10;        }&amp;#10;        net.minecraft.nbt.CompoundTag orders = orderOwner.getCapability(net.code.thisnotamod.network.ThisnotamodModVariables.PLAYER_VARIABLES_CAPABILITY, null)&amp;#10;                .orElse(new net.code.thisnotamod.network.ThisnotamodModVariables.PlayerVariables()).Order_list;&amp;#10;        if (orders == null || orders.isEmpty()) {&amp;#10;            return false;&amp;#10;        }&amp;#10;        orderKey = pickMinNumericKey(orders);&amp;#10;        if (orderKey == null) {&amp;#10;            return false;&amp;#10;        }&amp;#10;        net.minecraft.nbt.Tag t = orders.get(orderKey);&amp;#10;        orderStr = (t instanceof net.minecraft.nbt.StringTag s) ? s.getAsString() : null;&amp;#10;        if (orderStr == null || orderStr.isEmpty()) {&amp;#10;            return false;&amp;#10;        }&amp;#10;        return true;&amp;#10;    }&amp;#10;&amp;#10;    @Override&amp;#10;    public boolean canContinueToUse() {&amp;#10;        return (stage != Stage.IDLE);&amp;#10;    }&amp;#10;&amp;#10;    @Override&amp;#10;    public void start() {&amp;#10;        stage = Stage.ASCEND;&amp;#10;        cruiseY = Double.NaN; // сбрасываем перед новым рейсом&amp;#10;        droneHumCooldown = 0; // сброс таймера лупа&amp;#10;        stopNav();&amp;#10;        // sanity‑лог: какой контроллер/навигация и какие атрибуты реально используются&amp;#10;        debugNow(String.format(java.util.Locale.ROOT,&amp;#10;                \"INIT: MC=%s Nav=%s fly=%.3f move=%.3f\",&amp;#10;                mob.getMoveControl().getClass().getSimpleName(),&amp;#10;                mob.getNavigation().getClass().getSimpleName(),&amp;#10;                val(mob, net.minecraft.world.entity.ai.attributes.Attributes.FLYING_SPEED),&amp;#10;                val(mob, net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED)&amp;#10;        ));&amp;#10;    }&amp;#10;&amp;#10;    @Override&amp;#10;    public void stop() {&amp;#10;        stopNav();&amp;#10;        stage = Stage.IDLE;&amp;#10;        droneHumCooldown = 0; // перестраховка&amp;#10;        waitTicks = 0;&amp;#10;        orderOwner = null;&amp;#10;        orderKey = null;&amp;#10;        orderStr = null;&amp;#10;        startPos = null;&amp;#10;        endPos = null;&amp;#10;    }&amp;#10;&amp;#10;    @Override&amp;#10;    public void tick() {&amp;#10;        // лог входа в стадию&amp;#10;        if (lastLoggedStage != stage) {&amp;#10;            debugStageEnter(stage, \"tick()\");&amp;#10;            lastLoggedStage = stage;&amp;#10;        }&amp;#10;&amp;#10;        // === ЛУП ЗВУКА: играет во всех стадиях кроме IDLE ===&amp;#10;        tickDroneHum();&amp;#10;&amp;#10;        switch (stage) {&amp;#10;            case ASCEND -&gt; {&amp;#10;                double tx = startPos.getX() + 0.5, ty = startPos.getY() + 5.0, tz = startPos.getZ() + 0.5;&amp;#10;                moveTo(tx, ty, tz, 15.0);&amp;#10;                if (closeTo(tx, ty, tz)) {&amp;#10;                    cruiseY = mob.getY(); // запоминаем фактическую высоту после подъёма&amp;#10;                    stage = Stage.CRUISE_TO_END;&amp;#10;                    stabilizeVertical(ty);&amp;#10;                    stopNav();&amp;#10;                }&amp;#10;            }&amp;#10;            case CRUISE_TO_END -&gt; {&amp;#10;                double tx = endPos.getX() + 0.5, ty = Double.isNaN(cruiseY) ? (endPos.getY() + 5.0) : cruiseY, tz = endPos.getZ() + 0.5;&amp;#10;                moveTo(tx, ty, tz, 15.0);&amp;#10;                if (closeTo(tx, ty, tz)) {&amp;#10;                    stage = Stage.DROP;&amp;#10;                    stabilizeVertical(ty);&amp;#10;                    stopNav();&amp;#10;                }&amp;#10;            }&amp;#10;            case DROP -&gt; {&amp;#10;                dropOrderItems();&amp;#10;                removeOrderFromOwner();&amp;#10;                waitTicks = 100; // 5 сек&amp;#10;                stage = Stage.WAIT;&amp;#10;            }&amp;#10;            case WAIT -&gt; {&amp;#10;                if (waitTicks &gt; 0) {&amp;#10;                    waitTicks--;&amp;#10;                } else {&amp;#10;                    stage = Stage.RETURN_TO_START_ALT;&amp;#10;                }&amp;#10;            }&amp;#10;            case RETURN_TO_START_ALT -&gt; {&amp;#10;                double tx = startPos.getX() + 0.5, ty = Double.isNaN(cruiseY) ? (startPos.getY() + 5.0) : cruiseY, tz = startPos.getZ() + 0.5;&amp;#10;                moveTo(tx, ty, tz, 15.0);&amp;#10;                if (closeTo(tx, ty, tz)) {&amp;#10;                    stage = Stage.DESCEND_TO_PAD;&amp;#10;                    stabilizeVertical(ty);&amp;#10;                    stopNav();&amp;#10;                }&amp;#10;            }&amp;#10;            case DESCEND_TO_PAD -&gt; {&amp;#10;                double tx = startPos.getX() + 0.5, ty = startPos.getY() + 1.0, tz = startPos.getZ() + 0.5;&amp;#10;                moveTo(tx, ty, tz, 15.0);&amp;#10;                if (closeTo(tx, ty, tz)) {&amp;#10;                    stabilizeVertical(ty);&amp;#10;                    stop(); // цикл завершён&amp;#10;                }&amp;#10;            }&amp;#10;            case IDLE -&gt; {&amp;#10;                debugEverySec(\"IDLE: ожидаю условия запуска (см. canUse-логи)\");&amp;#10;            }&amp;#10;        }&amp;#10;    }&amp;#10;&amp;#10;    // =========================&amp;#10;    // ВСПОМОГАТЕЛЬНОЕ&amp;#10;    // =========================&amp;#10;    private void moveTo(double x, double y, double z, double speed) {&amp;#10;        // 1) просим штатный контроллер&amp;#10;        mob.getMoveControl().setWantedPosition(x, y, z, speed);&amp;#10;&amp;#10;        // 2) небольшой горизонтальный форсаж, чтобы крейсерские этапы были реально быстрыми&amp;#10;        double fly = 0.0;&amp;#10;        var flyAttr = mob.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.FLYING_SPEED);&amp;#10;        if (flyAttr != null) fly = flyAttr.getValue();&amp;#10;        double flyNorm = Math.max(0.3, Math.min(fly, 2.0)); // нормализация&amp;#10;        double baseAcc = 0.005 * Math.min(speed, 3.0) * flyNorm; // блоков/тик&amp;#10;&amp;#10;        double dx = x - mob.getX();&amp;#10;        double dz = z - mob.getZ();&amp;#10;        double dXZ = Math.sqrt(dx * dx + dz * dz);&amp;#10;        if (dXZ &gt; 1.0E-4) {&amp;#10;            double nx = dx / dXZ;&amp;#10;            double nz = dz / dXZ;&amp;#10;            var v = mob.getDeltaMovement();&amp;#10;            double kDrag = 0.90; // чуть сглаживаем&amp;#10;            double vx = v.x * kDrag + nx * baseAcc;&amp;#10;            double vz = v.z * kDrag + nz * baseAcc;&amp;#10;            mob.setDeltaMovement(vx, v.y, vz);&amp;#10;        }&amp;#10;    }&amp;#10;&amp;#10;    private void stopNav() {&amp;#10;        mob.getNavigation().stop();&amp;#10;        // не гасим горизонтальную скорость&amp;#10;        var v = mob.getDeltaMovement();&amp;#10;        mob.setDeltaMovement(v.x, 0.0, v.z);&amp;#10;    }&amp;#10;&amp;#10;    private boolean closeTo(double x, double y, double z) {&amp;#10;        double dx = mob.getX() - x;&amp;#10;        double dy = mob.getY() - y;&amp;#10;        double dz = mob.getZ() - z;&amp;#10;        boolean inHoriz = (dx * dx + dz * dz) &lt;= (1.5 * 1.5); // мягче&amp;#10;        boolean inVert = Math.abs(dy) &lt;= 0.6;                  // мягче&amp;#10;        return inHoriz &amp;&amp; inVert;&amp;#10;    }&amp;#10;&amp;#10;    private void stabilizeVertical(double targetY) {&amp;#10;        double dy = targetY - mob.getY();&amp;#10;        if (Math.abs(dy) &lt; 0.25) {&amp;#10;            var v = mob.getDeltaMovement();&amp;#10;            mob.setDeltaMovement(v.x, 0.0, v.z);&amp;#10;        }&amp;#10;    }&amp;#10;&amp;#10;    private double distSqrTo(double x, double y, double z) {&amp;#10;        return mob.position().distanceToSqr(x, y, z);&amp;#10;    }&amp;#10;&amp;#10;    // === Луп звука ===&amp;#10;    private void tickDroneHum() {&amp;#10;        if (mob.level().isClientSide) return; // играем на сервере&amp;#10;        if (stage == Stage.IDLE) { // в IDLE не перезапускаем&amp;#10;            droneHumCooldown = 0;&amp;#10;            return;&amp;#10;        }&amp;#10;        if (droneHumCooldown &lt;= 0) {&amp;#10;            playDroneHumOnce();&amp;#10;            droneHumCooldown = DRONE_HUM_PERIOD - 1; // небольшой запас на шов&amp;#10;        } else {&amp;#10;            droneHumCooldown--;&amp;#10;        }&amp;#10;    }&amp;#10;&amp;#10;    private void playDroneHumOnce() {&amp;#10;        var evt = net.minecraftforge.registries.ForgeRegistries.SOUND_EVENTS.getValue(DRONE_HUM_ID);&amp;#10;        if (evt == null) return;&amp;#10;        float volume = 0.6f;&amp;#10;        float pitch  = 1.0f;&amp;#10;        mob.level().playSound(&amp;#10;            /*player*/ null,&amp;#10;            mob.getX(), mob.getY(), mob.getZ(),&amp;#10;            evt,&amp;#10;            net.minecraft.sounds.SoundSource.AMBIENT,&amp;#10;            volume, pitch&amp;#10;        );&amp;#10;    }&amp;#10;&amp;#10;    // Универсальный парсер координат&amp;#10;    private BlockPos parsePoint(String s) {&amp;#10;        if (s == null) return null;&amp;#10;        s = s.trim();&amp;#10;        if (s.isEmpty()) return null;&amp;#10;        s = s.replace(\"BlockPos\", \"\");&amp;#10;        s = s.replace(\"{\", \"\").replace(\"}\", \"\");&amp;#10;        s = s.replace(\"[\", \"\").replace(\"]\", \"\");&amp;#10;        s = s.replace(\"x=\", \"\").replace(\"y=\", \"\").replace(\"z=\", \"\");&amp;#10;        String[] parts = s.split(\"[,;\\s]+\");&amp;#10;        if (parts.length &lt; 3) return null;&amp;#10;        try {&amp;#10;            double dx = Double.parseDouble(parts[0]);&amp;#10;            double dy = Double.parseDouble(parts[1]);&amp;#10;            double dz = Double.parseDouble(parts[2]);&amp;#10;            int x = net.minecraft.util.Mth.floor(dx);&amp;#10;            int y = net.minecraft.util.Mth.floor(dy);&amp;#10;            int z = net.minecraft.util.Mth.floor(dz);&amp;#10;            return new BlockPos(x, y, z);&amp;#10;        } catch (Exception e) {&amp;#10;            return null;&amp;#10;        }&amp;#10;    }&amp;#10;&amp;#10;    private Player findNearestPlayerWithOrders(double radius) {&amp;#10;        Player best = null;&amp;#10;        double bestD = radius * radius;&amp;#10;        for (Player p : mob.level().players()) {&amp;#10;            double d = p.distanceToSqr(mob);&amp;#10;            if (d &lt;= bestD) {&amp;#10;                net.minecraft.nbt.CompoundTag orders = p.getCapability(net.code.thisnotamod.network.ThisnotamodModVariables.PLAYER_VARIABLES_CAPABILITY, null)&amp;#10;                        .orElse(new net.code.thisnotamod.network.ThisnotamodModVariables.PlayerVariables()).Order_list;&amp;#10;                if (orders != null &amp;&amp; !orders.isEmpty()) {&amp;#10;                    best = p;&amp;#10;                    bestD = d;&amp;#10;                }&amp;#10;            }&amp;#10;        }&amp;#10;        return best;&amp;#10;    }&amp;#10;&amp;#10;    private String pickMinNumericKey(net.minecraft.nbt.CompoundTag orders) {&amp;#10;        int best = Integer.MAX_VALUE;&amp;#10;        String bestKey = null;&amp;#10;        for (String k : orders.getAllKeys()) {&amp;#10;            try {&amp;#10;                int v = Integer.parseInt(k);&amp;#10;                if (v &lt; best) { best = v; bestKey = k; }&amp;#10;            } catch (NumberFormatException ignored) {}&amp;#10;        }&amp;#10;        if (bestKey != null) return bestKey;&amp;#10;        java.util.Iterator&lt;String&gt; it = orders.getAllKeys().iterator();&amp;#10;        return it.hasNext() ? it.next() : null;&amp;#10;    }&amp;#10;&amp;#10;    private void removeOrderFromOwner() {&amp;#10;        if (orderOwner == null || orderKey == null) return;&amp;#10;        orderOwner.getCapability(net.code.thisnotamod.network.ThisnotamodModVariables.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(cap -&gt; {&amp;#10;            if (cap.Order_list != null) {&amp;#10;                cap.Order_list.remove(orderKey);&amp;#10;            }&amp;#10;            try { cap.syncPlayerVariables(orderOwner); } catch (Throwable ignored) {}&amp;#10;        });&amp;#10;    }&amp;#10;&amp;#10;    private void dropOrderItems() {&amp;#10;        if (!(mob.level() instanceof net.minecraft.server.level.ServerLevel level)) return;&amp;#10;        if (orderStr == null || orderStr.isEmpty()) return;&amp;#10;        String[] parts = orderStr.split(\",\");&amp;#10;        for (String raw : parts) {&amp;#10;            String s = raw.trim();&amp;#10;            if (s.isEmpty()) continue;&amp;#10;            try {&amp;#10;                int code = Integer.parseInt(s);&amp;#10;                net.minecraft.world.item.Item item = mapCodeToItem(code);&amp;#10;                if (item == null || item == net.minecraft.world.item.Items.AIR) continue;&amp;#10;                net.minecraft.world.entity.item.ItemEntity it = new net.minecraft.world.entity.item.ItemEntity(level, mob.getX(), mob.getY(), mob.getZ(), new net.minecraft.world.item.ItemStack(item, 1));&amp;#10;                it.setPickUpDelay(10);&amp;#10;                level.addFreshEntity(it);&amp;#10;            } catch (NumberFormatException ignored) {}&amp;#10;        }&amp;#10;    }&amp;#10;&amp;#10;    private net.minecraft.world.item.Item mapCodeToItem(int code) {&amp;#10;        net.minecraft.resources.ResourceLocation id = switch (code) {&amp;#10;            case 0 -&gt; new net.minecraft.resources.ResourceLocation(\"thisnotamod\", \"argemiared\");&amp;#10;            case 1 -&gt; new net.minecraft.resources.ResourceLocation(\"thisnotamod\", \"music_disk_votv\");&amp;#10;            case 2 -&gt; new net.minecraft.resources.ResourceLocation(\"thisnotamod\", \"music_disk_votv_winter\");&amp;#10;            case 3 -&gt; new net.minecraft.resources.ResourceLocation(\"thisnotamod\", \"w_canim\");&amp;#10;            default -&gt; null;&amp;#10;        };&amp;#10;        return id == null ? net.minecraft.world.item.Items.AIR : net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(id);&amp;#10;    }&amp;#10;&amp;#10;    // =========================&amp;#10;    // ЛОГИ В ЧАТ&amp;#10;    // =========================&amp;#10;    private void debug(String msg) {&amp;#10;        if (mob.level().isClientSide) return;&amp;#10;        String prefix = \"[DRONE:\" + mob.getId() + \"] \";&amp;#10;        net.minecraft.server.level.ServerLevel sl = (net.minecraft.server.level.ServerLevel) mob.level();&amp;#10;        for (Player p : sl.players()) {&amp;#10;            if (p.distanceToSqr(mob) &lt;= 32 * 32) {&amp;#10;                p.sendSystemMessage(net.minecraft.network.chat.Component.literal(prefix + msg));&amp;#10;            }&amp;#10;        }&amp;#10;        if (orderOwner != null &amp;&amp; orderOwner.level() == sl &amp;&amp; orderOwner.distanceToSqr(mob) &gt; 32 * 32) {&amp;#10;            orderOwner.sendSystemMessage(net.minecraft.network.chat.Component.literal(prefix + msg));&amp;#10;        }&amp;#10;    }&amp;#10;&amp;#10;    private void debugNow(String msg) { debug(msg); }&amp;#10;&amp;#10;    private void debugEverySec(String msg) {&amp;#10;        int tick = mob.tickCount;&amp;#10;        if (tick - lastTickLog &gt;= LOG_COOLDOWN_TICKS) {&amp;#10;            lastTickLog = tick;&amp;#10;            debug(msg);&amp;#10;        }&amp;#10;    }&amp;#10;&amp;#10;    private void debugStageEnter(Stage st, String src) {&amp;#10;        debug(\"ENTER \" + st + \" (\" + src + \"), startPos=\" + fmt(startPos) + \", endPos=\" + fmt(endPos) + \", pos=\" + fmt(mob.getX(), mob.getY(), mob.getZ()));&amp;#10;    }&amp;#10;&amp;#10;    private static String fmt(BlockPos p) {&amp;#10;        return p == null ? \"null\" : (\"[\" + p.getX() + \", \" + p.getY() + \", \" + p.getZ() + \"]\");&amp;#10;    }&amp;#10;&amp;#10;    private static String fmt(double x, double y, double z) {&amp;#10;        return String.format(java.util.Locale.ROOT, \"[%.2f, %.2f, %.2f]\", x, y, z);&amp;#10;    }&amp;#10;&amp;#10;    // safe‑получение значения атрибута (0 если нет)&amp;#10;    private static double val(LivingEntity e, net.minecraft.world.entity.ai.attributes.Attribute a) {&amp;#10;        var i = e.getAttribute(a);&amp;#10;        return (i == null) ? 0.0 : i.getValue();&amp;#10;    }&amp;#10;});&amp;#10;</field></block></next></block></xml>",
+    "model": "drome.geo.json",
+    "groupName": "",
+    "animation1": "fly",
+    "animation2": "",
+    "animation3": "",
+    "animation4": "",
+    "animation5": "",
+    "animation6": "",
+    "animation7": "",
+    "animation8": "fast_fly",
+    "animation9": "",
+    "animation10": "",
+    "enable2": false,
+    "enable3": false,
+    "enable4": false,
+    "enable5": false,
+    "enable6": false,
+    "enable7": false,
+    "enable8": true,
+    "enable9": false,
+    "enable10": false,
+    "breedable": false,
+    "tameable": false,
+    "disableDeathRotation": false,
+    "headMovement": false,
+    "eyeHeight": false,
+    "breedTriggerItems": [],
+    "ranged": false,
+    "rangedAttackItem": {
+      "value": ""
+    },
+    "rangedItemType": "Default item",
+    "rangedAttackInterval": 20,
+    "rangedAttackRadius": 10.0,
+    "height": 1.0,
+    "raidSpawnsCount": [
+      4,
+      3,
+      3,
+      4,
+      4,
+      4,
+      2
+    ],
+    "spawnThisMob": false,
+    "doesDespawnWhenIdle": false,
+    "spawningProbability": 20,
+    "mobSpawningType": "monster",
+    "minNumberOfMobsPerGroup": 4,
+    "maxNumberOfMobsPerGroup": 4,
+    "restrictionBiomes": [],
+    "spawnInDungeons": false
+  }
+}

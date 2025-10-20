@@ -1,0 +1,7 @@
+
+{
+  "parent": "thisnotamod:displaysettings/kerf-o_spawn_v5_disp",
+  "textures": {
+    "particle": "thisnotamod:block/omega_kerfu_blue"
+  }
+}

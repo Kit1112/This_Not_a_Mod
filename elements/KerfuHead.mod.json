@@ -1,0 +1,140 @@
+{
+  "_fv": 66,
+  "_type": "animatedblock",
+  "definition": {
+    "texture": "omega_kerfu_blue",
+    "textureTop": "",
+    "textureLeft": "",
+    "textureFront": "",
+    "textureRight": "",
+    "textureBack": "",
+    "renderType": 0,
+    "rotationMode": 1,
+    "enablePitch": false,
+    "emissiveRendering": false,
+    "displayFluidOverlay": false,
+    "itemTexture": "omega_kerfu_head",
+    "particleTexture": "",
+    "tintType": "No tint",
+    "isItemTinted": false,
+    "hasTransparency": true,
+    "connectedSides": false,
+    "transparencyType": "SOLID",
+    "disableOffset": false,
+    "boundingBoxes": [
+      {
+        "mx": 2.0,
+        "my": 0.0,
+        "mz": 4.0,
+        "Mx": 14.0,
+        "My": 13.0,
+        "Mz": 13.0,
+        "subtract": false
+      }
+    ],
+    "name": "Голова Керфура-О",
+    "specialInformation": {
+      "fixedValue": []
+    },
+    "hardness": 1.0,
+    "resistance": 10.0,
+    "hasGravity": false,
+    "isWaterloggable": false,
+    "creativeTabs": [
+      {
+        "value": "CUSTOM:VotV"
+      }
+    ],
+    "destroyTool": "Not specified",
+    "customDrop": {
+      "value": ""
+    },
+    "dropAmount": 1,
+    "useLootTableForDrops": false,
+    "requiresCorrectTool": false,
+    "enchantPowerBonus": 0.0,
+    "plantsGrowOn": false,
+    "canRedstoneConnect": false,
+    "lightOpacity": 0,
+    "material": {
+      "value": "ROCK"
+    },
+    "tickRate": 0,
+    "tickRandomly": false,
+    "isReplaceable": false,
+    "canProvidePower": false,
+    "emittedRedstonePower": {
+      "fixedValue": 15.0
+    },
+    "colorOnMap": "DEFAULT",
+    "creativePickItem": {
+      "value": ""
+    },
+    "offsetType": "NONE",
+    "aiPathNodeType": "BLOCKED",
+    "flammability": 0,
+    "fireSpreadSpeed": 0,
+    "isLadder": false,
+    "slipperiness": 0.6,
+    "speedFactor": 1.0,
+    "jumpFactor": 1.0,
+    "animationCount": 1,
+    "reactionToPushing": "NORMAL",
+    "isNotColidable": false,
+    "isCustomSoundType": true,
+    "soundOnStep": {
+      "value": "BONE"
+    },
+    "breakSound": {
+      "value": "block.bone_block.break"
+    },
+    "fallSound": {
+      "value": "block.bone_block.fall"
+    },
+    "hitSound": {
+      "value": "block.bone_block.hit"
+    },
+    "placeSound": {
+      "value": "block.bone_block.place"
+    },
+    "stepSound": {
+      "value": "block.bone_block.step"
+    },
+    "luminance": 0,
+    "unbreakable": false,
+    "breakHarvestLevel": 0,
+    "hasInventory": false,
+    "guiBoundTo": "<NONE>",
+    "openGUIOnRightClick": false,
+    "inventorySize": 9,
+    "inventoryStackSize": 64,
+    "inventoryDropWhenDestroyed": true,
+    "inventoryComparatorPower": true,
+    "generateFeature": false,
+    "inventoryOutSlotIDs": [],
+    "inventoryInSlotIDs": [],
+    "hasEnergyStorage": false,
+    "energyInitial": 0,
+    "energyCapacity": 400000,
+    "energyMaxReceive": 200,
+    "energyMaxExtract": 200,
+    "isFluidTank": false,
+    "fluidCapacity": 8000,
+    "fluidRestrictions": [],
+    "restrictionBiomes": [],
+    "blocksToReplace": [
+      {
+        "value": "TAG:stone_ore_replaceables"
+      }
+    ],
+    "generationShape": "UNIFORM",
+    "frequencyPerChunks": 10,
+    "frequencyOnChunk": 16,
+    "minGenerateHeight": 0,
+    "maxGenerateHeight": 64,
+    "normal": "omega_kerfu_craft_head_v2.geo.json",
+    "displaySettings": "omega_kerfu_craft_head_v2_disp.json",
+    "vanillaToolTier": "NONE",
+    "blockstateList": []
+  }
+}

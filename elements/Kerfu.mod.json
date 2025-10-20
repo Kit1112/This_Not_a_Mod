@@ -17,6 +17,11 @@
         "name": "kerfu",
         "type": "string",
         "value": "kerfu"
+      },
+      {
+        "name": "DATA_idle",
+        "type": "logic",
+        "value": false
       }
     ],
     "modelWidth": 0.6,

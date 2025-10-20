@@ -1,6 +1,7 @@
 package net.code.thisnotamod.procedures;
 
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.network.NetworkHooks;
 
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.Vec2;
@@ -11,19 +12,31 @@ import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.CommandSource;
 
+import net.code.thisnotamod.world.inventory.SignalScannerMenu;
 import net.code.thisnotamod.ThisnotamodMod;
 
+import io.netty.buffer.Unpooled;
+
 public class TermLDRClProcedure {
-	public static void execute(LevelAccessor world, double x, double y, double z, BlockState blockstate) {
+	public static void execute(LevelAccessor world, double x, double y, double z, BlockState blockstate, Entity entity) {
+		if (entity == null)
+			return;
 		if ((blockstate.getBlock().getStateDefinition().getProperty("blockstate") instanceof IntegerProperty _getip1 ? blockstate.getValue(_getip1) : -1) == 0
 				|| (blockstate.getBlock().getStateDefinition().getProperty("blockstate") instanceof IntegerProperty _getip3 ? blockstate.getValue(_getip3) : -1) == 1) {
 			{
@@ -264,7 +277,7 @@ public class TermLDRClProcedure {
 					}
 				}
 			});
-		} else if ((blockstate.getBlock().getStateDefinition().getProperty("blockstate") instanceof IntegerProperty _getip52 ? blockstate.getValue(_getip52) : -1) == 3) {
+		} else if ((blockstate.getBlock().getStateDefinition().getProperty("blockstate") instanceof IntegerProperty _getip52 ? blockstate.getValue(_getip52) : -1) == 3 && entity.isVisuallySwimming()) {
 			{
 				int _value = 4;
 				BlockPos _pos = BlockPos.containing(x, y, z);
@@ -499,6 +512,21 @@ public class TermLDRClProcedure {
 					}
 				}
 			});
+		} else if ((blockstate.getBlock().getStateDefinition().getProperty("blockstate") instanceof IntegerProperty _getip102 ? blockstate.getValue(_getip102) : -1) == 3) {
+			if (entity instanceof ServerPlayer _ent) {
+				BlockPos _bpos = BlockPos.containing(x, y, z);
+				NetworkHooks.openScreen((ServerPlayer) _ent, new MenuProvider() {
+					@Override
+					public Component getDisplayName() {
+						return Component.literal("SignalScanner");
+					}
+
+					@Override
+					public AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
+						return new SignalScannerMenu(id, inventory, new FriendlyByteBuf(Unpooled.buffer()).writeBlockPos(_bpos));
+					}
+				}, _bpos);
+			}
 		}
 	}
 }

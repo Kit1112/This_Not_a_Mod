@@ -50,6 +50,7 @@ public class KerfuEntity extends PathfinderMob implements GeoEntity {
 	public static final EntityDataAccessor<String> ANIMATION = SynchedEntityData.defineId(KerfuEntity.class, EntityDataSerializers.STRING);
 	public static final EntityDataAccessor<String> TEXTURE = SynchedEntityData.defineId(KerfuEntity.class, EntityDataSerializers.STRING);
 	public static final EntityDataAccessor<String> DATA_kerfu = SynchedEntityData.defineId(KerfuEntity.class, EntityDataSerializers.STRING);
+	public static final EntityDataAccessor<Boolean> DATA_DATA_idle = SynchedEntityData.defineId(KerfuEntity.class, EntityDataSerializers.BOOLEAN);
 	private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 	private boolean swinging;
 	private boolean lastloop;
@@ -75,6 +76,7 @@ public class KerfuEntity extends PathfinderMob implements GeoEntity {
 		this.entityData.define(ANIMATION, "undefined");
 		this.entityData.define(TEXTURE, "kerfu");
 		this.entityData.define(DATA_kerfu, "kerfu");
+		this.entityData.define(DATA_DATA_idle, false);
 	}
 
 	public void setTexture(String texture) {
@@ -173,6 +175,7 @@ public class KerfuEntity extends PathfinderMob implements GeoEntity {
 		super.addAdditionalSaveData(compound);
 		compound.putString("Texture", this.getTexture());
 		compound.putString("Datakerfu", this.entityData.get(DATA_kerfu));
+		compound.putBoolean("DataDATA_idle", this.entityData.get(DATA_DATA_idle));
 	}
 
 	@Override
@@ -182,6 +185,8 @@ public class KerfuEntity extends PathfinderMob implements GeoEntity {
 			this.setTexture(compound.getString("Texture"));
 		if (compound.contains("Datakerfu"))
 			this.entityData.set(DATA_kerfu, compound.getString("Datakerfu"));
+		if (compound.contains("DataDATA_idle"))
+			this.entityData.set(DATA_DATA_idle, compound.getBoolean("DataDATA_idle"));
 	}
 
 	@Override

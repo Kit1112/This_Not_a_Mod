@@ -12,6 +12,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.code.thisnotamod.client.renderer.MannequinRenderer;
 import net.code.thisnotamod.client.renderer.KerfuRenderer;
 import net.code.thisnotamod.client.renderer.KerfuOmegaRenderer;
+import net.code.thisnotamod.client.renderer.Drone1Renderer;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public class ThisnotamodModEntityRenderers {
@@ -20,5 +21,6 @@ public class ThisnotamodModEntityRenderers {
 		event.registerEntityRenderer(ThisnotamodModEntities.KERFU.get(), KerfuRenderer::new);
 		event.registerEntityRenderer(ThisnotamodModEntities.KERFU_OMEGA.get(), KerfuOmegaRenderer::new);
 		event.registerEntityRenderer(ThisnotamodModEntities.MANNEQUIN.get(), MannequinRenderer::new);
+		event.registerEntityRenderer(ThisnotamodModEntities.DRONE_1.get(), Drone1Renderer::new);
 	}
 }

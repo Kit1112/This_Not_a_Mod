@@ -8,6 +8,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.sounds.SoundSource;
@@ -16,8 +17,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.network.chat.Component;
 import net.minecraft.core.BlockPos;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.Minecraft;
 
+import net.code.thisnotamod.init.ThisnotamodModItems;
 import net.code.thisnotamod.ThisnotamodMod;
+import net.code.thisnotamod.CustomTipOverlay;
 
 import java.util.HashMap;
 
@@ -50,9 +54,11 @@ public class PassChangeOkBProcedure {
 			}
 			if (entity instanceof Player _player)
 				_player.closeContainer();
-			if (entity instanceof Player _player && !_player.level().isClientSide())
-				_player.displayClientMessage(Component.literal(("\u00A7a\u041A\u043E\u0434\u043E\u0432\u043E\u043C\u0443 \u0437\u0430\u043C\u043A\u0443 \u043F\u0440\u0438\u0441\u0432\u043E\u0435\u043D \u043F\u0430\u0440\u043E\u043B\u044C \u00A7a"
-						+ (guistate.containsKey("textin:passChangeField") ? (String) guistate.get("textin:passChangeField") : ""))), true);
+			Minecraft mc = Minecraft.getInstance();
+			if (mc != null && mc.level != null && mc.player != null) {
+				CustomTipOverlay.queueTip(Component.literal("Кодовому замку присвоен пароль " + (guistate.containsKey("textin:passChangeField") ? (String) guistate.get("textin:passChangeField") : "")),
+						new ItemStack(ThisnotamodModItems.INFOICON.get()), new ResourceLocation("thisnotamod", "hint"));
+			}
 			if (world instanceof Level _level) {
 				if (!_level.isClientSide()) {
 					_level.playSound(null, BlockPos.containing(x, y, z), ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("thisnotamod:passchange_ok")), SoundSource.BLOCKS, 1, 1);
@@ -66,6 +72,10 @@ public class PassChangeOkBProcedure {
 			if (entity instanceof Player _player && !_player.level().isClientSide())
 				_player.displayClientMessage(
 						Component.literal("\u00A7c\u041F\u0430\u0440\u043E\u043B\u044C \u0434\u043E\u043B\u0436\u0435\u043D \u0441\u043E\u0441\u0442\u043E\u044F\u0442\u044C \u0438\u0437 4 \u0441\u0438\u043C\u0432\u043E\u043B\u043E\u0432!"), true);
+			Minecraft mc = Minecraft.getInstance();
+			if (mc != null && mc.level != null && mc.player != null) {
+				CustomTipOverlay.queueTip(Component.literal("§cПароль должен состоять из 4 символов!"), new ItemStack(ThisnotamodModItems.ERRORICON.get()), new ResourceLocation("thisnotamod", "hint"));
+			}
 			if (world instanceof Level _level) {
 				if (!_level.isClientSide()) {
 					_level.playSound(null, BlockPos.containing(x, y, z), ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("thisnotamod:passlock_deny")), SoundSource.BLOCKS, 1, 1);

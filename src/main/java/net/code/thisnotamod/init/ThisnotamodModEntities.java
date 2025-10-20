@@ -19,6 +19,7 @@ import net.minecraft.world.entity.Entity;
 import net.code.thisnotamod.entity.MannequinEntity;
 import net.code.thisnotamod.entity.KerfuOmegaEntity;
 import net.code.thisnotamod.entity.KerfuEntity;
+import net.code.thisnotamod.entity.Drone1Entity;
 import net.code.thisnotamod.ThisnotamodMod;
 
 @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
@@ -32,6 +33,8 @@ public class ThisnotamodModEntities {
 			EntityType.Builder.<MannequinEntity>of(MannequinEntity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(MannequinEntity::new)
 
 					.sized(0.6f, 1.8f));
+	public static final RegistryObject<EntityType<Drone1Entity>> DRONE_1 = register("drone_1",
+			EntityType.Builder.<Drone1Entity>of(Drone1Entity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(Drone1Entity::new).fireImmune().sized(0.6f, 1.8f));
 
 	private static <T extends Entity> RegistryObject<EntityType<T>> register(String registryname, EntityType.Builder<T> entityTypeBuilder) {
 		return REGISTRY.register(registryname, () -> (EntityType<T>) entityTypeBuilder.build(registryname));
@@ -43,6 +46,7 @@ public class ThisnotamodModEntities {
 			KerfuEntity.init();
 			KerfuOmegaEntity.init();
 			MannequinEntity.init();
+			Drone1Entity.init();
 		});
 	}
 
@@ -51,5 +55,6 @@ public class ThisnotamodModEntities {
 		event.put(KERFU.get(), KerfuEntity.createAttributes().build());
 		event.put(KERFU_OMEGA.get(), KerfuOmegaEntity.createAttributes().build());
 		event.put(MANNEQUIN.get(), MannequinEntity.createAttributes().build());
+		event.put(DRONE_1.get(), Drone1Entity.createAttributes().build());
 	}
 }

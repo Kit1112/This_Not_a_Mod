@@ -1,0 +1,144 @@
+{
+	"format_version": "1.8.0",
+	"animations": {
+		"0": {
+			"loop": true,
+			"animation_length": 5,
+			"bones": {
+				"bone4": {
+					"rotation": {
+						"vector": [0, "query.anim_time * 720", 0]
+					}
+				},
+				"bone2": {
+					"rotation": {
+						"vector": [0, "query.anim_time * 720", 0]
+					}
+				},
+				"bone3": {
+					"rotation": {
+						"vector": [0, "query.anim_time * 720", 0]
+					}
+				},
+				"bone5": {
+					"rotation": {
+						"vector": [0, "query.anim_time * 720", 0]
+					}
+				},
+				"chvat": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.4583": {
+							"vector": [0, 0, -15]
+						}
+					}
+				},
+				"chvat2": {
+					"rotation": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"0.4583": {
+							"vector": [0, 0, 15]
+						}
+					}
+				},
+				"drone": {
+					"position": {
+						"0.0": {
+							"vector": [0, 0, 0]
+						},
+						"1.0": {
+							"vector": [0, 0, 0]
+						},
+						"2.5": {
+							"vector": [0, 29.625, 0]
+						},
+						"3.5": {
+							"vector": [0, 29.63, 0]
+						},
+						"5.0": {
+							"vector": [0, 29.63, -300]
+						}
+					}
+				}
+			}
+		},
+		"fly": {
+			"loop": true,
+			"animation_length": 1,
+			"bones": {
+				"bone4": {
+					"rotation": {
+						"vector": [0, "query.anim_time * 720", 0]
+					}
+				},
+				"bone2": {
+					"rotation": {
+						"vector": [0, "query.anim_time * 720", 0]
+					}
+				},
+				"bone3": {
+					"rotation": {
+						"vector": [0, "query.anim_time * 720", 0]
+					}
+				},
+				"bone5": {
+					"rotation": {
+						"vector": [0, "query.anim_time * 720", 0]
+					}
+				},
+				"bone6": {
+					"scale": {
+						"0.0": {
+							"pre": [0, 0, 0],
+							"post": [0, 0, 0]
+						}
+					}
+				}
+			}
+		},
+		"fast_fly": {
+			"loop": true,
+			"animation_length": 1,
+			"bones": {
+				"bone4": {
+					"rotation": {
+						"vector": [0, "query.anim_time * 720", 0]
+					}
+				},
+				"bone2": {
+					"rotation": {
+						"vector": [0, "query.anim_time * 720", 0]
+					}
+				},
+				"bone3": {
+					"rotation": {
+						"vector": [0, "query.anim_time * 720", 0]
+					}
+				},
+				"bone5": {
+					"rotation": {
+						"vector": [0, "query.anim_time * 720", 0]
+					}
+				},
+				"bone6": {
+					"scale": {
+						"0.0": {
+							"pre": [0, 0, 0],
+							"post": [0, 0, 0]
+						}
+					}
+				},
+				"drone": {
+					"rotation": {
+						"vector": [12.5, 0, 0]
+					}
+				}
+			}
+		}
+	},
+	"geckolib_format_version": 2
+}

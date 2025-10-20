@@ -12,22 +12,34 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.Direction;
+import net.minecraft.commands.arguments.MessageArgument;
 import net.minecraft.commands.Commands;
 
 import net.code.thisnotamod.procedures.TimeDisplayTrueProcedure;
 import net.code.thisnotamod.procedures.TimeDisplayFalseProcedure;
 import net.code.thisnotamod.procedures.ThunderProcedureProcedure;
+import net.code.thisnotamod.procedures.SendWarnProcedure;
+import net.code.thisnotamod.procedures.SendInfoProcedure;
+import net.code.thisnotamod.procedures.SendErrorProcedure;
+import net.code.thisnotamod.procedures.ScannerSpeedProcedure;
+import net.code.thisnotamod.procedures.ScannerCooldownProcedure;
 import net.code.thisnotamod.procedures.RepairAllServersProcedure;
 import net.code.thisnotamod.procedures.RainProcedureProcedure;
+import net.code.thisnotamod.procedures.PingerSuccesChanceProcedure;
+import net.code.thisnotamod.procedures.PingerSpeedProcedure;
+import net.code.thisnotamod.procedures.DownloadSpeedProcedure;
+import net.code.thisnotamod.procedures.DetectorSpeedProcedure;
 import net.code.thisnotamod.procedures.DebugTrueProcProcedure;
 import net.code.thisnotamod.procedures.DebugFalseProcProcedure;
 import net.code.thisnotamod.procedures.DebugAllTrueProcedure;
 import net.code.thisnotamod.procedures.DebugAllFalseProcedure;
-import net.code.thisnotamod.procedures.ClearListProcedure;
+import net.code.thisnotamod.procedures.ClearListSProcedure;
 import net.code.thisnotamod.procedures.CleanProcedureProcedure;
 import net.code.thisnotamod.procedures.BreakAllServersProcedure;
 import net.code.thisnotamod.procedures.AlarmTrueProcedure;
 import net.code.thisnotamod.procedures.AlarmFalseProcedure;
+
+import com.mojang.brigadier.arguments.DoubleArgumentType;
 
 @Mod.EventBusSubscriber
 public class VotvComandCommand {
@@ -75,7 +87,133 @@ public class VotvComandCommand {
 
 			ThunderProcedureProcedure.execute(world, x, y, z, entity);
 			return 0;
-		}))).then(Commands.literal("debug").then(Commands.literal("all").then(Commands.literal("true").executes(arguments -> {
+		}))).then(Commands.literal("modifier").then(Commands.literal("scanner_speed").then(Commands.argument("speed", DoubleArgumentType.doubleArg(0.1, 2)).executes(arguments -> {
+			Level world = arguments.getSource().getUnsidedLevel();
+			double x = arguments.getSource().getPosition().x();
+			double y = arguments.getSource().getPosition().y();
+			double z = arguments.getSource().getPosition().z();
+			Entity entity = arguments.getSource().getEntity();
+			if (entity == null && world instanceof ServerLevel _servLevel)
+				entity = FakePlayerFactory.getMinecraft(_servLevel);
+			Direction direction = Direction.DOWN;
+			if (entity != null)
+				direction = entity.getDirection();
+
+			ScannerSpeedProcedure.execute(arguments, entity);
+			return 0;
+		}))).then(Commands.literal("pinger_cooldown").then(Commands.argument("pinger_cooldown", DoubleArgumentType.doubleArg(0, 60)).executes(arguments -> {
+			Level world = arguments.getSource().getUnsidedLevel();
+			double x = arguments.getSource().getPosition().x();
+			double y = arguments.getSource().getPosition().y();
+			double z = arguments.getSource().getPosition().z();
+			Entity entity = arguments.getSource().getEntity();
+			if (entity == null && world instanceof ServerLevel _servLevel)
+				entity = FakePlayerFactory.getMinecraft(_servLevel);
+			Direction direction = Direction.DOWN;
+			if (entity != null)
+				direction = entity.getDirection();
+
+			ScannerCooldownProcedure.execute(arguments, entity);
+			return 0;
+		}))).then(Commands.literal("pinger_speed").then(Commands.argument("PingerSpeed", DoubleArgumentType.doubleArg(0.1, 1)).executes(arguments -> {
+			Level world = arguments.getSource().getUnsidedLevel();
+			double x = arguments.getSource().getPosition().x();
+			double y = arguments.getSource().getPosition().y();
+			double z = arguments.getSource().getPosition().z();
+			Entity entity = arguments.getSource().getEntity();
+			if (entity == null && world instanceof ServerLevel _servLevel)
+				entity = FakePlayerFactory.getMinecraft(_servLevel);
+			Direction direction = Direction.DOWN;
+			if (entity != null)
+				direction = entity.getDirection();
+
+			PingerSpeedProcedure.execute(arguments, entity);
+			return 0;
+		}))).then(Commands.literal("pinger_succes_chance").then(Commands.argument("pinger_succes_chance", DoubleArgumentType.doubleArg(0.01, 1)).executes(arguments -> {
+			Level world = arguments.getSource().getUnsidedLevel();
+			double x = arguments.getSource().getPosition().x();
+			double y = arguments.getSource().getPosition().y();
+			double z = arguments.getSource().getPosition().z();
+			Entity entity = arguments.getSource().getEntity();
+			if (entity == null && world instanceof ServerLevel _servLevel)
+				entity = FakePlayerFactory.getMinecraft(_servLevel);
+			Direction direction = Direction.DOWN;
+			if (entity != null)
+				direction = entity.getDirection();
+
+			PingerSuccesChanceProcedure.execute(arguments, entity);
+			return 0;
+		}))).then(Commands.literal("detector_speed").then(Commands.argument("detector_speed", DoubleArgumentType.doubleArg(1, 100)).executes(arguments -> {
+			Level world = arguments.getSource().getUnsidedLevel();
+			double x = arguments.getSource().getPosition().x();
+			double y = arguments.getSource().getPosition().y();
+			double z = arguments.getSource().getPosition().z();
+			Entity entity = arguments.getSource().getEntity();
+			if (entity == null && world instanceof ServerLevel _servLevel)
+				entity = FakePlayerFactory.getMinecraft(_servLevel);
+			Direction direction = Direction.DOWN;
+			if (entity != null)
+				direction = entity.getDirection();
+
+			DetectorSpeedProcedure.execute(arguments, entity);
+			return 0;
+		}))).then(Commands.literal("download_speed").then(Commands.argument("download_speed", DoubleArgumentType.doubleArg(1, 100)).executes(arguments -> {
+			Level world = arguments.getSource().getUnsidedLevel();
+			double x = arguments.getSource().getPosition().x();
+			double y = arguments.getSource().getPosition().y();
+			double z = arguments.getSource().getPosition().z();
+			Entity entity = arguments.getSource().getEntity();
+			if (entity == null && world instanceof ServerLevel _servLevel)
+				entity = FakePlayerFactory.getMinecraft(_servLevel);
+			Direction direction = Direction.DOWN;
+			if (entity != null)
+				direction = entity.getDirection();
+
+			DownloadSpeedProcedure.execute(arguments, entity);
+			return 0;
+		})))).then(Commands.literal("send").then(Commands.literal("hint").then(Commands.literal("info").then(Commands.argument("info_text", MessageArgument.message()).executes(arguments -> {
+			Level world = arguments.getSource().getUnsidedLevel();
+			double x = arguments.getSource().getPosition().x();
+			double y = arguments.getSource().getPosition().y();
+			double z = arguments.getSource().getPosition().z();
+			Entity entity = arguments.getSource().getEntity();
+			if (entity == null && world instanceof ServerLevel _servLevel)
+				entity = FakePlayerFactory.getMinecraft(_servLevel);
+			Direction direction = Direction.DOWN;
+			if (entity != null)
+				direction = entity.getDirection();
+
+			SendInfoProcedure.execute(world, arguments);
+			return 0;
+		}))).then(Commands.literal("warn").then(Commands.argument("warn_text", MessageArgument.message()).executes(arguments -> {
+			Level world = arguments.getSource().getUnsidedLevel();
+			double x = arguments.getSource().getPosition().x();
+			double y = arguments.getSource().getPosition().y();
+			double z = arguments.getSource().getPosition().z();
+			Entity entity = arguments.getSource().getEntity();
+			if (entity == null && world instanceof ServerLevel _servLevel)
+				entity = FakePlayerFactory.getMinecraft(_servLevel);
+			Direction direction = Direction.DOWN;
+			if (entity != null)
+				direction = entity.getDirection();
+
+			SendWarnProcedure.execute(world, arguments);
+			return 0;
+		}))).then(Commands.literal("error").then(Commands.argument("error_text", MessageArgument.message()).executes(arguments -> {
+			Level world = arguments.getSource().getUnsidedLevel();
+			double x = arguments.getSource().getPosition().x();
+			double y = arguments.getSource().getPosition().y();
+			double z = arguments.getSource().getPosition().z();
+			Entity entity = arguments.getSource().getEntity();
+			if (entity == null && world instanceof ServerLevel _servLevel)
+				entity = FakePlayerFactory.getMinecraft(_servLevel);
+			Direction direction = Direction.DOWN;
+			if (entity != null)
+				direction = entity.getDirection();
+
+			SendErrorProcedure.execute(world, arguments);
+			return 0;
+		}))))).then(Commands.literal("debug").then(Commands.literal("all").then(Commands.literal("true").executes(arguments -> {
 			Level world = arguments.getSource().getUnsidedLevel();
 			double x = arguments.getSource().getPosition().x();
 			double y = arguments.getSource().getPosition().y();
@@ -171,7 +309,7 @@ public class VotvComandCommand {
 			if (entity != null)
 				direction = entity.getDirection();
 
-			ClearListProcedure.execute(world, entity);
+			ClearListSProcedure.execute(world, entity);
 			return 0;
 		}))).then(Commands.literal("time_display").then(Commands.literal("true").executes(arguments -> {
 			Level world = arguments.getSource().getUnsidedLevel();

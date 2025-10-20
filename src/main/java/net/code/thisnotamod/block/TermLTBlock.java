@@ -9,6 +9,7 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.pathfinder.BlockPathTypes;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
@@ -30,6 +31,7 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.Mob;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.network.chat.Component;
@@ -130,6 +132,11 @@ public class TermLTBlock extends BaseEntityBlock implements EntityBlock {
 	}
 
 	@Override
+	public BlockPathTypes getBlockPathType(BlockState state, BlockGetter world, BlockPos pos, Mob entity) {
+		return BlockPathTypes.BLOCKED;
+	}
+
+	@Override
 	public List<ItemStack> getDrops(BlockState state, LootParams.Builder builder) {
 		List<ItemStack> dropsOriginal = super.getDrops(state, builder);
 		if (!dropsOriginal.isEmpty())
@@ -155,7 +162,7 @@ public class TermLTBlock extends BaseEntityBlock implements EntityBlock {
 		double hitZ = hit.getLocation().z;
 		Direction direction = hit.getDirection();
 
-		TermLTRClProcedure.execute(world, x, y, z, blockstate);
+		TermLTRClProcedure.execute(world, x, y, z, blockstate, entity);
 		return InteractionResult.SUCCESS;
 	}
 }

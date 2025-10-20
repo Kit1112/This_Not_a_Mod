@@ -1,0 +1,13 @@
+{
+  "parent": "block/cube",
+  "textures": {
+    "down": "thisnotamod:block/0001_left",
+    "up": "thisnotamod:block/0001_left",
+    "north": "thisnotamod:block/0001_left",
+    "east": "thisnotamod:block/0001_left",
+    "south": "thisnotamod:block/0001_left",
+    "west": "thisnotamod:block/0001_left",
+    "particle": "thisnotamod:block/0001_left"
+  },
+  "render_type": "solid"
+}

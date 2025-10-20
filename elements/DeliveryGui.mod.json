@@ -1,0 +1,82 @@
+{
+  "_fv": 66,
+  "_type": "gui",
+  "definition": {
+    "type": 0,
+    "width": 410,
+    "height": 166,
+    "inventoryOffsetX": 0,
+    "inventoryOffsetY": 0,
+    "renderBgLayer": false,
+    "doesPauseGame": false,
+    "components": [
+      {
+        "type": "image",
+        "data": {
+          "image": "placeholderback.png",
+          "use1Xscale": false,
+          "x": 9,
+          "y": 20
+        }
+      },
+      {
+        "type": "checkbox",
+        "data": {
+          "name": "ArirPlush",
+          "text": "Плюшевый арирал",
+          "x": 13,
+          "y": 33
+        }
+      },
+      {
+        "type": "checkbox",
+        "data": {
+          "name": "Music_disc_main",
+          "text": "Пластинка главной темы",
+          "x": 13,
+          "y": 59
+        }
+      },
+      {
+        "type": "checkbox",
+        "data": {
+          "name": "Music_disc_winter",
+          "text": "Пластинка зимней темы",
+          "x": 13,
+          "y": 86
+        }
+      },
+      {
+        "type": "checkbox",
+        "data": {
+          "name": "WC",
+          "text": "Унитаз",
+          "x": 13,
+          "y": 113
+        }
+      },
+      {
+        "type": "button",
+        "data": {
+          "name": "button_zakazat",
+          "text": "Заказать",
+          "isUndecorated": false,
+          "onClick": {
+            "name": "CreateOrder"
+          },
+          "width": 67,
+          "height": 20,
+          "x": 344,
+          "y": 191
+        }
+      }
+    ],
+    "gridSettings": {
+      "sx": 18,
+      "sy": 18,
+      "ox": 11,
+      "oy": 15,
+      "snapOnGrid": false
+    }
+  }
+}

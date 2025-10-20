@@ -1,0 +1,127 @@
+{
+  "credit": "Made with Blockbench",
+  "parent": "builtin/entity",
+  "texture_size": [
+    128,
+    128
+  ],
+  "display": {
+    "thirdperson_righthand": {
+      "rotation": [
+        48.5,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        0,
+        1.5
+      ],
+      "scale": [
+        0.6,
+        0.6,
+        0.6
+      ]
+    },
+    "thirdperson_lefthand": {
+      "rotation": [
+        0.44000000000005457,
+        -82.44999999999982,
+        -67.84999999999991
+      ],
+      "translation": [
+        -0.75,
+        -2.5,
+        -2.75
+      ],
+      "scale": [
+        0.6,
+        0.6,
+        0.6
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        166.67000000000007,
+        -7.699999999999818,
+        -161.0999999999999
+      ],
+      "translation": [
+        -9.5,
+        2.75,
+        1
+      ],
+      "scale": [
+        0.6,
+        0.6,
+        0.6
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        151.2199999999998,
+        15.889999999999873,
+        -158.51999999999998
+      ],
+      "translation": [
+        -8.5,
+        3.25,
+        2.5
+      ],
+      "scale": [
+        0.6,
+        0.6,
+        0.6
+      ]
+    },
+    "ground": {
+      "rotation": [
+        90,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        1.5,
+        0
+      ],
+      "scale": [
+        0.6,
+        0.6,
+        0.6
+      ]
+    },
+    "gui": {
+      "rotation": [
+        -151.05999999999995,
+        41.409999999999854,
+        166.26999999999998
+      ],
+      "translation": [
+        0,
+        0.5,
+        0
+      ],
+      "scale": [
+        1.33,
+        1.33,
+        1.33
+      ]
+    },
+    "head": {
+      "translation": [
+        0,
+        -15.25,
+        0
+      ],
+      "scale": [
+        1.7589843749999998,
+        2.212109375,
+        1.4621093749999998
+      ]
+    }
+  },
+  "textures": {
+    "particle": "item/omega_kerfu_blue"
+  }
+}

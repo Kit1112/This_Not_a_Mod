@@ -122,6 +122,9 @@ public class AutoBreakProcedure {
                     );
                 }
 
+                // === НОВОЕ: зафиксировать ключ для использования внутри лямбды ===
+                final String selectedKey = key;
+
                 ThisnotamodMod.queueServerWork(delay, () -> {
                     int brokenState = 2;
 
@@ -142,6 +145,19 @@ public class AutoBreakProcedure {
                     if (bs.getBlock().getStateDefinition().getProperty("blockstate") instanceof IntegerProperty prop &&
                         prop.getPossibleValues().contains(brokenState)) {
                         votvWorld.setBlock(pos, bs.setValue(prop, brokenState), 3);
+
+                        // === НОВОЕ: обновить datamap1: enabled -> disabled ===
+                        var mv = ThisnotamodModVariables.MapVariables.get(world); // используем тот же мир, откуда читали datamap1
+                        mv.datamap1.remove(selectedKey);
+                        mv.datamap1.put(selectedKey, StringTag.valueOf("disabled"));
+                        mv.syncData(world);
+
+                        if (mv.worldDebug) {
+                            server.getPlayerList().broadcastSystemMessage(
+                                Component.literal("🗂 Обновлён datamap: " + selectedKey + " → disabled"),
+                                false
+                            );
+                        }
 
                         if (ThisnotamodModVariables.MapVariables.get(votvWorld).worldDebug) {
                             server.getPlayerList().broadcastSystemMessage(

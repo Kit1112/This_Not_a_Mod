@@ -96,7 +96,7 @@
       "value": "CUSTOM:Terminal"
     },
     "offsetType": "NONE",
-    "aiPathNodeType": "DEFAULT",
+    "aiPathNodeType": "BLOCKED",
     "flammability": 0,
     "fireSpreadSpeed": 0,
     "isLadder": false,

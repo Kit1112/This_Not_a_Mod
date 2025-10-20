@@ -1,0 +1,25 @@
+{
+  "credit": "Made with Blockbench",
+  "parent": "builtin/entity",
+  "texture_size": [
+    128,
+    128
+  ],
+  "display": {
+    "firstperson_righthand": {
+      "rotation": [
+        178.4000000000001,
+        11.460000000000036,
+        -176.05000000000018
+      ],
+      "translation": [
+        -9.25,
+        0,
+        0
+      ]
+    }
+  },
+  "textures": {
+    "particle": "item/omega_kerfu_blue"
+  }
+}

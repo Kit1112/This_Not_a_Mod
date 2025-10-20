@@ -41,4 +41,14 @@ public class ThisnotamodModSounds {
 	public static final RegistryObject<SoundEvent> AMB_MORNING = REGISTRY.register("amb_morning", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "amb_morning")));
 	public static final RegistryObject<SoundEvent> AMB_NIGHT = REGISTRY.register("amb_night", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "amb_night")));
 	public static final RegistryObject<SoundEvent> ALARM = REGISTRY.register("alarm", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "alarm")));
+	public static final RegistryObject<SoundEvent> DRONE_SOUND = REGISTRY.register("drone_sound", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "drone_sound")));
+	public static final RegistryObject<SoundEvent> HINT = REGISTRY.register("hint", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "hint")));
+	public static final RegistryObject<SoundEvent> DENY = REGISTRY.register("deny", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "deny")));
+	public static final RegistryObject<SoundEvent> SIGNAL_ERROR = REGISTRY.register("signal_error", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "signal_error")));
+	public static final RegistryObject<SoundEvent> SCANNER_MOVE = REGISTRY.register("scanner_move", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "scanner_move")));
+	public static final RegistryObject<SoundEvent> SCANNER_DENY = REGISTRY.register("scanner_deny", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "scanner_deny")));
+	public static final RegistryObject<SoundEvent> PINGER = REGISTRY.register("pinger", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "pinger")));
+	public static final RegistryObject<SoundEvent> SCANNER_TURN = REGISTRY.register("scanner_turn", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "scanner_turn")));
+	public static final RegistryObject<SoundEvent> NOTIF_WARNING = REGISTRY.register("notif_warning", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "notif_warning")));
+	public static final RegistryObject<SoundEvent> NOTIF_ERROR = REGISTRY.register("notif_error", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "notif_error")));
 }
