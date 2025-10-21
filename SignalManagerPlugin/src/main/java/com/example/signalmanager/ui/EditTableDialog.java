@@ -5,6 +5,7 @@ import com.example.signalmanager.services.SignalLocalization;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.mcreator.ui.MCreator;
+import com.example.signalmanager.services.SignalLocalization;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -102,28 +103,25 @@ public final class EditTableDialog extends JDialog {
             JsonObject obj = model.getAtModelRow(modelRow);
             int res = JOptionPane.showConfirmDialog(
                     EditTableDialog.this, "Delete?", "Confirm", JOptionPane.YES_NO_OPTION);
-            if (res == JOptionPane.YES_OPTION) {
-                try {
-                    JsonArray arr = SignalIO.loadSignals(mc);
-                    int id = obj.get("id").getAsInt();
-                    // удаляем запись из JSON
-                    for (int i = 0; i < arr.size(); i++) {
-                        if (arr.get(i).getAsJsonObject().get("id").getAsInt() == id) {
-                            arr.remove(i);
-                            break;
-                        }
-                    }
-                    SignalIO.saveSignals(mc, arr);
+            try {
+    JsonArray arr = SignalIO.loadSignals(mc);
+    int id = obj.get("id").getAsInt();
+    for (int i = 0; i < arr.size(); i++) {
+        if (arr.get(i).getAsJsonObject().get("id").getAsInt() == id) {
+            arr.remove(i);
+            break;
+        }
+    }
+    SignalIO.saveSignals(mc, arr);
 
-                    // ВАЖНО: чистим локализационные ключи для этого сигнала (но не трогаем дефолтные)
-                    SignalLocalization.deleteKeysForSignal(mc, id);
+    // подчистить локализации (text_*, special_response_*, object_name), дефолты не трогаем
+    SignalLocalization.deleteLocalizationForSignal(mc, id);
 
-                    reload();
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(EditTableDialog.this, ex.getMessage(),
-                            "SignalManager", JOptionPane.ERROR_MESSAGE);
-                }
-            }
+    reload();
+} catch (Exception ex) {
+    JOptionPane.showMessageDialog(EditTableDialog.this, ex.getMessage(),
+            "SignalManager", JOptionPane.ERROR_MESSAGE);
+}
         }));
     }
 
