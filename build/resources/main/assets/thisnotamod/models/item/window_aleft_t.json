@@ -1,6 +1,0 @@
-{
-  "parent": "item/generated",
-  "textures": {
-    "layer0": "thisnotamod:item/window_2x2text"
-  }
-}

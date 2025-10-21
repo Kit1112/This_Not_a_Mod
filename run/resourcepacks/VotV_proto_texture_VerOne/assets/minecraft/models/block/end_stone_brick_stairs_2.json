@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/stairs",
-  "textures": {
-    "bottom": "minecraft:block/tex_concretewall_0006_var2",
-    "side": "minecraft:block/tex_concretewall_0006_var2",
-    "top": "minecraft:block/tex_concretewall_0006_var2"
-  }
-}

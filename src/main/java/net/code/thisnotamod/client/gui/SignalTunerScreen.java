@@ -79,6 +79,10 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
 
     private static final double DETECTOR_RATE_DEFAULT = 1.0; // %/с по умолчанию
     private static final double DOWNLOAD_SPEED_DEFAULT = 1.0; // downloadSpeed по умолчанию (1% за 10 с)
+    private static final double POLARITY_WIDTH_DEFAULT  = 18.0; // градусы, «ширина» по умолчанию
+    private static final double FREQUENCY_WIDTH_DEFAULT = 60.0; // Гц, «ширина» по умолчанию
+    // p < 1 даёт «острую» вершину у 100% (узкое окно 98–100)
+    private static final double TOP_SHARPNESS_EXP = 0.6; // подстройка: 0.5 — очень остро, 0.7 — мягче
 
 
     private int polarityBars = 0;
@@ -87,6 +91,18 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
     private double frequencyOutputPercent = 0.0;
     private double polarityOutputPercentSmoothed = 0.0;
     private double frequencyOutputPercentSmoothed = 0.0;
+    // Управление «ловимостью» вершины в зависимости от значения player-переменной (0.5..100)
+    private static final double EASE_MIN = 0.5;
+    private static final double EASE_MAX = 100.0;
+
+    // Острота пика: p в 1 - x^p. Чем ближе к 1, тем легче поймать высокий %.
+// При 0.5 хотим как сейчас → p ~ 0.60; при 100 хотим «ловимо» → p ~ 0.95.
+    private static final double SHARP_P_MIN = 0.60;  // при значении 0.5
+    private static final double SHARP_P_MAX = 0.95;  // при значении 100
+
+    // «Прилипание» к 100% (в проц. пунктах). При 0.5 — нет прилипания; при 100 — небольшое окно.
+    private static final double TOP_SNAP_EPS_MIN = 0.00;  // 0.00% — нет прилипания
+    private static final double TOP_SNAP_EPS_MAX = 0.35;  // до 0.35% у верхней границы
 
     private double downloadedPercent = 0.0;
 
@@ -175,9 +191,12 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         polarityOutputPercentSmoothed  += (polarityOutputPercent  - polarityOutputPercentSmoothed)  * alpha;
         frequencyOutputPercentSmoothed += (frequencyOutputPercent - frequencyOutputPercentSmoothed) * alpha;
 
-        if (polarityBars > 0 && frequencyBars > 0 && downloadedPercent < 100.0) {
-            double normalized = (polarityBars / 10.0) * (frequencyBars / 10.0);
-            double perSecondAtFull = getDownloadRatePercentPerSecAtFull(); // = downloadSpeed / 10
+        double polNorm  = clampDouble(polarityOutputPercentSmoothed  / 100.0, 0.0, 1.0);
+        double freqNorm = clampDouble(frequencyOutputPercentSmoothed / 100.0, 0.0, 1.0);
+        double normalized = polNorm * freqNorm; // чистая опора на output data
+
+        if (normalized > 0.0 && downloadedPercent < 100.0) {
+            double perSecondAtFull = getDownloadRatePercentPerSecAtFull(); // downloadSpeed/10 %/с при 100%+100%
             downloadedPercent += dt * perSecondAtFull * normalized;
             if (downloadedPercent > 100.0) downloadedPercent = 100.0;
         }
@@ -282,12 +301,11 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
 
         String objText  = "Object: " + (ready ? detectedObject : "none");
 
-        // качество = «бутылочное горлышко» из двух выходов (0..100)
         double quality = Math.min(polarityOutputPercentSmoothed, frequencyOutputPercentSmoothed);
-        String qualText = "Signal quality: " + (ready ? String.format(Locale.ROOT, "%.1f%%", quality) : "none");
-
-        // их формулировка с опечаткой — оставляем как просили
-        String freqText = "Signal frequencity: " + (ready ? String.format(Locale.ROOT, "%.1f Hz", currentFrequency) : "none");
+        
+        // показываем слова только когда ready, иначе — "none"
+        String qualText = "Signal quality: " + (ready ? "high" : "none");
+        String freqText = "Signal frequencity: " + (ready ? "middle" : "none");
 
         String dlText = String.format(Locale.ROOT, "Downloaded: %.1f%%", downloadedPercent);
 
@@ -416,7 +434,8 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
 
         drawCircleOutline(gg, cx, cy, radius, 0xFFB0B0B0);
 
-        double angleRad = Math.toRadians(currentPolarityDeg);
+        // вариант только для визуала
+        double angleRad = Math.toRadians(360.0 - currentPolarityDeg); // или -currentPolarityDeg
         int ex = (int) Math.round(cx + radius * Math.cos(angleRad));
         int ey = (int) Math.round(cy - radius * Math.sin(angleRad));
         drawThickLine(gg, cx, cy, ex, ey, POLARITY_LINE_THICKNESS, POLARITY_LINE_COLOR);
@@ -674,27 +693,28 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         return clamp(bars, 1, 10);
     }
 
-    private static double computePolarityPercentFine(double currentDeg, double targetDeg) {
-        double diff = angularDiffDegD(currentDeg, targetDeg);
-        if (diff <= 2.0) return 100.0;
-        if (diff <= 25.0) {
-            return 10.0 + (25.0 - diff) * (90.0 / 23.0);
-        }
-        double t = (diff - 25.0) / (180.0 - 25.0);
-        double smooth = 0.5 * (1.0 + Math.cos(Math.PI * t));
-        return 10.0 * smooth;
+    // Polarity
+    private double computePolarityPercentFine(double currentDeg, double targetDeg) {
+        double diff  = angularDiffDegD(currentDeg, targetDeg);         // |угол|, градусы
+        double width = Math.max(1e-6, getPolarityFilterWidth());       // player-переменная (0.5..100..)
+        double p     = getPolaritySharpnessExp();                      // 0.60..0.95
+        double x     = diff / width;                                   // нормализованный сдвиг
+        double val   = 1.0 - Math.pow(x, p);                           // острый пик
+        if (val < 0.0) val = 0.0;
+        double pct   = val * 100.0;
+        return topSnapTo100(pct, width);                               // «прилипание» к 100%
     }
 
-    private static double computeFrequencyPercentFine(double current, double target) {
-        double diff = Math.abs(current - target);
-        if (diff <= 1.0) return 100.0;
-        if (diff <= 75.0) {
-            return 10.0 + (75.0 - diff) * (90.0 / 74.0);
-        }
-        double cap = 300.0;
-        double t = Math.min(1.0, (diff - 75.0) / (cap - 75.0));
-        double smooth = 0.5 * (1.0 + Math.cos(Math.PI * t));
-        return 10.0 * smooth;
+    // Frequency
+    private double computeFrequencyPercentFine(double current, double target) {
+        double diff  = Math.abs(current - target);                     // |частота|, Гц
+        double width = Math.max(1e-6, getFrequencyFilterWidth());      // player-переменная (0.5..100..)
+        double p     = getFrequencySharpnessExp();                     // 0.60..0.95
+        double x     = diff / width;
+        double val   = 1.0 - Math.pow(x, p);
+        if (val < 0.0) val = 0.0;
+        double pct   = val * 100.0;
+        return topSnapTo100(pct, width);
     }
 
     private double getDetectorRatePerSec() {
@@ -722,10 +742,60 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         return v / 10.0;               // 1 -> 0.1%/с; 2 -> 0.2%/с; ...
     }
 
+    private double getPolarityFilterWidth() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) return POLARITY_WIDTH_DEFAULT;
+
+        double v = mc.player
+                .getCapability(ThisnotamodModVariables.PLAYER_VARIABLES_CAPABILITY, null)
+                .map(vars -> vars.polarityFilterWidth) // Player_Persistent: polarityFilterWidth
+                .orElse(POLARITY_WIDTH_DEFAULT);
+
+        return (v > 0) ? v : POLARITY_WIDTH_DEFAULT;
+    }
+
+    private double getFrequencyFilterWidth() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null) return FREQUENCY_WIDTH_DEFAULT;
+
+        double v = mc.player
+                .getCapability(ThisnotamodModVariables.PLAYER_VARIABLES_CAPABILITY, null)
+                .map(vars -> vars.frequencyFilterWidth) // Player_Persistent: frequencyFilterWidth
+                .orElse(FREQUENCY_WIDTH_DEFAULT);
+
+        return (v > 0) ? v : FREQUENCY_WIDTH_DEFAULT;
+    }
+
     private static int clamp(int v, int min, int max) { return Math.max(min, Math.min(max, v)); }
     private static double clampDouble(double v, double min, double max) { return Math.max(min, Math.min(max, v)); }
     private static int floorMod(int x, int mod) { int r = x % mod; return (r < 0) ? r + mod : r; }
     private static double wrapAngle(double deg) { double d = deg % 360.0; return (d < 0) ? d + 360.0 : d; }
+
+    private static double lerp(double a, double b, double t) { return a + (b - a) * t; }
+    private static double invLerpClamped(double a, double b, double v) {
+        if (b == a) return 0.0;
+        return clampDouble((v - a) / (b - a), 0.0, 1.0);
+    }
+
+    // p для полярности и частоты — из их «ширины» (player-переменная)
+    private double getPolaritySharpnessExp() {
+        double w = getPolarityFilterWidth();
+        double t = invLerpClamped(EASE_MIN, EASE_MAX, w);
+        return lerp(SHARP_P_MIN, SHARP_P_MAX, t);
+    }
+    private double getFrequencySharpnessExp() {
+        double w = getFrequencyFilterWidth();
+        double t = invLerpClamped(EASE_MIN, EASE_MAX, w);
+        return lerp(SHARP_P_MIN, SHARP_P_MAX, t);
+    }
+
+    // Прилипаем к 100% в окне, зависящем от той же переменной
+    private double topSnapTo100(double percent, double widthValue) {
+        double t   = invLerpClamped(EASE_MIN, EASE_MAX, widthValue);
+        double eps = lerp(TOP_SNAP_EPS_MIN, TOP_SNAP_EPS_MAX, t); // в проц. пунктах
+        return (percent >= 100.0 - eps) ? 100.0 : percent;
+    }
+
 
     private static class IntRect {
         final int x, y, w, h;

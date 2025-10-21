@@ -25,8 +25,10 @@ import net.code.thisnotamod.procedures.ScannerSpeedProcedure;
 import net.code.thisnotamod.procedures.ScannerCooldownProcedure;
 import net.code.thisnotamod.procedures.RepairAllServersProcedure;
 import net.code.thisnotamod.procedures.RainProcedureProcedure;
+import net.code.thisnotamod.procedures.PolarityFilterWidthProcedure;
 import net.code.thisnotamod.procedures.PingerSuccesChanceProcedure;
 import net.code.thisnotamod.procedures.PingerSpeedProcedure;
+import net.code.thisnotamod.procedures.FrequencyFilterWidthProcedure;
 import net.code.thisnotamod.procedures.DownloadSpeedProcedure;
 import net.code.thisnotamod.procedures.DetectorSpeedProcedure;
 import net.code.thisnotamod.procedures.DebugTrueProcProcedure;
@@ -170,6 +172,34 @@ public class VotvComandCommand {
 				direction = entity.getDirection();
 
 			DownloadSpeedProcedure.execute(arguments, entity);
+			return 0;
+		}))).then(Commands.literal("frequency_filter_width").then(Commands.argument("frequency_filter_width", DoubleArgumentType.doubleArg(0.1, 100)).executes(arguments -> {
+			Level world = arguments.getSource().getUnsidedLevel();
+			double x = arguments.getSource().getPosition().x();
+			double y = arguments.getSource().getPosition().y();
+			double z = arguments.getSource().getPosition().z();
+			Entity entity = arguments.getSource().getEntity();
+			if (entity == null && world instanceof ServerLevel _servLevel)
+				entity = FakePlayerFactory.getMinecraft(_servLevel);
+			Direction direction = Direction.DOWN;
+			if (entity != null)
+				direction = entity.getDirection();
+
+			FrequencyFilterWidthProcedure.execute(arguments, entity);
+			return 0;
+		}))).then(Commands.literal("polarity_filter_width").then(Commands.argument("polarity_filter_width", DoubleArgumentType.doubleArg(0.1, 100)).executes(arguments -> {
+			Level world = arguments.getSource().getUnsidedLevel();
+			double x = arguments.getSource().getPosition().x();
+			double y = arguments.getSource().getPosition().y();
+			double z = arguments.getSource().getPosition().z();
+			Entity entity = arguments.getSource().getEntity();
+			if (entity == null && world instanceof ServerLevel _servLevel)
+				entity = FakePlayerFactory.getMinecraft(_servLevel);
+			Direction direction = Direction.DOWN;
+			if (entity != null)
+				direction = entity.getDirection();
+
+			PolarityFilterWidthProcedure.execute(arguments, entity);
 			return 0;
 		})))).then(Commands.literal("send").then(Commands.literal("hint").then(Commands.literal("info").then(Commands.argument("info_text", MessageArgument.message()).executes(arguments -> {
 			Level world = arguments.getSource().getUnsidedLevel();

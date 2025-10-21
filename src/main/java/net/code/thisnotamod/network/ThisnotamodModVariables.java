@@ -141,6 +141,8 @@ public class ThisnotamodModVariables {
 			clone.KerfCraftTrueList = original.KerfCraftTrueList;
 			clone.DetectorSpeed = original.DetectorSpeed;
 			clone.downloadSpeed = original.downloadSpeed;
+			clone.polarityFilterWidth = original.polarityFilterWidth;
+			clone.frequencyFilterWidth = original.frequencyFilterWidth;
 			if (!event.isWasDeath()) {
 			}
 		}
@@ -426,7 +428,9 @@ public class ThisnotamodModVariables {
 		public double pingerSuccesChance = 0.5;
 		public ListTag KerfCraftTrueList = new ListTag();
 		public double DetectorSpeed = 1.0;
-		public double downloadSpeed = 0.0;
+		public double downloadSpeed = 1.0;
+		public double polarityFilterWidth = 1.0;
+		public double frequencyFilterWidth = 1.0;
 
 		public void syncPlayerVariables(Entity entity) {
 			if (entity instanceof ServerPlayer serverPlayer)
@@ -493,6 +497,8 @@ public class ThisnotamodModVariables {
 			nbt.put("KerfCraftTrueList", this.KerfCraftTrueList);
 			nbt.putDouble("DetectorSpeed", DetectorSpeed);
 			nbt.putDouble("downloadSpeed", downloadSpeed);
+			nbt.putDouble("polarityFilterWidth", polarityFilterWidth);
+			nbt.putDouble("frequencyFilterWidth", frequencyFilterWidth);
 			return nbt;
 		}
 
@@ -552,6 +558,8 @@ public class ThisnotamodModVariables {
 			this.KerfCraftTrueList = nbt.get("KerfCraftTrueList") instanceof ListTag KerfCraftTrueList ? KerfCraftTrueList : new ListTag();
 			DetectorSpeed = nbt.getDouble("DetectorSpeed");
 			downloadSpeed = nbt.getDouble("downloadSpeed");
+			polarityFilterWidth = nbt.getDouble("polarityFilterWidth");
+			frequencyFilterWidth = nbt.getDouble("frequencyFilterWidth");
 		}
 	}
 
@@ -627,6 +635,8 @@ public class ThisnotamodModVariables {
 					variables.KerfCraftTrueList = message.data.KerfCraftTrueList;
 					variables.DetectorSpeed = message.data.DetectorSpeed;
 					variables.downloadSpeed = message.data.downloadSpeed;
+					variables.polarityFilterWidth = message.data.polarityFilterWidth;
+					variables.frequencyFilterWidth = message.data.frequencyFilterWidth;
 				}
 			});
 			context.setPacketHandled(true);

@@ -1,7 +1,0 @@
-{
-    "overlay": {
-        "texture": "thisnotamod:textures/entities/omega_kerfu_blue_e.png",
-        "emissive": true,
-        "transparency": "auto"
-    }
-}

@@ -207,5 +207,9 @@
   "gui.thisnotamod.server_interface.label_11": "8+8",
   "subtitles.passlock_success": "",
   "signalmanager.default_text": "Нет текста",
-  "signalmanager.default_special_response": " "
+  "signalmanager.default_special_response": " ",
+  "signalmanager.defaults.object_name.celestial": "Небесное тело",
+  "signalmanager.defaults.object_name.asteroid": "Астероид",
+  "signalmanager.defaults.object_name.planet": "Планета",
+  "signalmanager.defaults.object_name.comet": "Комета"
 }

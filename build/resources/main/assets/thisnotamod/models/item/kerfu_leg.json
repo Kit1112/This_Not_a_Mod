@@ -1,6 +1,0 @@
-{
-  "parent": "thisnotamod:displaysettings/omega_craft_leg_disp",
-  "textures": {
-    "layer0": "thisnotamod:item/omega_kerfu_blue"
-  }
-}

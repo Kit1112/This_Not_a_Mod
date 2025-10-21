@@ -1,8 +1,0 @@
-{
-  "parent": "minecraft:block/orientable",
-  "textures": {
-    "front": "minecraft:block/tex_concretewall_0009",
-    "side": "minecraft:block/tex_concretewall_0006_var2",
-    "top": "minecraft:block/tex_concretewall_0006_var2"
-  }
-}
