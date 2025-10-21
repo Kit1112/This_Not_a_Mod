@@ -1,6 +1,6 @@
 package net.code.thisnotamod.client.gui;
 
-import net.code.thisnotamod.network.ThisnotamodModVariables; // имя пакета подставь своё, если отличается
+import net.code.thisnotamod.network.ThisnotamodModVariables; // подставь своё имя пакета, если отличается
 import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.pipeline.TextureTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -8,8 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.GameRenderer;
-import net.minecraft.client.renderer.ItemModelShaper;
-import net.minecraft.client.resources.model.BakedModel; // <— правильный пакет для 1.20.1
+import net.minecraft.client.resources.model.BakedModel; // 1.20.1
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -21,15 +20,67 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
-import net.minecraft.client.resources.model.BakedModel;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 
 import net.code.thisnotamod.world.inventory.SignalTunerMenu;
 
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
+
 import java.util.Locale;
 
+/**
+ * Экран тюнера сигнала.
+ * Игровая логика вынесена в статический Background и тикает даже при закрытом GUI.
+ */
 public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> {
 
+    // ========= Фоновая модель — работает всегда (даже когда GUI закрыт) =========
+    private static final class Background {
+        // целевые параметры
+        static int    targetPolarityDir  = clamp(1, 0, 2);
+        static double targetPolarityDeg  = wrapAngle(25.0);
+        static double targetFrequency    = clampDouble(75.0, 0, 999);
+
+        // текущее состояние (то, что «крутится»)
+        static int    currentPolarityDir = 0;
+        static double currentPolarityDeg = 0.0;
+        static double currentFrequency   = 0.0;
+
+        // скорости от крутилок
+        static int polaritySpeedPerSec   = 0; // deg/s
+        static int frequencySpeedPerSec  = 0; // Hz/s
+
+        // детектор и загрузка
+        static double detectorPercent     = 0.0;  // 0..100
+        static double downloadedPercent   = 0.0;  // 0..100
+
+        // выходы фильтров
+        static double polarityOutputPercent              = 0.0;
+        static double frequencyOutputPercent             = 0.0;
+        static double polarityOutputPercentSmoothed      = 0.0;
+        static double frequencyOutputPercentSmoothed     = 0.0;
+
+        // время
+        static long   lastNano = -1L;
+        static double timeSeconds = 0.0;
+
+        // RNG
+        static final java.util.Random noiseRnd = new java.util.Random(0x612D_BEEF);
+
+        // Бюджеты дискретного дрейфа от погоды для каждого параметра (накапливаем и тратим по 0.1/0.2)
+        static double driftBudgetPol = 0.0;
+        static double driftBudgetFreq = 0.0;
+
+        static void initOnce() {
+            if (!registered) {
+                registered = true;
+                MinecraftForge.EVENT_BUS.addListener(SignalTunerScreen::onClientTick);
+            }
+        }
+        private static boolean registered = false;
+    }
+
+    // ======================= ПАРАМЕТРЫ ОТРИСОВКИ/GUI =======================
     @Override
     protected void renderLabels(GuiGraphics gg, int mouseX, int mouseY) {
         // Не рисуем ни заголовок, ни "Инвентарь"
@@ -38,9 +89,8 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
     public static final int VIRTUAL_W = 640;
     public static final int VIRTUAL_H = 360;
 
-    private static final int BASE_W = 640, BASE_H = 360; // твоя базовая сетка
     private int guiX, guiY;       // левый верх рендера в пикселях экрана
-    private float guiScale;       // масштаб к BASE_W×BASE_H
+    private float guiScale;       // масштаб к VIRTUAL_W×VIRTUAL_H
 
     public static final int INSET_LEFT = 13;
     public static final int INSET_RIGHT = 13;
@@ -66,49 +116,20 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
     private static final int  POLARITY_LINE_THICKNESS = 1;
     private static final int  POLARITY_LINE_COLOR     = 0xFFFFFFFF;
 
-    private int targetPolarityDir;
-    private double targetPolarityDeg;
-    private double targetFrequency;
+    private static final double DETECTOR_RATE_DEFAULT = 1.0;   // %/с по умолчанию
+    private static final double DOWNLOAD_SPEED_DEFAULT = 1.0;  // 1 => 1% за 10 сек
+    private static final double POLARITY_WIDTH_DEFAULT  = 18.0; // градусы
+    private static final double FREQUENCY_WIDTH_DEFAULT = 60.0; // Гц
 
-    private int currentPolarityDir = 0;
-    private double currentPolarityDeg = 0.0;
-    private double currentFrequency = 0.0;
-
-    private int polaritySpeedPerSec = 0;
-    private int frequencySpeedPerSec = 0;
-
-    private static final double DETECTOR_RATE_DEFAULT = 1.0; // %/с по умолчанию
-    private static final double DOWNLOAD_SPEED_DEFAULT = 1.0; // downloadSpeed по умолчанию (1% за 10 с)
-    private static final double POLARITY_WIDTH_DEFAULT  = 18.0; // градусы, «ширина» по умолчанию
-    private static final double FREQUENCY_WIDTH_DEFAULT = 60.0; // Гц, «ширина» по умолчанию
-    // p < 1 даёт «острую» вершину у 100% (узкое окно 98–100)
-    private static final double TOP_SHARPNESS_EXP = 0.6; // подстройка: 0.5 — очень остро, 0.7 — мягче
-
-
-    private int polarityBars = 0;
-    private int frequencyBars = 0;
-    private double polarityOutputPercent = 0.0;
-    private double frequencyOutputPercent = 0.0;
-    private double polarityOutputPercentSmoothed = 0.0;
-    private double frequencyOutputPercentSmoothed = 0.0;
-    // Управление «ловимостью» вершины в зависимости от значения player-переменной (0.5..100)
+    // «нелинейность» выхода (острый пик к 100%):
     private static final double EASE_MIN = 0.5;
     private static final double EASE_MAX = 100.0;
+    private static final double SHARP_P_MIN = 0.60;  // при низком значении переменной
+    private static final double SHARP_P_MAX = 0.95;  // при высоком
+    private static final double TOP_SNAP_EPS_MIN = 0.00; // прилипание к 100%
+    private static final double TOP_SNAP_EPS_MAX = 0.35;
 
-    // Острота пика: p в 1 - x^p. Чем ближе к 1, тем легче поймать высокий %.
-// При 0.5 хотим как сейчас → p ~ 0.60; при 100 хотим «ловимо» → p ~ 0.95.
-    private static final double SHARP_P_MIN = 0.60;  // при значении 0.5
-    private static final double SHARP_P_MAX = 0.95;  // при значении 100
-
-    // «Прилипание» к 100% (в проц. пунктах). При 0.5 — нет прилипания; при 100 — небольшое окно.
-    private static final double TOP_SNAP_EPS_MIN = 0.00;  // 0.00% — нет прилипания
-    private static final double TOP_SNAP_EPS_MAX = 0.35;  // до 0.35% у верхней границы
-
-    private double downloadedPercent = 0.0;
-
-    private double timeSeconds = 0.0;
-    private long lastNano = -1L;
-
+    // «звёзды» — чисто визуал
     private static final int STAR_COUNT = 80;
     private int[] starXs = null, starYs = null;
     private long starSeed = 12345L;
@@ -117,14 +138,12 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
 
     private static final double STAR_SPEED_X = -18.0;
     private static final double STAR_SPEED_Y = -6.0;
-
     private double starOffsetX = 0.0;
     private double starOffsetY = 0.0;
 
     private TextureTarget pixelRT = null;
     private static final int PIXEL_MIN_RES = 2;
-    private String detectedObject = "Unknown object";
-    private double detectorPercent = 0.0;
+    private String detectedObject = "Test Probe";
 
     private final IntRect btn0      = new IntRect(SCREEN_X + 12,  BTN_ROW1_Y, 20, 20);
     private final IntRect btn1      = new IntRect(SCREEN_X + 52,  BTN_ROW1_Y, 17, 20);
@@ -136,70 +155,30 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
 
     public SignalTunerScreen(SignalTunerMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
-
-        this.targetPolarityDir = clamp(1, 0, 2);
-        this.targetPolarityDeg = wrapAngle(25.0);
-        this.targetFrequency   = clampDouble(75.0, 0, 999);
-
         this.imageWidth = VIRTUAL_W;
         this.imageHeight = VIRTUAL_H;
-        this.detectedObject = "Test Probe";
 
-        this.polarityOutputPercentSmoothed = this.polarityOutputPercent;
-        this.frequencyOutputPercentSmoothed = this.frequencyOutputPercent;
-        this.lastNano = System.nanoTime();
+        // Включаем фоновый тикер (регистрируется один раз за игру)
+        Background.initOnce();
     }
 
     @Override
     public boolean isPauseScreen() { return false; }
 
+    // =============================== РЕНДЕР ===============================
     @Override
     protected void renderBg(GuiGraphics gg, float partialTick, int mouseX, int mouseY) {
+        // Локальное dt только для визуала (звёзды, спин предмета)
         long now = System.nanoTime();
-        if (lastNano < 0) lastNano = now;
-        double dt = (now - lastNano) / 1_000_000_000.0;
-        lastNano = now;
+        if (Background.lastNano < 0) Background.lastNano = now;
+        double dt = (now - Background.lastNano) / 1_000_000_000.0;
+        if (dt < 0) dt = 0;
+        Background.lastNano = now; // синхронизируем визуальное время с фоновой логикой
+        Background.timeSeconds += dt;
 
-        timeSeconds += dt;
-
-        currentPolarityDeg += polaritySpeedPerSec * dt;
-        currentPolarityDeg = wrapAngle(currentPolarityDeg);
-
-        currentFrequency += frequencySpeedPerSec * dt;
-        currentFrequency = clampDouble(currentFrequency, 0, 999);
-
+        // визуальные смещения звёзд
         starOffsetX += STAR_SPEED_X * dt;
         starOffsetY += STAR_SPEED_Y * dt;
-
-        detectorPercent = clampDouble(detectorPercent + getDetectorRatePerSec() * dt, 0.0, 100.0);
-
-        polarityBars = computePolarityBars(currentPolarityDeg, targetPolarityDeg);
-        frequencyBars = computeFrequencyBars(currentFrequency, targetFrequency);
-
-        polarityOutputPercent  = computePolarityPercentFine(currentPolarityDeg, targetPolarityDeg);
-        frequencyOutputPercent = computeFrequencyPercentFine(currentFrequency, targetFrequency);
-
-        if (currentPolarityDir != targetPolarityDir) {
-            polarityBars = 0;
-            polarityOutputPercent = 0.0;
-        }
-
-        double smoothK = 8.0;
-        double alpha = 1.0 - Math.exp(-smoothK * dt);
-        if (Double.isNaN(polarityOutputPercentSmoothed))  polarityOutputPercentSmoothed  = polarityOutputPercent;
-        if (Double.isNaN(frequencyOutputPercentSmoothed)) frequencyOutputPercentSmoothed = frequencyOutputPercent;
-        polarityOutputPercentSmoothed  += (polarityOutputPercent  - polarityOutputPercentSmoothed)  * alpha;
-        frequencyOutputPercentSmoothed += (frequencyOutputPercent - frequencyOutputPercentSmoothed) * alpha;
-
-        double polNorm  = clampDouble(polarityOutputPercentSmoothed  / 100.0, 0.0, 1.0);
-        double freqNorm = clampDouble(frequencyOutputPercentSmoothed / 100.0, 0.0, 1.0);
-        double normalized = polNorm * freqNorm; // чистая опора на output data
-
-        if (normalized > 0.0 && downloadedPercent < 100.0) {
-            double perSecondAtFull = getDownloadRatePercentPerSecAtFull(); // downloadSpeed/10 %/с при 100%+100%
-            downloadedPercent += dt * perSecondAtFull * normalized;
-            if (downloadedPercent > 100.0) downloadedPercent = 100.0;
-        }
 
         // === расчёт вписанного прямоугольника 16:9 ===
         float screenW = this.width;
@@ -214,31 +193,22 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
 
         guiX = Math.round((screenW - targetW) / 2f);
         guiY = Math.round((screenH - targetH) / 2f);
-        guiScale = targetW / (float) VIRTUAL_W; // VIRTUAL_W=640
+        guiScale = targetW / (float) VIRTUAL_W;
 
-        // -- ванильное затемнение «гуттеров» вокруг UI 16:9 --
+        // затемнение гуттеров
         RenderSystem.enableBlend();
-        final int shade = 0xA0000000; // полупрозрачный чёрный (как в ванильных экранах)
-
+        final int shade = 0xA0000000;
         int uiW = Math.round(guiScale * VIRTUAL_W);
         int uiH = Math.round(guiScale * VIRTUAL_H);
         int left   = guiX;
         int top    = guiY;
         int right  = guiX + uiW;
         int bottom = guiY + uiH;
-
-        // верхняя полоса
         gg.fill(0, 0, this.width, top, shade);
-        // левая полоса
         gg.fill(0, top, left, bottom, shade);
-        // правая полоса
         gg.fill(right, top, this.width, bottom, shade);
-        // нижняя полоса
         gg.fill(0, bottom, this.width, this.height, shade);
-
         RenderSystem.disableBlend();
-        // -----------------------------------------------
-
 
         gg.pose().pushPose();
         gg.pose().translate(guiX, guiY, 0);
@@ -258,6 +228,7 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         IntRect r4 = cellRect(4);
         IntRect r5 = cellRect(5);
 
+        // звёзды и item
         if (starXs == null || starYs == null) {
             java.util.Random rnd = new java.util.Random(starSeed);
             starXs = new int[STAR_COUNT];
@@ -267,26 +238,24 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
                 starYs[i] = r2.y + 6 + rnd.nextInt(Math.max(1, r2.h - 12));
             }
         }
-
-        // r2: звёзды + предмет (в высоком разрешении)
         renderArea2Content(gg, r2);
 
-        // сброс батчей (чтобы ничего не «доехало» поверх пикселизации)
+        // cбросим батчи перед пикселизацией
         gg.flush();
 
         // PIXELATE: копия r2 -> pixelRT и апскейл назад
-        double tDet = clampDouble(detectorPercent / 100.0, 0.0, 1.0);
+        double tDet = clampDouble(Background.detectorPercent / 100.0, 0.0, 1.0);
         int lowW = Math.max(PIXEL_MIN_RES, (int)Math.round(PIXEL_MIN_RES + tDet * (r2.w - PIXEL_MIN_RES)));
         int lowH = Math.max(PIXEL_MIN_RES, (int)Math.round(PIXEL_MIN_RES + tDet * (r2.h - PIXEL_MIN_RES)));
-
         ensurePixelRT(lowW, lowH);
         copyScreenAreaToPixelRT(r2, lowW, lowH);
         blitPixelRTToArea(gg, r2);
 
-        // остальной UI поверх
+        // Остальной UI поверх
         drawPolarityRadar(gg, r0);
         drawFrequencyOscilloscope(gg, r3);
 
+        // Текстовые блоки (используем значения из Background)
         drawPolarityTextBlock(gg, r1);
         drawFrequencyTextBlock(gg, r4);
 
@@ -294,22 +263,20 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         int top5  = r5.y + 8;
         int lh5   = 10 + 4;
 
-        boolean ready = detectorPercent >= 100.0 - 1e-6;
+        boolean ready = Background.detectorPercent >= 100.0 - 1e-6;
 
         String detLabel = "Detector status: ";
-        String detValue = String.format(Locale.ROOT, "%.1f%%", detectorPercent);
+        String detValue = String.format(Locale.ROOT, "%.1f%%", Background.detectorPercent);
 
         String objText  = "Object: " + (ready ? detectedObject : "none");
 
-        double quality = Math.min(polarityOutputPercentSmoothed, frequencyOutputPercentSmoothed);
-        
-        // показываем слова только когда ready, иначе — "none"
-        String qualText = "Signal quality: " + (ready ? "high" : "none");
+        // плейсхолдеры только после готовности
+        String qualText = "Signal quality: " + (ready ? "high"   : "none");
         String freqText = "Signal frequencity: " + (ready ? "middle" : "none");
 
-        String dlText = String.format(Locale.ROOT, "Downloaded: %.1f%%", downloadedPercent);
+        String dlText = String.format(Locale.ROOT, "Downloaded: %.1f%%", Background.downloadedPercent);
 
-        // 1) Статус детектора: белый текст + зелёные проценты
+        // 1) Статус детектора
         gg.drawString(this.font, detLabel, left5, top5 + 0 * lh5, 0xFFFFFFFF, false);
         int detLabelW = this.font.width(detLabel);
         gg.drawString(this.font, detValue, left5 + detLabelW, top5 + 0 * lh5, 0xFF00FF00, false);
@@ -317,16 +284,21 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         // 2) Объект
         gg.drawString(this.font, objText,  left5, top5 + 1 * lh5, 0xFFBBBBBB, false);
 
-        // 3) Качество сигнала
+        // 3) Качество
         gg.drawString(this.font, qualText, left5, top5 + 2 * lh5, 0xFFBBBBBB, false);
 
-        // 4) Частота сигнала
+        // 4) Частота
         gg.drawString(this.font, freqText, left5, top5 + 3 * lh5, 0xFFBBBBBB, false);
 
-        // 5) Загружено — целиком зелёным
+        // 5) Загружено
         gg.drawString(this.font, dlText, left5, top5 + 4 * lh5, 0xFF00FF00, false);
 
-
+        // Полоски для визуала
+        int polarityBars = computePolarityBars(Background.currentPolarityDeg, Background.targetPolarityDeg);
+        int frequencyBars = computeFrequencyBars(Background.currentFrequency, Background.targetFrequency);
+        if (Background.currentPolarityDir != Background.targetPolarityDir) {
+            polarityBars = 0;
+        }
         drawBars(gg, r1, polarityBars, 10, 0xFFE0C040);
         drawBars(gg, r4, frequencyBars, 10, 0xFF40C0E0);
 
@@ -350,10 +322,11 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         this.renderTooltip(gg, mouseX, mouseY);
     }
 
+    // Кнопки и крутилки меняют состояние в Background (оно не сбрасывается)
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (button == 0 && isHovering(btn0, mouseX, mouseY)) {
-            currentPolarityDir = (currentPolarityDir + 1) % 3;
+            Background.currentPolarityDir = (Background.currentPolarityDir + 1) % 3;
             return true;
         }
         return super.mouseClicked(mouseX, mouseY, button);
@@ -363,13 +336,13 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
     public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
         int sign = delta > 0 ? 1 : -1;
 
-        if (isHovering(btn1, mouseX, mouseY)) { polaritySpeedPerSec += sign * 1;   return true; }
-        if (isHovering(btn2, mouseX, mouseY)) { polaritySpeedPerSec += sign * 5;   return true; }
-        if (isHovering(btn3, mouseX, mouseY)) { polaritySpeedPerSec += sign * 15;  return true; }
+        if (isHovering(btn1, mouseX, mouseY)) { Background.polaritySpeedPerSec  += sign * 1;    return true; }
+        if (isHovering(btn2, mouseX, mouseY)) { Background.polaritySpeedPerSec  += sign * 5;    return true; }
+        if (isHovering(btn3, mouseX, mouseY)) { Background.polaritySpeedPerSec  += sign * 15;   return true; }
 
-        if (isHovering(btn4, mouseX, mouseY)) { frequencySpeedPerSec += sign * 1;  return true; }
-        if (isHovering(btn5, mouseX, mouseY)) { frequencySpeedPerSec += sign * 10; return true; }
-        if (isHovering(btn6, mouseX, mouseY)) { frequencySpeedPerSec += sign * 100;return true; }
+        if (isHovering(btn4, mouseX, mouseY)) { Background.frequencySpeedPerSec += sign * 1;    return true; }
+        if (isHovering(btn5, mouseX, mouseY)) { Background.frequencySpeedPerSec += sign * 10;   return true; }
+        if (isHovering(btn6, mouseX, mouseY)) { Background.frequencySpeedPerSec += sign * 100;  return true; }
 
         return super.mouseScrolled(mouseX, mouseY, delta);
     }
@@ -398,9 +371,9 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         int lh = 10 + 4;
         int cx = r.x + 10;
         gg.drawString(this.font, "Polarity filter:", cx, r.y + 8 + line * lh, 0xFFFFFFFF, false); line++;
-        gg.drawString(this.font, String.format(Locale.ROOT, "Filter offset: %.1f", currentPolarityDeg), cx, r.y + 8 + line * lh, 0xFFBBBBBB, false); line++;
-        gg.drawString(this.font, "Offset speed: " + polaritySpeedPerSec + " deg/s", cx, r.y + 8 + line * lh, 0xFFBBBBBB, false); line++;
-        gg.drawString(this.font, String.format(Locale.ROOT, "Output data: %.1f%%", polarityOutputPercent), cx, r.y + 8 + line * lh, 0xFFE0C040, false);
+        gg.drawString(this.font, String.format(Locale.ROOT, "Filter offset: %.1f", Background.currentPolarityDeg), cx, r.y + 8 + line * lh, 0xFFBBBBBB, false); line++;
+        gg.drawString(this.font, "Offset speed: " + Background.polaritySpeedPerSec + " deg/s", cx, r.y + 8 + line * lh, 0xFFBBBBBB, false); line++;
+        gg.drawString(this.font, String.format(Locale.ROOT, "Output data: %.1f%%", Background.polarityOutputPercent), cx, r.y + 8 + line * lh, 0xFFE0C040, false);
     }
 
     private void drawFrequencyTextBlock(GuiGraphics gg, IntRect r) {
@@ -408,9 +381,9 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         int lh = 10 + 4;
         int cx = r.x + 10;
         gg.drawString(this.font, "Frequency filter:", cx, r.y + 8 + line * lh, 0xFFFFFFFF, false); line++;
-        gg.drawString(this.font, String.format(Locale.ROOT, "Filter offset: %.1f", currentFrequency), cx, r.y + 8 + line * lh, 0xFFBBBBBB, false); line++;
-        gg.drawString(this.font, "Offset speed: " + frequencySpeedPerSec + " Hz/s", cx, r.y + 8 + line * lh, 0xFFBBBBBB, false); line++;
-        gg.drawString(this.font, String.format(Locale.ROOT, "Output data: %.1f%%", frequencyOutputPercent), cx, r.y + 8 + line * lh, 0xFFE0C040, false);
+        gg.drawString(this.font, String.format(Locale.ROOT, "Filter offset: %.1f", Background.currentFrequency), cx, r.y + 8 + line * lh, 0xFFBBBBBB, false); line++;
+        gg.drawString(this.font, "Offset speed: " + Background.frequencySpeedPerSec + " Hz/s", cx, r.y + 8 + line * lh, 0xFFBBBBBB, false); line++;
+        gg.drawString(this.font, String.format(Locale.ROOT, "Output data: %.1f%%", Background.frequencyOutputPercent), cx, r.y + 8 + line * lh, 0xFFE0C040, false);
     }
 
     private void drawBars(GuiGraphics gg, IntRect underRect, int filled, int total, int color) {
@@ -434,8 +407,8 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
 
         drawCircleOutline(gg, cx, cy, radius, 0xFFB0B0B0);
 
-        // вариант только для визуала
-        double angleRad = Math.toRadians(360.0 - currentPolarityDeg); // или -currentPolarityDeg
+        // стрелку разворачиваем в противоположную сторону
+        double angleRad = Math.toRadians(360.0 - Background.currentPolarityDeg);
         int ex = (int) Math.round(cx + radius * Math.cos(angleRad));
         int ey = (int) Math.round(cy - radius * Math.sin(angleRad));
         drawThickLine(gg, cx, cy, ex, ey, POLARITY_LINE_THICKNESS, POLARITY_LINE_COLOR);
@@ -451,13 +424,15 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         int right = cx + radius - 6;
         int y = cy;
 
+        int frequencyBars = computeFrequencyBars(Background.currentFrequency, Background.targetFrequency);
+
         if (frequencyBars > 0) {
             double norm = frequencyBars / 10.0;
             double amplitude = (radius - 14) * 0.7 * norm;
-            double speed = 2.5;
+            double speed = 4.5; //скорость волны
             for (int x = left; x <= right; x++) {
                 double t = (x - left) / 32.0;
-                int wy = (int) Math.round(y + Math.sin(t + timeSeconds * speed) * amplitude);
+                int wy = (int) Math.round(y + Math.sin(t + Background.timeSeconds * speed) * amplitude);
                 gg.fill(x, wy, x + 1, wy + 1, 0xFF40E0FF);
             }
         } else {
@@ -465,7 +440,7 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         }
     }
 
-    // r2: звёзды + вращающийся предмет (без ItemRenderer)
+    // r2: звёзды + вращающийся предмет
     private void renderArea2Content(GuiGraphics gg, IntRect r2) {
         int pad = 6;
         int wrapW = Math.max(1, r2.w - pad * 2);
@@ -483,22 +458,20 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
 
         gg.pose().pushPose();
         gg.pose().translate(itemX, itemY, 0);
-        gg.pose().mulPose(com.mojang.math.Axis.ZP.rotationDegrees((float)(timeSeconds * 60.0)));
+        gg.pose().mulPose(com.mojang.math.Axis.ZP.rotationDegrees((float)(Background.timeSeconds * 60.0)));
         gg.pose().scale(ITEM_SCALE, ITEM_SCALE, 1f);
         gg.pose().translate(-8, -8, 0);
 
-        // Не вызываем gg.renderItem — рисуем спрайт вручную
         renderItemSprite(gg, demoStack, 0, 0);
 
         gg.pose().popPose();
     }
 
-    // Рисуем иконку предмета как quad из атласа: попадает в текущий RT и не «доезжает» потом
+    // Рисуем иконку предмета как quad из атласа
     private void renderItemSprite(GuiGraphics gg, net.minecraft.world.item.ItemStack stack, int x, int y) {
         Minecraft mc = Minecraft.getInstance();
         BakedModel model = mc.getItemRenderer().getModel(stack, null, null, 0);
         TextureAtlasSprite sprite = model.getParticleIcon();
-
         if (sprite == null) return;
 
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
@@ -546,16 +519,13 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         int fbW = main.width;
         int fbH = main.height;
 
-        // ВАЖНО: масштаб GUI -> пиксели фреймбуфера
         double sf = mc.getWindow().getGuiScale();
 
-        // Экранные пиксели области r с учётом translate+scale и GUI scale
         int srcX0 = (int)Math.floor( (guiX + r.x * guiScale)           * sf );
         int srcY0 = (int)Math.floor( (guiY + r.y * guiScale)           * sf );
         int srcX1 = (int)Math.ceil ( (guiX + (r.x + r.w) * guiScale)   * sf );
         int srcY1 = (int)Math.ceil ( (guiY + (r.y + r.h) * guiScale)   * sf );
 
-        // OpenGL Y-вверх: перевод в READ_FRAMEBUFFER
         int readY0 = fbH - srcY1;
         int readY1 = fbH - srcY0;
 
@@ -570,8 +540,6 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
 
         main.bindWrite(true);
     }
-
-
 
     private void blitPixelRTToArea(GuiGraphics gg, IntRect r) {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
@@ -630,7 +598,6 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         }
     }
 
-
     private void debugRect(GuiGraphics gg, IntRect r, int color) {
         gg.fill(r.x, r.y, r.x + r.w, r.y + r.h, color);
         gg.renderOutline(r.x, r.y, r.w, r.h, 0xFFFFFFFF);
@@ -652,7 +619,6 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
     }
 
     private boolean isHovering(IntRect r, double mouseX, double mouseY) {
-        // клик вне вписанного 16:9 — не наш UI
         if (mouseX < guiX || mouseY < guiY ||
                 mouseX >= guiX + guiScale * VIRTUAL_W ||
                 mouseY >= guiY + guiScale * VIRTUAL_H) {
@@ -693,79 +659,162 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         return clamp(bars, 1, 10);
     }
 
-    // Polarity
-    private double computePolarityPercentFine(double currentDeg, double targetDeg) {
-        double diff  = angularDiffDegD(currentDeg, targetDeg);         // |угол|, градусы
-        double width = Math.max(1e-6, getPolarityFilterWidth());       // player-переменная (0.5..100..)
-        double p     = getPolaritySharpnessExp();                      // 0.60..0.95
-        double x     = diff / width;                                   // нормализованный сдвиг
-        double val   = 1.0 - Math.pow(x, p);                           // острый пик
-        if (val < 0.0) val = 0.0;
-        double pct   = val * 100.0;
-        return topSnapTo100(pct, width);                               // «прилипание» к 100%
+    // ========= Фоновый тикер: тикает всегда, независимо от GUI =========
+    private static void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc == null) return;
+
+        long now = System.nanoTime();
+        if (Background.lastNano < 0) Background.lastNano = now;
+        double dt = (now - Background.lastNano) / 1_000_000_000.0;
+        Background.lastNano = now;
+        if (dt <= 0) return;
+        if (dt > 0.5) dt = 0.05; // защита от больших скачков
+
+        // 1) Собственные скорости игрока (крутилки)
+        Background.currentPolarityDeg = wrapAngle(Background.currentPolarityDeg + Background.polaritySpeedPerSec * dt);
+        Background.currentFrequency   = clampDouble(Background.currentFrequency + Background.frequencySpeedPerSec * dt, 0, 999);
+
+        // 2) Дрейф от погоды (дискретно: 0 / 0.1 / 0.2), лимиты: дождь 0.2/5с, гроза 0.2/с
+        if (mc.level != null) {
+            boolean thunder = mc.level.isThundering();
+            boolean rain    = mc.level.isRaining();
+            double ratePerSec = 0.0; // сколько «бюджета» накапливаем в секунду
+            if (thunder)       ratePerSec = 0.2;       // 0.2 в секунду
+            else if (rain)     ratePerSec = 0.2 / 5.0; // 0.2 за 5 секунд
+
+            if (ratePerSec > 0) {
+                // накапливаем бюджет (отдельно для каждого параметра), максимум — 0.2
+                Background.driftBudgetPol  = clampDouble(Background.driftBudgetPol  + ratePerSec * dt, 0.0, 0.2);
+                Background.driftBudgetFreq = clampDouble(Background.driftBudgetFreq + ratePerSec * dt, 0.0, 0.2);
+
+                // если накопили достаточно — тратим один дискретный шаг на параметр за тик
+                if (Background.driftBudgetPol >= 0.1) {
+                    double step = (Background.driftBudgetPol >= 0.2 && Background.noiseRnd.nextBoolean()) ? 0.2 : 0.1;
+                    Background.driftBudgetPol -= step;
+                    double sign = Background.noiseRnd.nextBoolean() ? 1.0 : -1.0;
+                    Background.currentPolarityDeg = wrapAngle(Background.currentPolarityDeg + sign * step);
+                }
+                if (Background.driftBudgetFreq >= 0.1) {
+                    double step = (Background.driftBudgetFreq >= 0.2 && Background.noiseRnd.nextBoolean()) ? 0.2 : 0.1;
+                    Background.driftBudgetFreq -= step;
+                    double sign = Background.noiseRnd.nextBoolean() ? 1.0 : -1.0;
+                    Background.currentFrequency = clampDouble(Background.currentFrequency + sign * step, 0, 999);
+                }
+            } else {
+                // погоды нет — бюджет обнуляем, чтобы не «выстреливало» потом
+                Background.driftBudgetPol = 0.0;
+                Background.driftBudgetFreq = 0.0;
+            }
+        }
+
+        Background.timeSeconds += dt;
+
+        // 3) Детектор тикает всегда
+        double detRate = getDetectorRatePerSec(mc);
+        Background.detectorPercent = clampDouble(Background.detectorPercent + detRate * dt, 0.0, 100.0);
+
+        // 4) Вычисление выходов (нелинейно, с «прилипанием»)
+        double polPct = computePolarityPercentFineStatic(Background.currentPolarityDeg, Background.targetPolarityDeg, mc);
+        double frqPct = computeFrequencyPercentFineStatic(Background.currentFrequency,   Background.targetFrequency,   mc);
+        if (Background.currentPolarityDir != Background.targetPolarityDir) polPct = 0.0;
+
+        Background.polarityOutputPercent  = polPct;
+        Background.frequencyOutputPercent = frqPct;
+
+        double alpha = 1.0 - Math.exp(-8.0 * dt);
+        if (Double.isNaN(Background.polarityOutputPercentSmoothed))  Background.polarityOutputPercentSmoothed  = polPct;
+        if (Double.isNaN(Background.frequencyOutputPercentSmoothed)) Background.frequencyOutputPercentSmoothed = frqPct;
+        Background.polarityOutputPercentSmoothed  += (polPct - Background.polarityOutputPercentSmoothed)  * alpha;
+        Background.frequencyOutputPercentSmoothed += (frqPct - Background.frequencyOutputPercentSmoothed) * alpha;
+
+        // 5) Загрузка — от output data, тикает всегда
+        double polNorm  = clampDouble(Background.polarityOutputPercentSmoothed  / 100.0, 0.0, 1.0);
+        double freqNorm = clampDouble(Background.frequencyOutputPercentSmoothed / 100.0, 0.0, 1.0);
+        double normalized = polNorm * freqNorm;
+
+        if (normalized > 0.0 && Background.downloadedPercent < 100.0) {
+            double perSecondAtFull = getDownloadRatePercentPerSecAtFull(mc); // downloadSpeed/10 %/с
+            Background.downloadedPercent = clampDouble(
+                    Background.downloadedPercent + dt * perSecondAtFull * normalized,
+                    0.0, 100.0
+            );
+        }
     }
 
-    // Frequency
-    private double computeFrequencyPercentFine(double current, double target) {
-        double diff  = Math.abs(current - target);                     // |частота|, Гц
-        double width = Math.max(1e-6, getFrequencyFilterWidth());      // player-переменная (0.5..100..)
-        double p     = getFrequencySharpnessExp();                     // 0.60..0.95
+    // ======= Статические вспомогательные вычисления для фоновой логики =======
+    private static double computePolarityPercentFineStatic(double currentDeg, double targetDeg, Minecraft mc) {
+        double diff  = angularDiffDegD(currentDeg, targetDeg);
+        double width = Math.max(1e-6, getPolarityFilterWidth(mc));
+        double p     = getSharpnessExpFromWidth(width);
         double x     = diff / width;
         double val   = 1.0 - Math.pow(x, p);
         if (val < 0.0) val = 0.0;
         double pct   = val * 100.0;
-        return topSnapTo100(pct, width);
+        return topSnapTo100Static(pct, width);
     }
 
-    private double getDetectorRatePerSec() {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null) return DETECTOR_RATE_DEFAULT;
+    private static double computeFrequencyPercentFineStatic(double current, double target, Minecraft mc) {
+        double diff  = Math.abs(current - target);
+        double width = Math.max(1e-6, getFrequencyFilterWidth(mc));
+        double p     = getSharpnessExpFromWidth(width);
+        double x     = diff / width;
+        double val   = 1.0 - Math.pow(x, p);
+        if (val < 0.0) val = 0.0;
+        double pct   = val * 100.0;
+        return topSnapTo100Static(pct, width);
+    }
 
+    private static double getSharpnessExpFromWidth(double widthValue) {
+        double t = invLerpClamped(EASE_MIN, EASE_MAX, widthValue);
+        return lerp(SHARP_P_MIN, SHARP_P_MAX, t);
+    }
+
+    private static double topSnapTo100Static(double percent, double widthValue) {
+        double t   = invLerpClamped(EASE_MIN, EASE_MAX, widthValue);
+        double eps = lerp(TOP_SNAP_EPS_MIN, TOP_SNAP_EPS_MAX, t);
+        return (percent >= 100.0 - eps) ? 100.0 : percent;
+    }
+
+    private static double getDetectorRatePerSec(Minecraft mc) {
+        if (mc.player == null) return DETECTOR_RATE_DEFAULT;
         double v = mc.player
                 .getCapability(ThisnotamodModVariables.PLAYER_VARIABLES_CAPABILITY, null)
-                .map(vars -> vars.DetectorSpeed) // Player_Persistent: DetectorSpeed
+                .map(vars -> vars.DetectorSpeed)
                 .orElse(DETECTOR_RATE_DEFAULT);
-
         return (v <= 0) ? DETECTOR_RATE_DEFAULT : v;
     }
 
-    private double getDownloadRatePercentPerSecAtFull() {
-        Minecraft mc = Minecraft.getInstance();
+    private static double getDownloadRatePercentPerSecAtFull(Minecraft mc) {
         if (mc.player == null) return DOWNLOAD_SPEED_DEFAULT / 10.0;
-
         double v = mc.player
                 .getCapability(ThisnotamodModVariables.PLAYER_VARIABLES_CAPABILITY, null)
-                .map(vars -> vars.downloadSpeed) // Player_Persistent: downloadSpeed
+                .map(vars -> vars.downloadSpeed)
                 .orElse(DOWNLOAD_SPEED_DEFAULT);
-
-        if (v <= 0) return 0.0;        // можно поставить 0 чтобы паузить загрузку
-        return v / 10.0;               // 1 -> 0.1%/с; 2 -> 0.2%/с; ...
+        if (v <= 0) return 0.0;
+        return v / 10.0; // 1 -> 0.1%/с; 2 -> 0.2%/с; ...
     }
 
-    private double getPolarityFilterWidth() {
-        Minecraft mc = Minecraft.getInstance();
+    private static double getPolarityFilterWidth(Minecraft mc) {
         if (mc.player == null) return POLARITY_WIDTH_DEFAULT;
-
         double v = mc.player
                 .getCapability(ThisnotamodModVariables.PLAYER_VARIABLES_CAPABILITY, null)
-                .map(vars -> vars.polarityFilterWidth) // Player_Persistent: polarityFilterWidth
+                .map(vars -> vars.polarityFilterWidth)
                 .orElse(POLARITY_WIDTH_DEFAULT);
-
         return (v > 0) ? v : POLARITY_WIDTH_DEFAULT;
     }
 
-    private double getFrequencyFilterWidth() {
-        Minecraft mc = Minecraft.getInstance();
+    private static double getFrequencyFilterWidth(Minecraft mc) {
         if (mc.player == null) return FREQUENCY_WIDTH_DEFAULT;
-
         double v = mc.player
                 .getCapability(ThisnotamodModVariables.PLAYER_VARIABLES_CAPABILITY, null)
-                .map(vars -> vars.frequencyFilterWidth) // Player_Persistent: frequencyFilterWidth
+                .map(vars -> vars.frequencyFilterWidth)
                 .orElse(FREQUENCY_WIDTH_DEFAULT);
-
         return (v > 0) ? v : FREQUENCY_WIDTH_DEFAULT;
     }
 
+    // ============================= Утилиты =============================
     private static int clamp(int v, int min, int max) { return Math.max(min, Math.min(max, v)); }
     private static double clampDouble(double v, double min, double max) { return Math.max(min, Math.min(max, v)); }
     private static int floorMod(int x, int mod) { int r = x % mod; return (r < 0) ? r + mod : r; }
@@ -774,34 +823,16 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
     private static double lerp(double a, double b, double t) { return a + (b - a) * t; }
     private static double invLerpClamped(double a, double b, double v) {
         if (b == a) return 0.0;
-        return clampDouble((v - a) / (b - a), 0.0, 1.0);
-    }
+        double t = (v - a) / (b - a);
+        return clampDouble(t, 0.0, 1.0);
+        }
 
-    // p для полярности и частоты — из их «ширины» (player-переменная)
-    private double getPolaritySharpnessExp() {
-        double w = getPolarityFilterWidth();
-        double t = invLerpClamped(EASE_MIN, EASE_MAX, w);
-        return lerp(SHARP_P_MIN, SHARP_P_MAX, t);
-    }
-    private double getFrequencySharpnessExp() {
-        double w = getFrequencyFilterWidth();
-        double t = invLerpClamped(EASE_MIN, EASE_MAX, w);
-        return lerp(SHARP_P_MIN, SHARP_P_MAX, t);
-    }
-
-    // Прилипаем к 100% в окне, зависящем от той же переменной
-    private double topSnapTo100(double percent, double widthValue) {
-        double t   = invLerpClamped(EASE_MIN, EASE_MAX, widthValue);
-        double eps = lerp(TOP_SNAP_EPS_MIN, TOP_SNAP_EPS_MAX, t); // в проц. пунктах
-        return (percent >= 100.0 - eps) ? 100.0 : percent;
-    }
-
-
+    // ============================= Прямоугольник =============================
     private static class IntRect {
         final int x, y, w, h;
         IntRect(int x, int y, int w, int h) { this.x = x; this.y = y; this.w = w; this.h = h; }
         int centerX() { return x + w / 2; }
-        int centerY() { return y + h / 2; }
+        int centerY() { return y + w / 2 - (w - h) / 2; } // не критично, можно оставить прежний расчёт
         boolean contains(int mx, int my) { return mx >= x && mx < x + w && my >= y && my < y + h; }
     }
 }

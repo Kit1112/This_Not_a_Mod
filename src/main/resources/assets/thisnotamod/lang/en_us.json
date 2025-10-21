@@ -68,7 +68,7 @@
   "subtitles.scanner_turn": "Сработал пингер",
   "item.thisnotamod.kerfu_leg": "Нога Керфура-О",
   "block.thisnotamod.table_kitchen": "Кухонный стол",
-  "block.thisnotamod.chess_andesit": "Андезит & Шашечка",
+  "block.thisnotamod.chess_andesit": "Андезит \u0026 Шашечка",
   "subtitles.wc_sound": "",
   "gui.thisnotamod.server_interface.third": "",
   "item.modname.apotheosis_guidebook": "Apotheosis Guidebook",
@@ -205,11 +205,5 @@
   "block.thisnotamod.term_ld": "Терминал",
   "subtitles.night_ambient_votv": "amb2_night",
   "gui.thisnotamod.server_interface.label_11": "8+8",
-  "subtitles.passlock_success": "",
-  "signalmanager.default_text": "No text",
-  "signalmanager.default_special_response": " ",
-  "signalmanager.defaults.object_name.celestial": "Celestial body",
-  "signalmanager.defaults.object_name.asteroid": "Asteroid",
-  "signalmanager.defaults.object_name.planet": "Planet",
-  "signalmanager.defaults.object_name.comet": "Comet"
+  "subtitles.passlock_success": ""
 }
