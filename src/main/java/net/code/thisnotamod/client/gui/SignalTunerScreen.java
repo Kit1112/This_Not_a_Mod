@@ -269,39 +269,37 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         drawPolarityTextBlock(gg, r1);
         drawFrequencyTextBlock(gg, r4);
 
+        // ==== информационный блок (r5) ====
         int left5 = r5.x + 10;
         int top5  = r5.y + 8;
         int lh5   = 10 + 4;
 
+        // готовность детектора
         boolean ready = Background.detectorPercent >= 100.0 - 1e-6;
 
-        String detLabel = "Detector status: ";
-        String detValue = String.format(Locale.ROOT, "%.1f%%", Background.detectorPercent);
+        // Лейбл+значение с выравниванием: используем drawLabelValue(...)
+        int line = 0;
+        drawLabelValue(gg, r5, line++, "Detector status:",
+                String.format(Locale.ROOT, "%.1f%%", Background.detectorPercent),
+                0xFFFFFFFF, 0xFF00FF00);
 
-        String objText  = "Object: " + (ready ? detectedObject : "none");
+        drawLabelValue(gg, r5, line++, "Object:",
+                ready ? detectedObject : "none",
+                0xFFBBBBBB, 0xFFBBBBBB);
 
-        // плейсхолдеры только после готовности
-        String qualText = "Signal quality: " + (ready ? "high"   : "none");
-        String freqText = "Signal frequencity: " + (ready ? "middle" : "none");
+        drawLabelValue(gg, r5, line++, "Signal quality:",
+                ready ? "high" : "none",
+                0xFFBBBBBB, 0xFFBBBBBB);
 
-        String dlText = String.format(Locale.ROOT, "Downloaded: %.1f%%", Background.downloadedPercent);
+        // опечатку «frequencity» сохраняем как просили
+        drawLabelValue(gg, r5, line++, "Signal frequencity:",
+                ready ? "middle" : "none",
+                0xFFBBBBBB, 0xFFBBBBBB);
 
-        // 1) Статус детектора
-        gg.drawString(this.font, detLabel, left5, top5 + 0 * lh5, 0xFFFFFFFF, false);
-        int detLabelW = this.font.width(detLabel);
-        gg.drawString(this.font, detValue, left5 + detLabelW, top5 + 0 * lh5, 0xFF00FF00, false);
+        drawLabelValue(gg, r5, line++, "Downloaded:",
+                String.format(Locale.ROOT, "%.1f%%", Background.downloadedPercent),
+                0xFF00FF00, 0xFF00FF00);
 
-        // 2) Объект
-        gg.drawString(this.font, objText,  left5, top5 + 1 * lh5, 0xFFBBBBBB, false);
-
-        // 3) Качество
-        gg.drawString(this.font, qualText, left5, top5 + 2 * lh5, 0xFFBBBBBB, false);
-
-        // 4) Частота
-        gg.drawString(this.font, freqText, left5, top5 + 3 * lh5, 0xFFBBBBBB, false);
-
-        // 5) Загружено
-        gg.drawString(this.font, dlText, left5, top5 + 4 * lh5, 0xFF00FF00, false);
 
         // Полоски для визуала
         int polarityBars = computePolarityBars(Background.currentPolarityDeg, Background.targetPolarityDeg);
@@ -400,38 +398,60 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         }
     }
 
+    // Рендер пары "лейбл слева — значение справа"
+    private void drawLabelValue(GuiGraphics gg, IntRect r, int lineIdx,
+                                String label, String value,
+                                int labelColor, int valueColor) {
+        final int lh = 10 + 4;               // как и раньше
+        final int padL = 10;                 // левый отступ
+        final int padR = 10;                 // правый отступ
+        final int y = r.y + 8 + lineIdx * lh;
+
+        // Лейбл — строго слева
+        gg.drawString(this.font, label, r.x + padL, y, labelColor, false);
+
+        // Значение — строго у правого края
+        if (value != null && !value.isEmpty()) {
+            int vw = this.font.width(value);
+            int vx = r.x + r.w - padR - vw;
+            gg.drawString(this.font, value, vx, y, valueColor, false);
+        }
+    }
+
     private void drawPolarityTextBlock(GuiGraphics gg, IntRect r) {
         int line = 0;
-        int lh = 10 + 4;
-        int cx = r.x + 10;
-        gg.drawString(this.font, "Polarity filter:", cx, r.y + 8 + line * lh, 0xFFFFFFFF, false); line++;
-        gg.drawString(this.font, String.format(Locale.ROOT, "Filter offset: %.1f", Background.currentPolarityDeg), cx, r.y + 8 + line * lh, 0xFFBBBBBB, false); line++;
-        gg.drawString(this.font, "Offset speed: " + Background.polaritySpeedPerSec + " deg/s", cx, r.y + 8 + line * lh, 0xFFBBBBBB, false); line++;
-        gg.drawString(this.font, String.format(Locale.ROOT, "Output data: %.1f%%", Background.polarityOutputPercent), cx, r.y + 8 + line * lh, 0xFFE0C040, false);
+
+        // Заголовок блока — без значения справа
+        gg.drawString(this.font, "Polarity filter:", r.x + 10, r.y + 8 + line * (10 + 4), 0xFFFFFFFF, false);
+        line++;
+
+        // Остальные строки — лейбл слева, значение справа
+        drawLabelValue(gg, r, line++, "Filter offset:", String.format(Locale.ROOT, "%.1f", Background.currentPolarityDeg),
+                0xFFBBBBBB, 0xFFBBBBBB);
+        drawLabelValue(gg, r, line++, "Offset speed:", Background.polaritySpeedPerSec + " deg/s",
+                0xFFBBBBBB, 0xFFBBBBBB);
+        drawLabelValue(gg, r, line,   "Output data:", String.format(Locale.ROOT, "%.1f%%", Background.polarityOutputPercent),
+                0xFFBBBBBB, 0xFFE0C040);
     }
 
     private void drawFrequencyTextBlock(GuiGraphics gg, IntRect r) {
         int line = 0;
-        int lh = 10 + 4;
-        int cx = r.x + 10;
-        gg.drawString(this.font, "Frequency filter:", cx, r.y + 8 + line * lh, 0xFFFFFFFF, false); line++;
-        gg.drawString(this.font, String.format(Locale.ROOT, "Filter offset: %.1f", Background.currentFrequency), cx, r.y + 8 + line * lh, 0xFFBBBBBB, false); line++;
-        gg.drawString(this.font, "Offset speed: " + Background.frequencySpeedPerSec + " Hz/s", cx, r.y + 8 + line * lh, 0xFFBBBBBB, false); line++;
-        gg.drawString(this.font, String.format(Locale.ROOT, "Output data: %.1f%%", Background.frequencyOutputPercent), cx, r.y + 8 + line * lh, 0xFFE0C040, false);
+
+        // Заголовок блока
+        gg.drawString(this.font, "Frequency filter:", r.x + 10, r.y + 8 + line * (10 + 4), 0xFFFFFFFF, false);
+        line++;
+
+        drawLabelValue(gg, r, line++, "Filter offset:", String.format(Locale.ROOT, "%.1f", Background.currentFrequency),
+                0xFFBBBBBB, 0xFFBBBBBB);
+        drawLabelValue(gg, r, line++, "Offset speed:", Background.frequencySpeedPerSec + " Hz/s",
+                0xFFBBBBBB, 0xFFBBBBBB);
+        drawLabelValue(gg, r, line,   "Output data:", String.format(Locale.ROOT, "%.1f%%", Background.frequencyOutputPercent),
+                0xFFBBBBBB, 0xFFE0C040);
     }
 
+    // раньше: рисовала 10 прямоугольников-шкал
     private void drawBars(GuiGraphics gg, IntRect underRect, int filled, int total, int color) {
-        int margin = 8;
-        int barW = (underRect.w - margin * 2 - (total - 1) * 3) / total;
-        int barH = 6;
-        int x = underRect.x + margin;
-        int y = underRect.y + underRect.h - margin - barH;
-
-        for (int i = 0; i < total; i++) {
-            int c = (i < filled) ? color : 0xFF404040;
-            gg.fill(x, y, x + barW, y + barH, c);
-            x += barW + 3;
-        }
+        // шкалы отключены — не рисуем ничего
     }
 
     private void drawPolarityRadar(GuiGraphics gg, IntRect r) {
