@@ -300,16 +300,6 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
                 String.format(Locale.ROOT, "%.1f%%", Background.downloadedPercent),
                 0xFF00FF00, 0xFF00FF00);
 
-
-        // Полоски для визуала
-        int polarityBars = computePolarityBars(Background.currentPolarityDeg, Background.targetPolarityDeg);
-        int frequencyBars = computeFrequencyBars(Background.currentFrequency, Background.targetFrequency);
-        if (Background.currentPolarityDir != Background.targetPolarityDir) {
-            polarityBars = 0;
-        }
-        drawBars(gg, r1, polarityBars, 10, 0xFFE0C040);
-        drawBars(gg, r4, frequencyBars, 10, 0xFF40C0E0);
-
         if (DEBUG_BUTTONS) {
             debugRect(gg, btn0, 0x40FFFF00);
             debugRect(gg, btn1, 0x40FFFFFF);
@@ -449,11 +439,6 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
                 0xFFBBBBBB, 0xFFE0C040);
     }
 
-    // раньше: рисовала 10 прямоугольников-шкал
-    private void drawBars(GuiGraphics gg, IntRect underRect, int filled, int total, int color) {
-        // шкалы отключены — не рисуем ничего
-    }
-
     private void drawPolarityRadar(GuiGraphics gg, IntRect r) {
         int cx = r.centerX();
         int cy = r.centerY();
@@ -478,12 +463,12 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         int right = cx + radius - 6;
         int y = cy;
 
-        int frequencyBars = computeFrequencyBars(Background.currentFrequency, Background.targetFrequency);
+        // Нормализуем из output data (лучше сглаженное)
+        double norm = clampDouble(Background.frequencyOutputPercentSmoothed / 100.0, 0.0, 1.0);
 
-        if (frequencyBars > 0) {
-            double norm = frequencyBars / 10.0;
+        if (norm > 0.0) {
             double amplitude = (radius - 14) * 0.7 * norm;
-            double speed = 4.5; //скорость волны
+            double speed = 4.5; // скорость волны
             for (int x = left; x <= right; x++) {
                 double t = (x - left) / 32.0;
                 int wy = (int) Math.round(y + Math.sin(t + Background.timeSeconds * speed) * amplitude);
@@ -699,26 +684,6 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
     private static double angularDiffDegD(double a, double b) {
         double d = Math.abs(a - b) % 360.0;
         return (d > 180.0) ? 360.0 - d : d;
-    }
-
-    private static int computePolarityBars(double currentDeg, double targetDeg) {
-        double diff = angularDiffDegD(currentDeg, targetDeg);
-        if (diff > 25.0) return 0;
-        if (diff <= 2.0) return 10;
-        double a = -9.0 / 23.0;
-        double b = 10.0 + (18.0 / 23.0);
-        int bars = (int) Math.round(a * diff + b);
-        return clamp(bars, 1, 10);
-    }
-
-    private static int computeFrequencyBars(double current, double target) {
-        double diff = Math.abs(current - target);
-        if (diff > 75.0) return 0;
-        if (diff <= 1.0) return 10;
-        double a = -9.0 / 74.0;
-        double b = 10.0 - a;
-        int bars = (int) Math.round(a * diff + b);
-        return clamp(bars, 1, 10);
     }
 
     // ========= Фоновый тикер: тикает всегда, независимо от GUI =========
