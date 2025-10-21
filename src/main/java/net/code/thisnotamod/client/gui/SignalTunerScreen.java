@@ -36,6 +36,7 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
 
     // ========= Фоновая модель — работает всегда (даже когда GUI закрыт) =========
     private static final class Background {
+
         // целевые параметры
         static int    targetPolarityDir  = clamp(1, 0, 2);
         static double targetPolarityDeg  = wrapAngle(25.0);
@@ -120,6 +121,12 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
     private static final double DOWNLOAD_SPEED_DEFAULT = 1.0;  // 1 => 1% за 10 сек
     private static final double POLARITY_WIDTH_DEFAULT  = 18.0; // градусы
     private static final double FREQUENCY_WIDTH_DEFAULT = 60.0; // Гц
+
+    //ограничения скоростей смещения фильтров
+    private static final int POLARITY_SPEED_MIN  = -360;
+    private static final int POLARITY_SPEED_MAX  =  360;
+    private static final int FREQUENCY_SPEED_MIN = -1000;
+    private static final int FREQUENCY_SPEED_MAX =  1000;
 
     // «нелинейность» выхода (острый пик к 100%):
     private static final double EASE_MIN = 0.5;
@@ -336,13 +343,37 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
     public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
         int sign = delta > 0 ? 1 : -1;
 
-        if (isHovering(btn1, mouseX, mouseY)) { Background.polaritySpeedPerSec  += sign * 1;    return true; }
-        if (isHovering(btn2, mouseX, mouseY)) { Background.polaritySpeedPerSec  += sign * 5;    return true; }
-        if (isHovering(btn3, mouseX, mouseY)) { Background.polaritySpeedPerSec  += sign * 15;   return true; }
+        if (isHovering(btn1, mouseX, mouseY)) {
+            Background.polaritySpeedPerSec += sign * 1;
+            Background.polaritySpeedPerSec = clamp(Background.polaritySpeedPerSec, POLARITY_SPEED_MIN, POLARITY_SPEED_MAX);
+            return true;
+        }
+        if (isHovering(btn2, mouseX, mouseY)) {
+            Background.polaritySpeedPerSec += sign * 5;
+            Background.polaritySpeedPerSec = clamp(Background.polaritySpeedPerSec, POLARITY_SPEED_MIN, POLARITY_SPEED_MAX);
+            return true;
+        }
+        if (isHovering(btn3, mouseX, mouseY)) {
+            Background.polaritySpeedPerSec += sign * 15;
+            Background.polaritySpeedPerSec = clamp(Background.polaritySpeedPerSec, POLARITY_SPEED_MIN, POLARITY_SPEED_MAX);
+            return true;
+        }
 
-        if (isHovering(btn4, mouseX, mouseY)) { Background.frequencySpeedPerSec += sign * 1;    return true; }
-        if (isHovering(btn5, mouseX, mouseY)) { Background.frequencySpeedPerSec += sign * 10;   return true; }
-        if (isHovering(btn6, mouseX, mouseY)) { Background.frequencySpeedPerSec += sign * 100;  return true; }
+        if (isHovering(btn4, mouseX, mouseY)) {
+            Background.frequencySpeedPerSec += sign * 1;
+            Background.frequencySpeedPerSec = clamp(Background.frequencySpeedPerSec, FREQUENCY_SPEED_MIN, FREQUENCY_SPEED_MAX);
+            return true;
+        }
+        if (isHovering(btn5, mouseX, mouseY)) {
+            Background.frequencySpeedPerSec += sign * 10;
+            Background.frequencySpeedPerSec = clamp(Background.frequencySpeedPerSec, FREQUENCY_SPEED_MIN, FREQUENCY_SPEED_MAX);
+            return true;
+        }
+        if (isHovering(btn6, mouseX, mouseY)) {
+            Background.frequencySpeedPerSec += sign * 100;
+            Background.frequencySpeedPerSec = clamp(Background.frequencySpeedPerSec, FREQUENCY_SPEED_MIN, FREQUENCY_SPEED_MAX);
+            return true;
+        }
 
         return super.mouseScrolled(mouseX, mouseY, delta);
     }
@@ -672,6 +703,10 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         if (dt <= 0) return;
         if (dt > 0.5) dt = 0.05; // защита от больших скачков
 
+        //ограничения скорости
+        Background.polaritySpeedPerSec  = clamp(Background.polaritySpeedPerSec,  POLARITY_SPEED_MIN,  POLARITY_SPEED_MAX);
+        Background.frequencySpeedPerSec = clamp(Background.frequencySpeedPerSec, FREQUENCY_SPEED_MIN, FREQUENCY_SPEED_MAX);
+
         // 1) Собственные скорости игрока (крутилки)
         Background.currentPolarityDeg = wrapAngle(Background.currentPolarityDeg + Background.polaritySpeedPerSec * dt);
         Background.currentFrequency   = clampDouble(Background.currentFrequency + Background.frequencySpeedPerSec * dt, 0, 999);
@@ -825,7 +860,7 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         if (b == a) return 0.0;
         double t = (v - a) / (b - a);
         return clampDouble(t, 0.0, 1.0);
-        }
+    }
 
     // ============================= Прямоугольник =============================
     private static class IntRect {
