@@ -1,0 +1,11 @@
+run/
+run
+run\
+/SignalManagerPlugin/build/
+/run/
+/build/
+/gradle/
+/.gradle/
+settings.gradle
+gradlew.bat
+gradlew
