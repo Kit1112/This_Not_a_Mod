@@ -250,13 +250,16 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         // cбросим батчи перед пикселизацией
         gg.flush();
 
-        // PIXELATE: копия r2 -> pixelRT и апскейл назад
+        // PIXELATE: копия (r2 с инсетами) -> pixelRT и апскейл назад
+        IntRect px = insetRect(r2, 2, 1, 2, 1);  // 2 слева/справа, 1 сверху/снизу
+
         double tDet = clampDouble(Background.detectorPercent / 100.0, 0.0, 1.0);
-        int lowW = Math.max(PIXEL_MIN_RES, (int)Math.round(PIXEL_MIN_RES + tDet * (r2.w - PIXEL_MIN_RES)));
-        int lowH = Math.max(PIXEL_MIN_RES, (int)Math.round(PIXEL_MIN_RES + tDet * (r2.h - PIXEL_MIN_RES)));
+        int lowW = Math.max(PIXEL_MIN_RES, (int)Math.round(PIXEL_MIN_RES + tDet * (px.w - PIXEL_MIN_RES)));
+        int lowH = Math.max(PIXEL_MIN_RES, (int)Math.round(PIXEL_MIN_RES + tDet * (px.h - PIXEL_MIN_RES)));
+
         ensurePixelRT(lowW, lowH);
-        copyScreenAreaToPixelRT(r2, lowW, lowH);
-        blitPixelRTToArea(gg, r2);
+        copyScreenAreaToPixelRT(px, lowW, lowH);
+        blitPixelRTToArea(gg, px);
 
         // Остальной UI поверх
         drawPolarityRadar(gg, r0);
@@ -647,6 +650,14 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         int y2 = SCREEN_Y + (int) Math.round((row + 1) * rh);
 
         return new IntRect(x, y, Math.max(0, x2 - x), Math.max(0, y2 - y));
+    }
+
+    private static IntRect insetRect(IntRect r, int left, int top, int right, int bottom) {
+        int nx = r.x + left;
+        int ny = r.y + top;
+        int nw = Math.max(0, r.w - left - right);
+        int nh = Math.max(0, r.h - top - bottom);
+        return new IntRect(nx, ny, nw, nh);
     }
 
     private boolean isHovering(IntRect r, double mouseX, double mouseY) {
