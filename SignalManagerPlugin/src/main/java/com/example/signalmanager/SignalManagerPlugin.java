@@ -9,8 +9,8 @@ import javax.swing.*;
 
 import com.example.signalmanager.registry.SMPluginActions;
 import com.example.signalmanager.registry.SMPluginEventTriggers;
-import com.example.signalmanager.services.SignalIO;
 import com.example.signalmanager.services.SignalLocalization;
+import com.example.signalmanager.services.SignalIO;
 
 public class SignalManagerPlugin extends JavaPlugin {
 
@@ -20,9 +20,9 @@ public class SignalManagerPlugin extends JavaPlugin {
         addListener(MCreatorLoadedEvent.class, event -> SwingUtilities.invokeLater(() -> {
             MCreator mc = event.getMCreator();
 
-            // 2) Подготовим scaffold (SignalRegistry.java + data/<modid>/signals.json)
             try {
                 SignalIO.ensureWorkspaceScaffold(mc);
+                SignalLocalization.ensureDefaultKeys(mc);
             } catch (Exception ex) {
                 ex.printStackTrace();
                 JOptionPane.showMessageDialog(mc,
@@ -30,16 +30,13 @@ public class SignalManagerPlugin extends JavaPlugin {
                         "SignalManager", JOptionPane.ERROR_MESSAGE);
             }
 
-            // 2.1) Гарантируем дефолтные ключи локализации во всех существующих lang-файлах
-            try {
-                SignalLocalization.ensureDefaultKeys(mc);
-            } catch (Throwable t) {
-                t.printStackTrace();
-            }
-
-            // 3) Регистрация действий и меню
             SMPluginEventTriggers.ACTIONS = new SMPluginActions(mc);
-            SMPluginEventTriggers.modifyMenus(mc);
+
+            // Новый способ: пункт «Сигналы» сразу после «Справка»
+            SMPluginEventTriggers.modifyMenuBarAfterHelp(mc);
+
+            // Если хочешь оставить ещё и в «Инструменты», можно добросить:
+            // SMPluginEventTriggers.modifyMenus(mc);
         }));
     }
 }
