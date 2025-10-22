@@ -40,7 +40,7 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         // целевые параметры
         static int    targetPolarityDir  = clamp(1, 0, 2);
         static double targetPolarityDeg  = wrapAngle(25.0);
-        static double targetFrequency    = clampDouble(75.0, 0, 999);
+        static double targetFrequency    = clampDouble(75.0, 0, 1000);
 
         // текущее состояние (то, что «крутится»)
         static int    currentPolarityDir = 0;
@@ -705,7 +705,7 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
 
         // 1) Собственные скорости игрока (крутилки)
         Background.currentPolarityDeg = wrapAngle(Background.currentPolarityDeg + Background.polaritySpeedPerSec * dt);
-        Background.currentFrequency   = clampDouble(Background.currentFrequency + Background.frequencySpeedPerSec * dt, 0, 999);
+        Background.currentFrequency   = clampDouble(Background.currentFrequency + Background.frequencySpeedPerSec * dt, 0, 1000);
 
         // 2) Дрейф от погоды (дискретно: 0 / 0.1 / 0.2), лимиты: дождь 0.2/5с, гроза 0.2/с
         if (mc.level != null) {
@@ -731,7 +731,7 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
                     double step = (Background.driftBudgetFreq >= 0.2 && Background.noiseRnd.nextBoolean()) ? 0.2 : 0.1;
                     Background.driftBudgetFreq -= step;
                     double sign = Background.noiseRnd.nextBoolean() ? 1.0 : -1.0;
-                    Background.currentFrequency = clampDouble(Background.currentFrequency + sign * step, 0, 999);
+                    Background.currentFrequency = clampDouble(Background.currentFrequency + sign * step, 0, 1000);
                 }
             } else {
                 // погоды нет — бюджет обнуляем, чтобы не «выстреливало» потом
