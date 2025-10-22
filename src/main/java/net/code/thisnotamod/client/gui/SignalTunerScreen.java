@@ -62,7 +62,8 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         static double frequencyOutputPercentSmoothed     = 0.0;
 
         // время
-        static long   lastNano = -1L;
+        static long   lastTickNano   = -1L;  // для onClientTick
+        static long   lastRenderNano = -1L;  // для renderBg
         static double timeSeconds = 0.0;
 
         // RNG
@@ -177,11 +178,10 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
     protected void renderBg(GuiGraphics gg, float partialTick, int mouseX, int mouseY) {
         // Локальное dt только для визуала (звёзды, спин предмета)
         long now = System.nanoTime();
-        if (Background.lastNano < 0) Background.lastNano = now;
-        double dt = (now - Background.lastNano) / 1_000_000_000.0;
+        if (Background.lastRenderNano < 0) Background.lastRenderNano = now;
+        double dt = (now - Background.lastRenderNano) / 1_000_000_000.0;
         if (dt < 0) dt = 0;
-        Background.lastNano = now; // синхронизируем визуальное время с фоновой логикой
-        Background.timeSeconds += dt;
+        Background.lastRenderNano = now; // dt — только для визуала (звёзды, спин)
 
         // визуальные смещения звёзд
         starOffsetX += STAR_SPEED_X * dt;
@@ -693,9 +693,9 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         if (mc == null) return;
 
         long now = System.nanoTime();
-        if (Background.lastNano < 0) Background.lastNano = now;
-        double dt = (now - Background.lastNano) / 1_000_000_000.0;
-        Background.lastNano = now;
+        if (Background.lastTickNano < 0) Background.lastTickNano = now;
+        double dt = (now - Background.lastTickNano) / 1_000_000_000.0;
+        Background.lastTickNano = now;
         if (dt <= 0) return;
         if (dt > 0.5) dt = 0.05; // защита от больших скачков
 
