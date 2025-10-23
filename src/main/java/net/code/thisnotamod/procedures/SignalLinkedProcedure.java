@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 
 /**
  * Совместимость со старыми вызовами MCreator.
- * Теперь просто делегирует в SignalPicker и прокидывает данные в тюнер.
+ * Делегирует в SignalPicker и прокидывает данные в тюнер.
  */
 public class SignalLinkedProcedure {
 

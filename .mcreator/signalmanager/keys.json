@@ -1,0 +1,18 @@
+{
+  "en_us": {
+    "signalmanager.default_text": "No text",
+    "signalmanager.default_special_response": " ",
+    "signalmanager.defaults.object_name.comet": "Comet",
+    "signalmanager.defaults.object_name.celestial": "Celestial body",
+    "signalmanager.defaults.object_name.asteroid": "Asteroid",
+    "signalmanager.defaults.object_name.planet": "Planet"
+  },
+  "ru_ru": {
+    "signalmanager.default_text": "Нет текста",
+    "signalmanager.default_special_response": " ",
+    "signalmanager.defaults.object_name.comet": "Комета",
+    "signalmanager.defaults.object_name.celestial": "Небесное тело",
+    "signalmanager.defaults.object_name.asteroid": "Астероид",
+    "signalmanager.defaults.object_name.planet": "Планета"
+  }
+}

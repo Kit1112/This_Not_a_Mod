@@ -292,18 +292,66 @@
       }
     ]
   },
-  "mercury_raw": {
+  "mercury_high": {
     "sounds": [
       {
-        "name": "thisnotamod:mercury",
+        "name": "thisnotamod:signal_planet_mercury",
         "stream": true
       }
     ]
   },
-  "venus_sound_raw": {
+  "mercury_low": {
     "sounds": [
       {
-        "name": "thisnotamod:venus_planet_audio.mp3",
+        "name": "thisnotamod:signal_planet_mercury_low",
+        "stream": true
+      }
+    ]
+  },
+  "mercury_noisy": {
+    "sounds": [
+      {
+        "name": "thisnotamod:signal_planet_mercury_noisy",
+        "stream": true
+      }
+    ]
+  },
+  "mercury_raw": {
+    "sounds": [
+      {
+        "name": "thisnotamod:signal_planet_mercury_raw",
+        "stream": true
+      }
+    ]
+  },
+  "venus_high": {
+    "sounds": [
+      {
+        "name": "thisnotamod:signal_planet_venus",
+        "stream": true
+      }
+    ]
+  },
+  "venus_low": {
+    "sounds": [
+      {
+        "name": "thisnotamod:signal_planet_venus_low",
+        "stream": true
+      }
+    ]
+  },
+  "venus_noisy": {
+    "sounds": [
+      {
+        "name": "thisnotamod:signal_planet_venus_noisy",
+        "stream": true
+      }
+    ]
+  },
+  "venus_raw": {
+    "sounds": [
+      {
+        "name": "thisnotamod:signal_planet_venus_raw",
         "stream": true
       }
     ]

@@ -1,239 +1,314 @@
 package com.example.signalmanager.services;
 
-import com.google.gson.*;
 import net.mcreator.ui.MCreator;
-
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
 import java.util.*;
-import java.util.stream.Stream;
 
+/**
+ * SignalLocalization — регистрация локализаций плагина БЕЗ временных файлов.
+ * Работает внутри среды MCreator (плагин). Не зависит от Minecraft-классов.
+ *
+ * Правила:
+ *  • База EN — через workspace.setLocalization(key, enValue).
+ *  • Другие локали — пишем в нужную карту из workspace.getLanguageMap().
+ *  • UI-ключи экрана тюнера добавляются лениво при первом ensureKeyForAllLocales(...).
+ */
 public final class SignalLocalization {
+
+    /**
+     * Восстановление (реапплай) локализаций при старте/открытии воркспейса.
+     * На текущем этапе задача — гарантированно «подсунуть» UI-ключи,
+     * чтобы они попали в lang при первой же операции.
+     * Остальные типы ключей восстанавливаются там, где вы уже их добавляете.
+     */
+    public static void reapplyPersistedKeys(MCreator mc) {
+		ensureSignalTunerUIScreenKeys(mc);
+		ensureSignalScannerUIScreenKeys(mc); // ← добавили вызов сканера
+		uiKeysEnsured = true;
+	}
+
+
 
     private SignalLocalization() {}
 
-    /** Папка lang в проекте мода */
-    public static Path langDir(MCreator mc) {
-        return SignalIO.workspaceResourcesDir(mc)
-                .resolve("assets").resolve(SignalIO.modid(mc)).resolve("lang");
-    }
+    // ---- одноразовая защёлка для UI ключей ----
+    private static boolean uiKeysEnsured = false;
 
-    /** На старте: во ВСЕ существующие lang-файлы добавить наши дефолтные ключи (если их нет) */
-    public static void ensureDefaultKeys(MCreator mc) {
-        Path dir = langDir(mc);
-        if (!Files.isDirectory(dir)) return;
+    // ---------- дефолтные ключи контента ----------
+    public static String defaultTextKey() { return "signalmanager.default_text"; }
+    public static String defaultSpecialResponseKey() { return "signalmanager.default_special_response"; }
 
-        try (Stream<Path> s = Files.list(dir)) {
-            for (Path p : (Iterable<Path>) s.filter(f -> f.getFileName().toString().endsWith(".json"))::iterator) {
-                JsonObject lang = readLang(p);
-                boolean changed = false;
-
-                final String KEY_DEF_TEXT = defaultTextKey();
-                final String KEY_DEF_SR   = defaultSpecialResponseKey();
-
-                if (!lang.has(KEY_DEF_TEXT)) {
-                    String defVal = defaultTextForFile(p.getFileName().toString());
-                    lang.addProperty(KEY_DEF_TEXT, defVal); // ru_ru -> "Нет текста", en_us -> "No text"
-                    changed = true;
-                }
-                if (!lang.has(KEY_DEF_SR)) {
-                    lang.addProperty(KEY_DEF_SR, " "); // дефолт для special_response — один пробел
-                    changed = true;
-                }
-
-                // ---- дефолты для object_name ----
-                Map<String,String> defaults = defaultObjectNamesForFile(p.getFileName().toString());
-                for (Map.Entry<String,String> e : defaults.entrySet()) {
-                    String key = e.getKey();
-                    String val = e.getValue();
-                    if (!lang.has(key)) {
-                        lang.addProperty(key, val);
-                        changed = true;
-                    }
-                }
-
-                if (changed) writeLang(p, lang);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /** Возвращает дефолтную фразу "Нет текста"/"No text" в зависимости от файла */
-    private static String defaultTextForFile(String filename) {
-        String lower = filename.toLowerCase(Locale.ROOT);
-        if (lower.startsWith("ru_")) return "Нет текста";
-        return "No text";
-    }
-
-    /** Дефолтные значения для object_name по файлу локали */
-    private static Map<String,String> defaultObjectNamesForFile(String filename) {
-        String lower = filename.toLowerCase(Locale.ROOT);
-        if (lower.startsWith("ru_")) {
-            return Map.of(
-                    defObjNamePlanetKey(),   "Планета",
-                    defObjNameAsteroidKey(), "Астероид",
-                    defObjNameCelestialKey(),"Небесное тело",
-                    defObjNameCometKey(),    "Комета"
-            );
-        } else { // en_us и прочие — английский по умолчанию
-            return Map.of(
-                    defObjNamePlanetKey(),   "Planet",
-                    defObjNameAsteroidKey(), "Asteroid",
-                    defObjNameCelestialKey(),"Celestial body",
-                    defObjNameCometKey(),    "Comet"
-            );
-        }
-    }
-
-    /** Создать/обновить запись key=value во всех существующих lang-файлах */
-    public static void ensureKeyForAllLocales(MCreator mc, String key, String value) {
-        Path dir = langDir(mc);
-        if (!Files.isDirectory(dir)) return;
-
-        try (Stream<Path> s = Files.list(dir)) {
-            for (Path p : (Iterable<Path>) s.filter(f -> f.getFileName().toString().endsWith(".json"))::iterator) {
-                JsonObject lang = readLang(p);
-                if (!lang.has(key) || !Objects.equals(asString(lang.get(key)), value)) {
-                    lang.addProperty(key, value);
-                    writeLang(p, lang);
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /** Удалить все локализационные ключи, связанные с данным id (НЕ трогая дефолты) */
-    public static void deleteLocalizationForSignal(MCreator mc, int id) {
-        Path dir = langDir(mc);
-        if (!Files.isDirectory(dir)) return;
-
-        // набор ключей для удаления
-        Set<String> keys = new HashSet<>();
-        // text
-        keys.add(textKey(id, "raw"));
-        keys.add(textKey(id, "low"));
-        keys.add(textKey(id, "noisy"));
-        keys.add(textKey(id, "high"));
-        // special_response
-        keys.add(specialResponseKey(id, "raw"));
-        keys.add(specialResponseKey(id, "low"));
-        keys.add(specialResponseKey(id, "noisy"));
-        keys.add(specialResponseKey(id, "high"));
-        // object_name
-        keys.add(objectNameKey(id));
-
-        try (Stream<Path> s = Files.list(dir)) {
-            for (Path p : (Iterable<Path>) s.filter(f -> f.getFileName().toString().endsWith(".json"))::iterator) {
-                JsonObject lang = readLang(p);
-                boolean changed = false;
-                for (String k : keys) {
-                    if (lang.has(k)) { lang.remove(k); changed = true; }
-                }
-                if (changed) writeLang(p, lang);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static String asString(JsonElement el) {
-        try { return el.getAsString(); } catch (Exception e) { return String.valueOf(el); }
-    }
-
-    private static JsonObject readLang(Path p) throws IOException {
-        if (!Files.exists(p)) return new JsonObject();
-        try (Reader r = Files.newBufferedReader(p, StandardCharsets.UTF_8)) {
-            JsonElement el = JsonParser.parseReader(r);
-            return el != null && el.isJsonObject() ? el.getAsJsonObject() : new JsonObject();
-        }
-    }
-
-    private static void writeLang(Path p, JsonObject obj) throws IOException {
-        Files.createDirectories(p.getParent());
-        try (Writer w = Files.newBufferedWriter(p, StandardCharsets.UTF_8)) {
-            new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create().toJson(obj, w);
-        }
-    }
-
-    // ------------ генерация наших ключей ------------
-    public static String textKey(int id, String tier) {
-        // tiers: raw|low|noisy|high
-        return "signalmanager.text." + id + "." + tier;
-    }
-    public static String specialResponseKey(int id, String tier) {
-        // tiers: raw|low|noisy|high
-        return "signalmanager.special_response." + id + "." + tier;
-    }
-    public static String objectNameKey(int id) {
-        return "signalmanager.object_name." + id;
-    }
-
-    public static String defaultTextKey() {
-        return "signalmanager.default_text";
-    }
-    public static String defaultSpecialResponseKey() {
-        return "signalmanager.default_special_response";
-    }
-
-    // дефолты object_name
     public static String defObjNamePlanetKey()   { return "signalmanager.defaults.object_name.planet"; }
     public static String defObjNameAsteroidKey() { return "signalmanager.defaults.object_name.asteroid"; }
     public static String defObjNameCelestialKey(){ return "signalmanager.defaults.object_name.celestial"; }
     public static String defObjNameCometKey()    { return "signalmanager.defaults.object_name.comet"; }
 
     public static String randomDefaultObjectNameKey() {
-        String[] keys = {
-                defObjNamePlanetKey(), defObjNameAsteroidKey(),
-                defObjNameCelestialKey(), defObjNameCometKey()
-        };
+        String[] keys = { defObjNamePlanetKey(), defObjNameAsteroidKey(), defObjNameCelestialKey(), defObjNameCometKey() };
         return keys[new java.util.Random().nextInt(keys.length)];
     }
 
-    // ------------ определение "дефолтности" значений в UI ------------
+    private static String defaultTextEN() { return "No text"; }
+    private static Map<String,String> defaultObjectNamesEN() {
+        Map<String, String> m = new LinkedHashMap<>();
+        m.put(defObjNamePlanetKey(),   "Planet");
+        m.put(defObjNameAsteroidKey(), "Asteroid");
+        m.put(defObjNameCelestialKey(),"Celestial body");
+        m.put(defObjNameCometKey(),    "Comet");
+        return m;
+    }
+
+    // ---------- генераторы ключей контента ----------
+    public static String textKey(int id, String tier) { return "signalmanager.text." + id + "." + tier; }
+    public static String specialResponseKey(int id, String tier) { return "signalmanager.special_response." + id + "." + tier; }
+    public static String objectNameKey(int id) { return "signalmanager.object_name." + id; }
+
+    // ---------- утилиты для UI ----------
     public static boolean isDefaultTextLiteral(String s) {
         if (s == null) return true;
         String t = s.trim();
         return t.isEmpty() || t.equalsIgnoreCase("Нет текста") || t.equalsIgnoreCase("No text");
     }
-
     public static boolean isDefaultSpecialLiteral(String s) {
-        return s == null || s.trim().isEmpty(); // дефолт = пусто/пробелы
+        return s == null || s.trim().isEmpty();
     }
-
-    /** Похоже ли значение на наш локализационный ключ */
     public static boolean looksLikeOurKey(String s) {
         return s != null && s.startsWith("signalmanager.");
     }
 
-    /** Разрешить ключ в текст: сначала ru_ru, потом en_us, потом первый попавшийся lang-файл, иначе вернуть исходное */
-    public static String resolveKeyToTextPreferRuEn(MCreator mc, String key) {
-        if (key == null || key.isBlank()) return key;
-        Path dir = langDir(mc);
-        if (!Files.isDirectory(dir)) return key;
+    // ---------- регистрация дефолтов + (опционально) UI ключей ----------
+    public static void ensureDefaultKeys(MCreator mc) {
+        var ws = mc.getWorkspace();
+        if (ws == null) return;
 
-        List<String> order = List.of("ru_ru.json", "en_us.json");
-        for (String fn : order) {
-            Path p = dir.resolve(fn);
-            if (Files.exists(p)) {
-                try {
-                    JsonObject lang = readLang(p);
-                    if (lang.has(key)) return lang.get(key).getAsString();
-                } catch (IOException ignored) {}
+        // база EN для дефолтов
+        ws.setLocalization(defaultTextKey(), defaultTextEN());
+        ws.setLocalization(defaultSpecialResponseKey(), " ");
+        for (Map.Entry<String,String> def : defaultObjectNamesEN().entrySet()) {
+            ws.setLocalization(def.getKey(), def.getValue());
+        }
+
+        // однократно регистрируем UI ключи
+        ensureSignalTunerUIScreenKeys(mc);
+		ensureSignalScannerUIScreenKeys(mc);
+    }
+
+    /**
+     * Зарегистрировать ключи UI экрана тюнера + переводы EN/RU.
+     * Идемпотентно: можно звать сколько угодно раз.
+     */
+    public static void ensureSignalTunerUIScreenKeys(MCreator mc) {
+        var ws = mc.getWorkspace();
+        if (ws == null) return;
+
+        // ----- EN (база) -----
+        Map<String, String> en = new LinkedHashMap<>();
+        en.put("signalmanager.ui.tuner.label.detector_status",   "Detector status:");
+        en.put("signalmanager.ui.tuner.label.object",            "Object:");
+        en.put("signalmanager.ui.tuner.label.signal_quality",    "Signal quality:");
+        en.put("signalmanager.ui.tuner.label.signal_frequency",  "Signal frequency:");
+        en.put("signalmanager.ui.tuner.label.downloaded",        "Downloaded:");
+        en.put("signalmanager.ui.tuner.label.polarity_filter",   "Polarity filter:");
+        en.put("signalmanager.ui.tuner.label.filter_offset",     "Filter offset:");
+        en.put("signalmanager.ui.tuner.label.offset_speed",      "Offset speed:");
+        en.put("signalmanager.ui.tuner.label.output_data",       "Output data:");
+        en.put("signalmanager.ui.tuner.label.frequency_filter",  "Frequency filter:");
+
+        en.put("signalmanager.ui.tuner.value.none",   "none");
+        en.put("signalmanager.ui.tuner.value.low",    "low");
+        en.put("signalmanager.ui.tuner.value.middle", "middle");
+
+        en.put("signalmanager.ui.tuner.unit.deg_per_s", "deg/s");
+        en.put("signalmanager.ui.tuner.unit.hz_per_s",  "Hz/s");
+
+        // Применяем EN в качестве базы
+        for (Map.Entry<String,String> e : en.entrySet()) {
+            ws.setLocalization(e.getKey(), e.getValue());
+        }
+
+        // ----- RU -----
+        Map<String, String> ru = new LinkedHashMap<>();
+        ru.put("signalmanager.ui.tuner.label.detector_status",   "Статус детектора:");
+        ru.put("signalmanager.ui.tuner.label.object",            "Объект:");
+        ru.put("signalmanager.ui.tuner.label.signal_quality",    "Качество сигнала:");
+        ru.put("signalmanager.ui.tuner.label.signal_frequency",  "Частота сигнала:");
+        ru.put("signalmanager.ui.tuner.label.downloaded",        "Загружено:");
+        ru.put("signalmanager.ui.tuner.label.polarity_filter",   "Поляризационный фильтр:");
+        ru.put("signalmanager.ui.tuner.label.filter_offset",     "Смещение фильтра:");
+        ru.put("signalmanager.ui.tuner.label.offset_speed",      "Скорость смещения:");
+        ru.put("signalmanager.ui.tuner.label.output_data",       "Выходные данные:");
+        ru.put("signalmanager.ui.tuner.label.frequency_filter",  "Частотный фильтр:");
+
+        ru.put("signalmanager.ui.tuner.value.none",   "нет");
+        ru.put("signalmanager.ui.tuner.value.low",    "низкое");
+        ru.put("signalmanager.ui.tuner.value.middle", "среднее");
+
+        ru.put("signalmanager.ui.tuner.unit.deg_per_s", "°/с");
+        ru.put("signalmanager.ui.tuner.unit.hz_per_s",  "Гц/с");
+
+        // Вписываем RU в карту конкретной локали
+        Map<String, ? extends Map<String, String>> lmap = ws.getLanguageMap();
+        Map<String, String> ruMap = getLocaleMapIgnoreCase(lmap, "ru_ru");
+        if (ruMap == null) ruMap = getLocaleMapIgnoreCase(lmap, "ru_RU");
+        if (ruMap != null) {
+            ruMap.putAll(ru);
+        }
+    }
+		
+		/**
+	* Зарегистрировать ключи UI экрана сканера + переводы EN/RU.
+	* Идемпотентно: можно звать сколько угодно раз.
+	*/
+	public static void ensureSignalScannerUIScreenKeys(MCreator mc) {
+		var ws = mc.getWorkspace();
+		if (ws == null) return;
+	
+		// ----- EN (база) -----
+		Map<String, String> en = new LinkedHashMap<>();
+	
+		// Баннер/хедер
+		en.put("signalmanager.ui.scanner.banner", "STOLAS Astronomical\u2122");
+	
+		// Статусы/подписи со строковыми плейсхолдерами
+		en.put("signalmanager.ui.scanner.label.scanner_speed",  "scanner speed: %s px/s");
+		en.put("signalmanager.ui.scanner.label.pinger_speed",   "pinger speed: x%s");
+		en.put("signalmanager.ui.scanner.label.pinger_cooldown","pinger cooldown: %ss");
+	
+		en.put("signalmanager.ui.scanner.label.pinger_ready",   "pinger: READY");
+		en.put("signalmanager.ui.scanner.label.pinger_seconds", "pinger: %ss");
+	
+		en.put("signalmanager.ui.scanner.label.azimuth",  "Azimuth: %s");
+		en.put("signalmanager.ui.scanner.label.altitude", "Altitude: %s");
+	
+		// Логи/сообщения
+		en.put("signalmanager.ui.scanner.log.cooldown",        "Quick scan is on cooldown");
+		en.put("signalmanager.ui.scanner.log.init_quick_scan", "Initializing quick scan...");
+		en.put("signalmanager.ui.scanner.log.pinging",         "pinging\u2026");
+		en.put("signalmanager.ui.scanner.log.error_ping_failed","Error [2] Ping failed, weak or no signal");
+		en.put("signalmanager.ui.scanner.log.sensor_error",    "sensor error");
+		en.put("signalmanager.ui.scanner.log.success_ping",    "Successful ping. Initializing satellite rotation...");
+	
+		// Применяем EN как базу
+		for (Map.Entry<String,String> e : en.entrySet()) {
+			ws.setLocalization(e.getKey(), e.getValue());
+		}
+	
+		// ----- RU -----
+		Map<String, String> ru = new LinkedHashMap<>();
+	
+		// Баннер
+		ru.put("signalmanager.ui.scanner.banner", "STOLAS Astronomical\u2122");
+	
+		// Статусы/подписи (плейсхолдеры сохраним строковыми)
+		ru.put("signalmanager.ui.scanner.label.scanner_speed",   "скорость сканера: %s px/с");
+		ru.put("signalmanager.ui.scanner.label.pinger_speed",    "скорость пингера: x%s");
+		ru.put("signalmanager.ui.scanner.label.pinger_cooldown", "перезарядка пингера: %sс");
+	
+		ru.put("signalmanager.ui.scanner.label.pinger_ready",    "пингер: ГОТОВ");
+		ru.put("signalmanager.ui.scanner.label.pinger_seconds",  "пингер: %sс");
+	
+		ru.put("signalmanager.ui.scanner.label.azimuth",  "Азимут: %s");
+		ru.put("signalmanager.ui.scanner.label.altitude", "Высота: %s");
+	
+		// Логи/сообщения
+		ru.put("signalmanager.ui.scanner.log.cooldown",         "Быстрое сканирование на перезарядке");
+		ru.put("signalmanager.ui.scanner.log.init_quick_scan",  "Инициализация быстрого сканирования...");
+		ru.put("signalmanager.ui.scanner.log.pinging",          "пингуем\u2026");
+		ru.put("signalmanager.ui.scanner.log.error_ping_failed","Ошибка [2] Не удалось пропинговать: слабый или отсутствующий сигнал");
+		ru.put("signalmanager.ui.scanner.log.sensor_error",     "ошибка датчика");
+		ru.put("signalmanager.ui.scanner.log.success_ping",     "Пинг успешен. Запуск поворота спутника...");
+	
+		// Вписываем RU в карту конкретной локали
+		Map<String, ? extends Map<String, String>> lmap = ws.getLanguageMap();
+		Map<String, String> ruMap = getLocaleMapIgnoreCase(lmap, "ru_ru");
+		if (ruMap == null) ruMap = getLocaleMapIgnoreCase(lmap, "ru_RU");
+		if (ruMap != null) {
+			ruMap.putAll(ru);
+		}
+	}
+	
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, String> getLocaleMapIgnoreCase(Map<String, ? extends Map<String, String>> lmap, String locale) {
+        if (lmap == null) return null;
+        for (Map.Entry<String, ? extends Map<String, String>> e : lmap.entrySet()) {
+            if (e.getKey() != null && e.getKey().equalsIgnoreCase(locale)) {
+                return (Map<String, String>) e.getValue();
             }
         }
-        // если нет ru/en — берём любой
-        try (Stream<Path> s = Files.list(dir)) {
-            for (Path p : (Iterable<Path>) s.filter(f -> f.getFileName().toString().endsWith(".json"))::iterator) {
-                try {
-                    JsonObject lang = readLang(p);
-                    if (lang.has(key)) return lang.get(key).getAsString();
-                } catch (IOException ignored) {}
-            }
-        } catch (IOException ignored) {}
+        return null;
+    }
 
-        return key; // не нашли — вернём ключ как есть
+    // ---------- регистрация/удаление контент-ключей ----------
+    public static void ensureKeyForAllLocales(MCreator mc, String key, String value) {
+        var ws = mc.getWorkspace();
+        if (ws == null) return;
+
+        // ленивое обеспечение UI-ключей — гарантирует, что они попадут в lang
+        if (!uiKeysEnsured) {
+            ensureSignalTunerUIScreenKeys(mc);
+            uiKeysEnsured = true;
+        }
+
+        ws.setLocalization(key, value); // база EN
+    }
+
+    public static void deleteLocalizationForSignal(MCreator mc, int id) {
+        var ws = mc.getWorkspace();
+        if (ws == null) return;
+
+        List<String> keys = new ArrayList<>();
+        keys.add(textKey(id, "raw"));
+        keys.add(textKey(id, "low"));
+        keys.add(textKey(id, "noisy"));
+        keys.add(textKey(id, "high"));
+        keys.add(specialResponseKey(id, "raw"));
+        keys.add(specialResponseKey(id, "low"));
+        keys.add(specialResponseKey(id, "noisy"));
+        keys.add(specialResponseKey(id, "high"));
+        keys.add(objectNameKey(id));
+
+        for (String k : keys) {
+            ws.removeLocalizationEntryByKey(k);
+        }
+    }
+
+    // ---------- резолв для UI (чтение) ----------
+    public static String resolveKeyToTextPreferRuEn(MCreator mc, String key) {
+        if (key == null || key.isBlank()) return key;
+        var ws = mc.getWorkspace();
+        if (ws == null) return key;
+        Map<String, ? extends Map<String, String>> lm = ws.getLanguageMap();
+        if (lm == null || lm.isEmpty()) return key;
+
+        for (String pref : List.of("ru_ru", "en_us")) {
+            Map<String, String> map = getLocaleMapIgnoreCase(lm, pref);
+            if (map != null && map.containsKey(key)) {
+                return String.valueOf(map.get(key));
+            }
+        }
+        for (Map.Entry<String, ? extends Map<String, String>> e : lm.entrySet()) {
+            String v = e.getValue().get(key);
+            if (v != null) return v;
+        }
+        return key;
+    }
+
+    public static String resolveKeyOrReturn(MCreator mc, String keyOrLiteral) {
+        if (keyOrLiteral == null || keyOrLiteral.isBlank()) return keyOrLiteral;
+        if (!looksLikeOurKey(keyOrLiteral)) return keyOrLiteral;
+
+        var ws = mc.getWorkspace();
+        if (ws == null) return keyOrLiteral;
+        Map<String, ? extends Map<String, String>> lm = ws.getLanguageMap();
+
+        if (lm != null) {
+            for (Map<String, String> map : lm.values()) {
+                String v = map.get(keyOrLiteral);
+                if (v != null) return v;
+            }
+        }
+        if (keyOrLiteral.equals(defaultTextKey())) return defaultTextEN();
+        if (keyOrLiteral.equals(defaultSpecialResponseKey())) return " ";
+        return keyOrLiteral;
     }
 }

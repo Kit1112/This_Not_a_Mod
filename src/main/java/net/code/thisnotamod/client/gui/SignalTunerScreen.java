@@ -21,6 +21,8 @@ import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
+import net.minecraft.client.resources.language.I18n; // <— используем для получения перевода
+
 import net.code.thisnotamod.world.inventory.SignalTunerMenu;
 
 import net.minecraftforge.common.MinecraftForge;
@@ -33,6 +35,25 @@ import java.util.Locale;
  * Игровая логика вынесена в статический Background и тикает даже при закрытом GUI.
  */
 public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> {
+
+    // --- ключи локализации UI (для удобства, чтобы не писать строки руками) ---
+    private static final String K_DETECTOR_STATUS   = "signalmanager.ui.tuner.label.detector_status";
+    private static final String K_OBJECT             = "signalmanager.ui.tuner.label.object";
+    private static final String K_SIGNAL_QUALITY    = "signalmanager.ui.tuner.label.signal_quality";
+    private static final String K_SIGNAL_FREQUENCY  = "signalmanager.ui.tuner.label.signal_frequency";
+    private static final String K_DOWNLOADED        = "signalmanager.ui.tuner.label.downloaded";
+    private static final String K_POLARITY_FILTER   = "signalmanager.ui.tuner.label.polarity_filter";
+    private static final String K_FILTER_OFFSET     = "signalmanager.ui.tuner.label.filter_offset";
+    private static final String K_OFFSET_SPEED      = "signalmanager.ui.tuner.label.offset_speed";
+    private static final String K_OUTPUT_DATA       = "signalmanager.ui.tuner.label.output_data";
+    private static final String K_FREQUENCY_FILTER  = "signalmanager.ui.tuner.label.frequency_filter";
+
+    private static final String K_VAL_NONE          = "signalmanager.ui.tuner.value.none";
+    private static final String K_VAL_LOW           = "signalmanager.ui.tuner.value.low";
+    private static final String K_VAL_MIDDLE        = "signalmanager.ui.tuner.value.middle";
+
+    private static final String K_UNIT_DEG_PER_S    = "signalmanager.ui.tuner.unit.deg_per_s";
+    private static final String K_UNIT_HZ_PER_S     = "signalmanager.ui.tuner.unit.hz_per_s";
 
     private static final class Background {
         static int    targetPolarityDir  = clamp(1, 0, 2);
@@ -284,28 +305,55 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         boolean ready = Background.detectorPercent >= 100.0 - 1e-6;
 
         int line = 0;
-        drawLabelValue(gg, r5, line++, "Detector status:",
+        drawLabelValue(gg, r5, line++, I18n.get(K_DETECTOR_STATUS),
                 String.format(Locale.ROOT, "%.1f%%", Background.detectorPercent),
                 0xFFFFFFFF, 0xFF00FF00);
 
         String objectNameShown = "unknown";
         if (sDetectedObjectKey != null && !sDetectedObjectKey.isEmpty()) {
-            objectNameShown = Component.translatable(sDetectedObjectKey).getString();
+            String langKey = sDetectedObjectKey.trim();
+            int colon = langKey.indexOf(':');
+            if (colon >= 0) langKey = langKey.substring(colon + 1);
+            String translated = net.minecraft.client.resources.language.I18n.get(langKey);
+            objectNameShown = (translated != null && !translated.equals(langKey)) ? translated : langKey;
         }
 
-        drawLabelValue(gg, r5, line++, "Object:",
-                ready ? objectNameShown : "none",
+        drawLabelValue(gg, r5, line++, I18n.get(K_OBJECT),
+                ready ? objectNameShown : I18n.get(K_VAL_NONE),
                 0xFFBBBBBB, 0xFFBBBBBB);
 
-        drawLabelValue(gg, r5, line++, "Signal quality:",
-                ready ? (sQuality != null ? sQuality : "low") : "none",
+        // значение для качества/частоты берём из таблицы перевода, если строка известна
+        String qualityShown = I18n.get(K_VAL_LOW);
+        if (ready) {
+            if (sQuality != null && !sQuality.isBlank()) {
+                String qKey = "signalmanager.ui.tuner.value." + sQuality.toLowerCase(Locale.ROOT);
+                String tr = I18n.get(qKey);
+                qualityShown = (tr != null && !tr.equals(qKey)) ? tr : sQuality;
+            }
+        } else {
+            qualityShown = I18n.get(K_VAL_NONE);
+        }
+
+        drawLabelValue(gg, r5, line++, I18n.get(K_SIGNAL_QUALITY),
+                qualityShown,
                 0xFFBBBBBB, 0xFFBBBBBB);
 
-        drawLabelValue(gg, r5, line++, "Signal frequency:",
-                ready ? (sFrequency != null ? sFrequency : "middle") : "none",
+        String frequencyShown = I18n.get(K_VAL_MIDDLE);
+        if (ready) {
+            if (sFrequency != null && !sFrequency.isBlank()) {
+                String fKey = "signalmanager.ui.tuner.value." + sFrequency.toLowerCase(Locale.ROOT);
+                String tr = I18n.get(fKey);
+                frequencyShown = (tr != null && !tr.equals(fKey)) ? tr : sFrequency;
+            }
+        } else {
+            frequencyShown = I18n.get(K_VAL_NONE);
+        }
+
+        drawLabelValue(gg, r5, line++, I18n.get(K_SIGNAL_FREQUENCY),
+                frequencyShown,
                 0xFFBBBBBB, 0xFFBBBBBB);
 
-        drawLabelValue(gg, r5, line++, "Downloaded:",
+        drawLabelValue(gg, r5, line++, I18n.get(K_DOWNLOADED),
                 String.format(Locale.ROOT, "%.1f%%", Background.downloadedPercent),
                 0xFF00FF00, 0xFF00FF00);
 
@@ -415,28 +463,38 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
     private void drawPolarityTextBlock(GuiGraphics gg, IntRect r) {
         int line = 0;
 
-        gg.drawString(this.font, "Polarity filter:", r.x + 10, r.y + 8 + line * (10 + 4), 0xFFFFFFFF, false);
+        gg.drawString(this.font, I18n.get(K_POLARITY_FILTER), r.x + 10, r.y + 8 + line * (10 + 4), 0xFFFFFFFF, false);
         line++;
 
-        drawLabelValue(gg, r, line++, "Filter offset:", String.format(Locale.ROOT, "%.1f", Background.currentPolarityDeg),
+        drawLabelValue(gg, r, line++, I18n.get(K_FILTER_OFFSET),
+                String.format(Locale.ROOT, "%.1f", Background.currentPolarityDeg),
                 0xFFBBBBBB, 0xFFBBBBBB);
-        drawLabelValue(gg, r, line++, "Offset speed:", Background.polaritySpeedPerSec + " deg/s",
+
+        drawLabelValue(gg, r, line++, I18n.get(K_OFFSET_SPEED),
+                Background.polaritySpeedPerSec + " " + I18n.get(K_UNIT_DEG_PER_S),
                 0xFFBBBBBB, 0xFFBBBBBB);
-        drawLabelValue(gg, r, line,   "Output data:", String.format(Locale.ROOT, "%.1f%%", Background.polarityOutputPercent),
+
+        drawLabelValue(gg, r, line, I18n.get(K_OUTPUT_DATA),
+                String.format(Locale.ROOT, "%.1f%%", Background.polarityOutputPercent),
                 0xFFBBBBBB, 0xFFE0C040);
     }
 
     private void drawFrequencyTextBlock(GuiGraphics gg, IntRect r) {
         int line = 0;
 
-        gg.drawString(this.font, "Frequency filter:", r.x + 10, r.y + 8 + line * (10 + 4), 0xFFFFFFFF, false);
+        gg.drawString(this.font, I18n.get(K_FREQUENCY_FILTER), r.x + 10, r.y + 8 + line * (10 + 4), 0xFFFFFFFF, false);
         line++;
 
-        drawLabelValue(gg, r, line++, "Filter offset:", String.format(Locale.ROOT, "%.1f", Background.currentFrequency),
+        drawLabelValue(gg, r, line++, I18n.get(K_FILTER_OFFSET),
+                String.format(Locale.ROOT, "%.1f", Background.currentFrequency),
                 0xFFBBBBBB, 0xFFBBBBBB);
-        drawLabelValue(gg, r, line++, "Offset speed:", Background.frequencySpeedPerSec + " Hz/s",
+
+        drawLabelValue(gg, r, line++, I18n.get(K_OFFSET_SPEED),
+                Background.frequencySpeedPerSec + " " + I18n.get(K_UNIT_HZ_PER_S),
                 0xFFBBBBBB, 0xFFBBBBBB);
-        drawLabelValue(gg, r, line,   "Output data:", String.format(Locale.ROOT, "%.1f%%", Background.frequencyOutputPercent),
+
+        drawLabelValue(gg, r, line, I18n.get(K_OUTPUT_DATA),
+                String.format(Locale.ROOT, "%.1f%%", Background.frequencyOutputPercent),
                 0xFFBBBBBB, 0xFFE0C040);
     }
 

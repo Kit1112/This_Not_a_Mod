@@ -7,6 +7,7 @@ import net.minecraft.Util;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.resources.language.I18n;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import org.joml.Matrix4f;
@@ -24,6 +25,22 @@ import net.code.thisnotamod.client.SignalPicker; // <-- единый источ�
 import java.util.*;
 
 public class SignalScannerScreen extends AbstractContainerScreen<SignalScannerMenu> {
+
+    // --- UI локализация: ключи ---
+    private static final String K_BANNER              = "signalmanager.ui.scanner.banner";
+    private static final String K_SCANNER_SPEED       = "signalmanager.ui.scanner.label.scanner_speed";       // scanner speed: %s px/s
+    private static final String K_PINGER_SPEED        = "signalmanager.ui.scanner.label.pinger_speed";        // pinger speed: x%s
+    private static final String K_PINGER_COOLDOWN     = "signalmanager.ui.scanner.label.pinger_cooldown";     // pinger cooldown: %ss
+    private static final String K_COOLDOWN_HINT       = "signalmanager.ui.scanner.log.cooldown";              // Quick scan is on cooldown
+    private static final String K_INIT_QUICK_SCAN     = "signalmanager.ui.scanner.log.init_quick_scan";       // Initializing quick scan...
+    private static final String K_PINGING             = "signalmanager.ui.scanner.log.pinging";               // pinging…
+    private static final String K_ERR_PING_FAILED     = "signalmanager.ui.scanner.log.error_ping_failed";     // Error [2] Ping failed, weak or no signal
+    private static final String K_ERR_SENSOR          = "signalmanager.ui.scanner.log.sensor_error";          // sensor error
+    private static final String K_SUCCESS_PING        = "signalmanager.ui.scanner.log.success_ping";          // Successful ping. Initializing satellite rotation...
+    private static final String K_PINGER_READY        = "signalmanager.ui.scanner.label.pinger_ready";        // pinger: READY
+    private static final String K_PINGER_SECONDS      = "signalmanager.ui.scanner.label.pinger_seconds";      // pinger: %ss
+    private static final String K_AZIMUTH             = "signalmanager.ui.scanner.label.azimuth";             // Azimuth: %s
+    private static final String K_ALTITUDE            = "signalmanager.ui.scanner.label.altitude";            // Altitude: %s
 
     private static final String MODID = "thisnotamod";
     private boolean wasMoving = false;
@@ -47,9 +64,8 @@ public class SignalScannerScreen extends AbstractContainerScreen<SignalScannerMe
     private float consoleX, consoleY, consoleW, consoleH;
     private float leftPaneW, logPaneX, logPaneW;
 
-        /** Пересчёт геометрии экрана под любое окно/скейл. */
+    /** Пересчёт геометрии экрана под любое окно/скейл. */
     private void computeLayout() {
-        // Границы «внутренней» области (без внешней рамки)
         final int w = this.width;
         final int h = this.height;
 
@@ -58,34 +74,27 @@ public class SignalScannerScreen extends AbstractContainerScreen<SignalScannerMe
         final int innerW = Math.max(1, w - MARGIN * 2);
         final int innerH = Math.max(1, h - MARGIN * 2);
 
-        // Высота нижней консоли: минимум фиксированный, остальное — доля от экрана
         int cH = Math.max(CONSOLE_MIN_H, Math.round(innerH * 0.26f));
-        // не даём консоли «съесть» весь экран — оставим минимум для окна обзора
         if (cH > innerH - 80) {
             cH = Math.max(CONSOLE_MIN_H, innerH - 80);
         }
 
-        // Область обзора (со звёздами/прицелом) — сверху
         this.viewX = innerX;
         this.viewY = innerY;
         this.viewW = innerW;
         this.viewH = Math.max(1, innerH - cH);
 
-        // Нижняя панель консоли (статусы слева + логи справа)
         this.consoleX = innerX;
         this.consoleY = innerY + this.viewH;
         this.consoleW = innerW;
         this.consoleH = cH;
 
-        // Левая колонка статусов — минимум фиксированный, иначе ~38% ширины консоли
         float lp = Math.max(LEFT_PANE_MIN_W, Math.round(this.consoleW * 0.38f));
-        // Оставим место под логи
         if (lp > this.consoleW - 100) {
             lp = Math.max(LEFT_PANE_MIN_W, this.consoleW - 100);
         }
         this.leftPaneW = lp;
 
-        // Правая колонка логов
         this.logPaneX = this.consoleX + this.leftPaneW;
         this.logPaneW = Math.max(1f, this.consoleW - this.leftPaneW);
     }
@@ -236,7 +245,7 @@ public class SignalScannerScreen extends AbstractContainerScreen<SignalScannerMe
         lastFrameMs=Util.getMillis();
 
         prepopulateSignals();
-        uiLogAdd("STOLAS Astronomical™", LOG_COLOR_WARN);
+        uiLogAdd(I18n.get(K_BANNER), LOG_COLOR_WARN);
         uiLogAdd("", LOG_COLOR_HINT);
 
         this.speedMod = readSpeedModOnce();
@@ -246,10 +255,9 @@ public class SignalScannerScreen extends AbstractContainerScreen<SignalScannerMe
         this.pingerSpeedMod = readPingerSpeedOnce();
         this.pingerSuccessChance = readPingerSuccessChanceOnce();
 
-        uiLogAdd(String.format(java.util.Locale.ROOT,
-                "scanner speed: %.0f px/s", BASE_MOVE_SPEED_PX_PER_SEC), LOG_COLOR_HINT);
-        uiLogAdd(String.format(java.util.Locale.ROOT, "pinger speed: x%.2f", pingerSpeedMod), LOG_COLOR_HINT);
-        uiLogAdd(String.format(java.util.Locale.ROOT, "pinger cooldown: %.2fs", pingerCooldownSec), LOG_COLOR_HINT);
+        uiLogAdd(I18n.get(K_SCANNER_SPEED, String.format(java.util.Locale.ROOT, "%.0f", BASE_MOVE_SPEED_PX_PER_SEC)), LOG_COLOR_HINT);
+        uiLogAdd(I18n.get(K_PINGER_SPEED,  String.format(java.util.Locale.ROOT, "x%.2f", pingerSpeedMod)).replace("x", ""), LOG_COLOR_HINT);
+        uiLogAdd(I18n.get(K_PINGER_COOLDOWN, String.format(java.util.Locale.ROOT, "%.2f", pingerCooldownSec)), LOG_COLOR_HINT);
     }
 
     @Override public boolean isPauseScreen(){return false;}
@@ -314,16 +322,14 @@ public class SignalScannerScreen extends AbstractContainerScreen<SignalScannerMe
                     captureNextPulseAtMs = now + (long)(pulseDur * 1000f);
                 } else {
                     if (captureTarget == null) {
-                        uiLogAdd("Error [2] Ping failed, weak or no signal", LOG_COLOR_WARN);
+                        uiLogAdd(I18n.get(K_ERR_PING_FAILED), LOG_COLOR_WARN);
                         playError();
                         captureInProgress = false;
                         return;
                     }
 
                     if (rng.nextFloat() > pingerSuccessChance) {
-                        uiLogAdd(rng.nextBoolean()
-                                ? "sensor error"
-                                : "Error [2] Ping failed, weak or no signal", LOG_COLOR_ERR);
+                        uiLogAdd(rng.nextBoolean() ? I18n.get(K_ERR_SENSOR) : I18n.get(K_ERR_PING_FAILED), LOG_COLOR_ERR);
                         playError();
                         signals.remove(captureTarget);
                         captureInProgress = false;
@@ -331,14 +337,12 @@ public class SignalScannerScreen extends AbstractContainerScreen<SignalScannerMe
                         return;
                     }
 
-                    // успешный пинг ⇒ выбрать сигнал и передать тюнеру
                     captureTarget.caught = true;
                     signals.remove(captureTarget);
-                    uiLogAdd("Successful ping. Initializing satellite rotation...", LOG_COLOR_OK);
+                    uiLogAdd(I18n.get(K_SUCCESS_PING), LOG_COLOR_OK);
                     captureInProgress = false;
                     captureTarget = null;
 
-                    // === ЕДИНЫЙ ВЫЗОВ ===
                     SignalTunerScreen.applyPickedSignal(SignalPicker.pickRandomRegular());
                 }
             }
@@ -376,11 +380,11 @@ public class SignalScannerScreen extends AbstractContainerScreen<SignalScannerMe
         if (keyCode == GLFW.GLFW_KEY_LEFT_SHIFT || keyCode == GLFW.GLFW_KEY_RIGHT_SHIFT) {
             long now = Util.getMillis();
             if (now < nextPingAllowedMs) {
-                uiLogAdd("Quick scan is on cooldown", LOG_COLOR_WARN);
+                uiLogAdd(I18n.get(K_COOLDOWN_HINT), LOG_COLOR_WARN);
                 playError();
                 return true;
             }
-            uiLogAdd("Initializing quick scan...", LOG_COLOR_HINT);
+            uiLogAdd(I18n.get(K_INIT_QUICK_SCAN), LOG_COLOR_HINT);
             playTurn();
             triggerScan(now);
             if (pingerCooldownSec > 0f) nextPingAllowedMs = now + (long)(pingerCooldownSec * 1000f);
@@ -417,7 +421,7 @@ public class SignalScannerScreen extends AbstractContainerScreen<SignalScannerMe
         spawnCapturePulse(pulseDur);
         captureNextPulseAtMs = now + (long)(pulseDur * 1000f);
 
-        uiLogAdd("pinging…", LOG_COLOR_HINT);
+        uiLogAdd(I18n.get(K_PINGING), LOG_COLOR_HINT);
     }
 
     private void triggerScan(long nowMs) {
@@ -457,8 +461,6 @@ public class SignalScannerScreen extends AbstractContainerScreen<SignalScannerMe
 
         lastArrowRenderLogMs = 0L;
     }
-
-    // --- ниже код рендера/утилит без изменений ---
 
     @Override
     protected void renderLabels(GuiGraphics gfx, int mouseX, int mouseY) { }
@@ -601,8 +603,8 @@ public class SignalScannerScreen extends AbstractContainerScreen<SignalScannerMe
         float az  = 360f * (1f - nx);
         float alt = 25f + 65f * ny;
 
-        String azStr  = String.format(java.util.Locale.ROOT, "Azimuth: %.1f", az);
-        String altStr = String.format(java.util.Locale.ROOT, "Altitude: %.1f", alt);
+        String azStr  = I18n.get(K_AZIMUTH,  String.format(java.util.Locale.ROOT, "%.1f", az));
+        String altStr = I18n.get(K_ALTITUDE, String.format(java.util.Locale.ROOT, "%.1f", alt));
 
         int tx = leftX1;
         if (leftX2 > leftX1) {
@@ -612,8 +614,8 @@ public class SignalScannerScreen extends AbstractContainerScreen<SignalScannerMe
 
         String cdText;
         int    cdColor;
-        if (remain <= 0.0001f) { cdText = "pinger: READY"; cdColor = LOG_COLOR_OK; }
-        else { cdText = String.format(java.util.Locale.ROOT, "pinger: %.2fs", remain); cdColor = LOG_COLOR_WARN; }
+        if (remain <= 0.0001f) { cdText = I18n.get(K_PINGER_READY); cdColor = LOG_COLOR_OK; }
+        else { cdText = I18n.get(K_PINGER_SECONDS, String.format(java.util.Locale.ROOT, "%.2f", remain)); cdColor = LOG_COLOR_WARN; }
 
         if (leftX2 > leftX1) {
             gfx.drawString(this.font, cdText, tx, cooldownY, cdColor, false);

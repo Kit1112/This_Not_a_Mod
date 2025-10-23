@@ -5,7 +5,6 @@ import com.example.signalmanager.services.SignalLocalization;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.mcreator.ui.MCreator;
-import com.example.signalmanager.services.SignalLocalization;
 
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
@@ -103,29 +102,34 @@ public final class EditTableDialog extends JDialog {
             JsonObject obj = model.getAtModelRow(modelRow);
             int res = JOptionPane.showConfirmDialog(
                     EditTableDialog.this, "Delete?", "Confirm", JOptionPane.YES_NO_OPTION);
-            try {
-    JsonArray arr = SignalIO.loadSignals(mc);
-    int id = obj.get("id").getAsInt();
-    for (int i = 0; i < arr.size(); i++) {
-        if (arr.get(i).getAsJsonObject().get("id").getAsInt() == id) {
-            arr.remove(i);
-            break;
-        }
-    }
-    SignalIO.saveSignals(mc, arr);
+            if (res == JOptionPane.YES_OPTION) {
+                try {
+                    JsonArray arr = SignalIO.loadSignals(mc);
+                    int id = obj.get("id").getAsInt();
+                    for (int i = 0; i < arr.size(); i++) {
+                        if (arr.get(i).getAsJsonObject().get("id").getAsInt() == id) {
+                            arr.remove(i);
+                            break;
+                        }
+                    }
+                    SignalIO.saveSignals(mc, arr);
 
-    // подчистить локализации (text_*, special_response_*, object_name), дефолты не трогаем
-    SignalLocalization.deleteLocalizationForSignal(mc, id);
+                    // ВАЖНО: вычистим связанные локализационные ключи (кроме дефолтов)
+                    SignalLocalization.deleteLocalizationForSignal(mc, obj.get("id").getAsInt());
 
-    reload();
-} catch (Exception ex) {
-    JOptionPane.showMessageDialog(EditTableDialog.this, ex.getMessage(),
-            "SignalManager", JOptionPane.ERROR_MESSAGE);
-}
+                    reload();
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(EditTableDialog.this, ex.getMessage(),
+                            "SignalManager", JOptionPane.ERROR_MESSAGE);
+                }
+            }
         }));
     }
 
     private void reload() {
+        // На всякий случай — подлить недостающие локализации из зеркала перед показом
+        SignalLocalization.reapplyPersistedKeys(mc);
+
         JsonArray arr = SignalIO.loadSignals(mc);
         model.set(arr);
         applyFilter();

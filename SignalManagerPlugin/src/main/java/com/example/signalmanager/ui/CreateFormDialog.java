@@ -1,8 +1,8 @@
 package com.example.signalmanager.ui;
 
 import com.example.signalmanager.services.SignalIO;
-import com.example.signalmanager.services.Validation;
 import com.example.signalmanager.services.SignalLocalization;
+import com.example.signalmanager.services.Validation;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.mcreator.element.parts.Sound;
@@ -15,6 +15,8 @@ import net.mcreator.ui.workspace.resources.TextureType;
 
 import javax.swing.*;
 import java.awt.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Locale;
 
 public final class CreateFormDialog extends JDialog {
@@ -22,9 +24,11 @@ public final class CreateFormDialog extends JDialog {
     // Basic
     private final JLabel idValue = new JLabel("-");
     private final JTextField nameField = new JTextField();
-    private final JTextField objectNameField = new JTextField(); // <--- НОВОЕ ПОЛЕ
     private final JSpinner sizeField = new JSpinner(new SpinnerNumberModel(1.0, 0.1, 10.0, 0.1));
     private final JComboBox<String> typeCombo = new JComboBox<>(new String[] {"regular","trigger_event","story"});
+
+    // Object name (локализуемо)
+    private final JTextField objectNameField = new JTextField(); // если пусто — выберем случайный дефолтный локализуемый ключ
 
     // Flags
     private final JCheckBox specialResponseCheck = new JCheckBox("special_response");
@@ -59,7 +63,14 @@ public final class CreateFormDialog extends JDialog {
     private final MCreator mc;
     private Integer editingId = null;
 
-    // Безопасно получаем тип текстуры для папки "screens" (или "gui"), с фолбэком на ITEM
+    // Фолбэки «старых» значений ресурсов — если пикер не подгрузил визуально,
+    // мы всё равно НЕ потеряем их при сохранении
+    private String keyObjectImageOld = "";
+    private String keyImageRawOld = "", keyImageLowOld = "", keyImageNoisyOld = "", keyImageHighOld = "";
+    private String keySoundRawOld = "", keySoundLowOld = "", keySoundNoisyOld = "", keySoundHighOld = "";
+    private String existingObjectNameKey = null;
+
+    // Безопасно получаем тип текстуры для папки "screens"/"gui"
     private static TextureType screenTextureType() {
         try { return TextureType.valueOf("SCREEN"); } catch (Throwable ignored) {}
         try { return TextureType.valueOf("GUI"); }    catch (Throwable ignored) {}
@@ -70,9 +81,8 @@ public final class CreateFormDialog extends JDialog {
         super(mc, "Create Signal", false);
         this.mc = mc;
 
-        // стало — свой диалог на каждую кнопку
+        // каждый пикер со своим диалогом
         objectImageBtn = new TextureSelectionButton(new TypedTextureSelectorDialog(mc, TextureType.ITEM));
-        // image_* выбирают из screens/gui
         TextureType screenTT = screenTextureType();
         imageRawBtn   = new TextureSelectionButton(new TypedTextureSelectorDialog(mc, screenTT));
         imageLowBtn   = new TextureSelectionButton(new TypedTextureSelectorDialog(mc, screenTT));
@@ -86,19 +96,16 @@ public final class CreateFormDialog extends JDialog {
 
         buildUI();
         pack();
-        setSize(1100, 800);
+        setSize(1100, 860);
         setLocationRelativeTo(mc);
     }
 
     private void buildUI() {
-        // --- компактные размеры полей ---
+        // компактные размеры
         nameField.setColumns(22);
-        objectNameField.setColumns(22);
         Dimension tfSmall = new Dimension(320, nameField.getPreferredSize().height);
         nameField.setPreferredSize(tfSmall);
         nameField.setMaximumSize(tfSmall);
-        objectNameField.setPreferredSize(tfSmall);
-        objectNameField.setMaximumSize(tfSmall);
 
         try {
             if (sizeField.getEditor() instanceof JSpinner.DefaultEditor de) {
@@ -124,7 +131,6 @@ public final class CreateFormDialog extends JDialog {
         GridBagConstraints gc = new GridBagConstraints();
         gc.insets = new Insets(4,4,4,4);
 
-        // Левая форма – НЕ растягиваем поля
         JPanel formGrid = new JPanel(new GridBagLayout());
         GridBagConstraints lf = new GridBagConstraints();
         lf.insets = new Insets(4,4,4,4);
@@ -138,11 +144,6 @@ public final class CreateFormDialog extends JDialog {
         lf.gridx = 0; lf.gridy = row; formGrid.add(new JLabel("name:"), lf);
         lf.gridx = 1; lf.gridy = row; formGrid.add(nameField, lf); row++;
 
-        // НОВОЕ: object_name
-        lf.gridx = 0; lf.gridy = row; formGrid.add(new JLabel("object_name:"), lf);
-        lf.gridx = 1; lf.gridy = row; formGrid.add(objectNameField, lf); row++;
-
-        // size
         lf.gridx = 0; lf.gridy = row; formGrid.add(new JLabel("size:"), lf);
         JPanel sizeLine = new JPanel(new GridBagLayout());
         GridBagConstraints sgc = new GridBagConstraints();
@@ -159,10 +160,12 @@ public final class CreateFormDialog extends JDialog {
         lf.gridx = 0; lf.gridy = row; formGrid.add(new JLabel("type:"), lf);
         lf.gridx = 1; lf.gridy = row; formGrid.add(typeCombo, lf); row++;
 
+        lf.gridx = 0; lf.gridy = row; formGrid.add(new JLabel("object_name:"), lf);
+        lf.gridx = 1; lf.gridy = row; formGrid.add(objectNameField, lf); row++;
+
         JPanel formWrap = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         formWrap.add(formGrid);
 
-        // Правая колонка — флаги
         JPanel flagsCol = new JPanel();
         flagsCol.setLayout(new BoxLayout(flagsCol, BoxLayout.Y_AXIS));
         flagsCol.setBorder(BorderFactory.createEmptyBorder(0,14,0,0));
@@ -185,8 +188,8 @@ public final class CreateFormDialog extends JDialog {
         images.setBorder(BorderFactory.createTitledBorder("Изображения"));
         GridBagConstraints ic = new GridBagConstraints();
         ic.insets = new Insets(4,4,4,4);
-        ic.fill = GridBagConstraints.NONE;   // не растягиваем
-        ic.anchor = GridBagConstraints.WEST; // прижимаем влево
+        ic.fill = GridBagConstraints.NONE;
+        ic.anchor = GridBagConstraints.WEST;
         Dimension imgCell = new Dimension(300, 90);
 
         java.util.function.Function<JComponent, JComponent> leftWrap = comp -> {
@@ -268,7 +271,6 @@ public final class CreateFormDialog extends JDialog {
         comp.setMinimumSize(d);
         return comp;
     }
-
     private JPanel labeled(String l, JComponent c) {
         JPanel pan = new JPanel(new BorderLayout(4,4));
         pan.add(new JLabel(l), BorderLayout.NORTH);
@@ -277,39 +279,33 @@ public final class CreateFormDialog extends JDialog {
     }
 
     private static String orZero(String s) { return (s==null||s.isBlank()) ? "0" : s.replaceAll("\\D",""); }
-    private static String emptyDefault(String s){ return (s==null||s.isBlank()) ? "Нет текста" : s; }
 
-    private String textureKey(TextureSelectionButton b) {
+    /* ---------- helpers: texture/sound ---------- */
+
+    private String textureKey(TextureSelectionButton b, String fallback) {
         try {
-            // 1) прямые геттеры у кнопки
-            for (String m : new String[]{
-                    "getUnmappedTextureName", "getTextureName", "getSelectedTextureName"
-            }) {
+            // прямые геттеры у кнопки
+            for (String m : new String[]{"getUnmappedTextureName", "getTextureName", "getSelectedTextureName"}) {
                 try {
                     Object v = b.getClass().getMethod(m).invoke(b);
                     if (v instanceof String s && !s.isBlank())
                         return SignalIO.modid(mc) + ":" + s;
                 } catch (Throwable ignored) {}
             }
-
-            // 2) поле-холдер у кнопки
+            // поле-холдер у кнопки
             for (String fName : new String[]{"selected_texture","selectedTexture","selected"}) {
                 try {
-                    var f = b.getClass().getDeclaredField(fName);
+                    Field f = b.getClass().getDeclaredField(fName);
                     f.setAccessible(true);
                     Object holder = f.get(b);
                     if (holder != null) {
-                        // у холдера пробуем геттеры
-                        for (String hm : new String[]{
-                                "getUnmappedTextureName","getTextureName"
-                        }) {
+                        for (String hm : new String[]{"getUnmappedTextureName","getTextureName"}) {
                             try {
                                 Object v = holder.getClass().getMethod(hm).invoke(holder);
                                 if (v instanceof String s && !s.isBlank())
                                     return SignalIO.modid(mc) + ":" + s;
                             } catch (Throwable ignored) {}
                         }
-                        // иногда у холдера есть getTexture().getName()
                         try {
                             Object tex = holder.getClass().getMethod("getTexture").invoke(holder);
                             if (tex != null) {
@@ -321,28 +317,57 @@ public final class CreateFormDialog extends JDialog {
                     }
                 } catch (Throwable ignored) {}
             }
-        } catch (Throwable t) {
-            // ignore
-        }
-        return "";
+        } catch (Throwable ignored) {}
+        // если ничего не нашли — вернём то, что было сохранено раньше
+        return (fallback == null) ? "" : fallback;
     }
 
-    private String soundKey(SoundSelector s) {
+    private void setTextureFromKey(TextureSelectionButton b, String key) {
+        if (key == null || key.isBlank()) return;
+        String name = key.contains(":") ? key.substring(key.indexOf(':') + 1) : key;
+        // попробуем вызвать любые «устанавливающие» методы
+        for (String m : new String[]{"setSelectedTextureName","setTextureName","setTexture"}) {
+            try {
+                Method mm = b.getClass().getMethod(m, String.class);
+                mm.invoke(b, name);
+                return;
+            } catch (Throwable ignored) {}
+        }
+        // если методов нет — хотя бы поставим tooltip, чтобы было видно старое значение
+        try {
+            b.setToolTipText(name);
+        } catch (Throwable ignored) {}
+    }
+
+    private String soundKey(SoundSelector s, String fallback) {
         try {
             Sound snd = s.getSound();
-            if (snd == null) return "";
+            if (snd == null) return fallback == null ? "" : fallback;
             try {
                 Object v = snd.getClass().getMethod("getUnmappedValue").invoke(snd);
                 if (v instanceof String str && !str.isBlank()) return str;
             } catch (Throwable ignored){}
             return snd.toString();
-        } catch (Throwable t) { return ""; }
+        } catch (Throwable t) { return fallback == null ? "" : fallback; }
     }
+
+    private void setSoundFromKey(SoundSelector s, String key) {
+        if (key == null || key.isBlank()) return;
+        try {
+            Method m = s.getClass().getMethod("setSoundByName", String.class);
+            m.invoke(s, key);
+        } catch (Throwable ignored) {
+            // не получилось — оставим фолбэк через soundKey(...)
+        }
+    }
+
+    /* ---------- save ---------- */
 
     private void onSave() {
         try {
-            // на всякий — если за время работы добавили новые lang-файлы
+            // сначала гарантируем, что дефолты есть и «подливаем» наши ключи из зеркала (если MCreator что-то перезаписал)
             SignalLocalization.ensureDefaultKeys(mc);
+            SignalLocalization.reapplyPersistedKeys(mc);
 
             JsonArray arr = SignalIO.loadSignals(mc);
             int id = (editingId != null) ? editingId : nextId(arr);
@@ -351,17 +376,18 @@ public final class CreateFormDialog extends JDialog {
             o.addProperty("id", id);
             o.addProperty("name", nameField.getText());
             o.addProperty("size", ((Number) sizeField.getValue()).floatValue());
-            o.addProperty("object_image", textureKey(objectImageBtn));
+            // картинки/звуки — с защитой от потери (если пикер ничего не отдал, берём старое)
+            o.addProperty("object_image", textureKey(objectImageBtn, keyObjectImageOld));
             o.addProperty("type", (String) typeCombo.getSelectedItem());
 
             // ---- object_name (локализуемо) ----
             String objName = objectNameField.getText() == null ? "" : objectNameField.getText().trim();
             String objKey;
             if (objName.isBlank()) {
-                // не задано — берём случайный дефолтный ключ из набора
+                // не задано — возьмём случайный дефолтный ключ из набора (переводами заведует ensureDefaultKeys)
                 objKey = SignalLocalization.randomDefaultObjectNameKey();
             } else {
-                // задано — выделяем индивидуальный ключ и пишем его во все локали (одно и то же значение)
+                // задано — создаём персональный ключ и прописываем его значение для всех локалей
                 objKey = SignalLocalization.objectNameKey(id);
                 SignalLocalization.ensureKeyForAllLocales(mc, objKey, objName);
             }
@@ -372,15 +398,15 @@ public final class CreateFormDialog extends JDialog {
             o.addProperty("special_response", sr);
             o.addProperty("special_price", sp);
 
-            o.addProperty("image_raw",   textureKey(imageRawBtn));
-            o.addProperty("image_low",   textureKey(imageLowBtn));
-            o.addProperty("image_noisy", textureKey(imageNoisyBtn));
-            o.addProperty("image_high",  textureKey(imageHighBtn));
+            o.addProperty("image_raw",   textureKey(imageRawBtn,   keyImageRawOld));
+            o.addProperty("image_low",   textureKey(imageLowBtn,   keyImageLowOld));
+            o.addProperty("image_noisy", textureKey(imageNoisyBtn, keyImageNoisyOld));
+            o.addProperty("image_high",  textureKey(imageHighBtn,  keyImageHighOld));
 
-            o.addProperty("sound_raw",   soundKey(soundRawSel));
-            o.addProperty("sound_low",   soundKey(soundLowSel));
-            o.addProperty("sound_noisy", soundKey(soundNoisySel));
-            o.addProperty("sound_high",  soundKey(soundHighSel));
+            o.addProperty("sound_raw",   soundKey(soundRawSel,   keySoundRawOld));
+            o.addProperty("sound_low",   soundKey(soundLowSel,   keySoundLowOld));
+            o.addProperty("sound_noisy", soundKey(soundNoisySel, keySoundNoisyOld));
+            o.addProperty("sound_high",  soundKey(soundHighSel,  keySoundHighOld));
 
             if (sp) {
                 o.addProperty("price_raw",  orZero(priceRawField.getText()));
@@ -497,41 +523,66 @@ public final class CreateFormDialog extends JDialog {
     public static void open(MCreator mc, JsonObject existingOrNull) {
         try {
             SignalIO.ensureWorkspaceScaffold(mc); // на всякий
+            // дефолты и подливка из зеркала перед показом
             SignalLocalization.ensureDefaultKeys(mc);
+            SignalLocalization.reapplyPersistedKeys(mc);
         } catch (Exception e) {
             e.printStackTrace();
         }
         CreateFormDialog d = new CreateFormDialog(mc);
+
         if (existingOrNull != null) {
             d.editingId = existingOrNull.get("id").getAsInt();
             d.idValue.setText(String.valueOf(d.editingId));
             d.nameField.setText(existingOrNull.get("name").getAsString());
             d.sizeField.setValue(existingOrNull.get("size").getAsDouble());
             d.typeCombo.setSelectedItem(existingOrNull.get("type").getAsString());
-
             d.specialResponseCheck.setSelected(existingOrNull.get("special_response").getAsBoolean());
             d.specialPriceCheck.setSelected(existingOrNull.get("special_price").getAsBoolean());
             d.pricesPanel.setVisible(d.specialPriceCheck.isSelected());
             d.srPanel.setVisible(d.specialResponseCheck.isSelected());
 
-            // object_name: если это ключ — показываем текст, иначе — как есть
-            if (existingOrNull.has("object_name")) {
-                String on = existingOrNull.get("object_name").getAsString();
-                if (SignalLocalization.looksLikeOurKey(on)) {
-                    d.objectNameField.setText(SignalLocalization.resolveKeyToTextPreferRuEn(mc, on));
-                } else {
-                    d.objectNameField.setText(on);
-                }
-            }
+            // object_name
+            String objKey = existingOrNull.has("object_name") ? existingOrNull.get("object_name").getAsString() : "";
+            d.existingObjectNameKey = objKey;
+            String objText = SignalLocalization.resolveKeyToTextPreferRuEn(mc, objKey);
+            d.objectNameField.setText(objText);
 
-            d.textRawField.setText(existingOrNull.get("text_raw").getAsString());
-            d.textLowField.setText(existingOrNull.get("text_low").getAsString());
-            d.textNoisyField.setText(existingOrNull.get("text_noisy").getAsString());
-            d.textHighField.setText(existingOrNull.get("text_high").getAsString());
-            d.srRawField.setText(existingOrNull.get("special_response_raw").getAsString());
-            d.srLowField.setText(existingOrNull.get("special_response_low").getAsString());
-            d.srNoisyField.setText(existingOrNull.get("special_response_noisy").getAsString());
-            d.srHighField.setText(existingOrNull.get("special_response_high").getAsString());
+            // тексты: если там ключ — показываем текст
+            d.textRawField.setText(SignalLocalization.resolveKeyToTextPreferRuEn(mc, existingOrNull.get("text_raw").getAsString()));
+            d.textLowField.setText(SignalLocalization.resolveKeyToTextPreferRuEn(mc, existingOrNull.get("text_low").getAsString()));
+            d.textNoisyField.setText(SignalLocalization.resolveKeyToTextPreferRuEn(mc, existingOrNull.get("text_noisy").getAsString()));
+            d.textHighField.setText(SignalLocalization.resolveKeyToTextPreferRuEn(mc, existingOrNull.get("text_high").getAsString()));
+
+            d.srRawField.setText(SignalLocalization.resolveKeyToTextPreferRuEn(mc, existingOrNull.get("special_response_raw").getAsString()));
+            d.srLowField.setText(SignalLocalization.resolveKeyToTextPreferRuEn(mc, existingOrNull.get("special_response_low").getAsString()));
+            d.srNoisyField.setText(SignalLocalization.resolveKeyToTextPreferRuEn(mc, existingOrNull.get("special_response_noisy").getAsString()));
+            d.srHighField.setText(SignalLocalization.resolveKeyToTextPreferRuEn(mc, existingOrNull.get("special_response_high").getAsString()));
+
+            // фолбэки для ресурсов
+            d.keyObjectImageOld = existingOrNull.get("object_image").getAsString();
+            d.keyImageRawOld    = existingOrNull.get("image_raw").getAsString();
+            d.keyImageLowOld    = existingOrNull.get("image_low").getAsString();
+            d.keyImageNoisyOld  = existingOrNull.get("image_noisy").getAsString();
+            d.keyImageHighOld   = existingOrNull.get("image_high").getAsString();
+
+            d.keySoundRawOld    = existingOrNull.get("sound_raw").getAsString();
+            d.keySoundLowOld    = existingOrNull.get("sound_low").getAsString();
+            d.keySoundNoisyOld  = existingOrNull.get("sound_noisy").getAsString();
+            d.keySoundHighOld   = existingOrNull.get("sound_high").getAsString();
+
+            // Попробуем отобразить выбор в пикерах (если API не даст — хотя бы tooltip будет)
+            d.setTextureFromKey(d.objectImageBtn, d.keyObjectImageOld);
+            d.setTextureFromKey(d.imageRawBtn,    d.keyImageRawOld);
+            d.setTextureFromKey(d.imageLowBtn,    d.keyImageLowOld);
+            d.setTextureFromKey(d.imageNoisyBtn,  d.keyImageNoisyOld);
+            d.setTextureFromKey(d.imageHighBtn,   d.keyImageHighOld);
+
+            d.setSoundFromKey(d.soundRawSel,   d.keySoundRawOld);
+            d.setSoundFromKey(d.soundLowSel,   d.keySoundLowOld);
+            d.setSoundFromKey(d.soundNoisySel, d.keySoundNoisyOld);
+            d.setSoundFromKey(d.soundHighSel,  d.keySoundHighOld);
+
         } else {
             JsonArray all = SignalIO.loadSignals(mc);
             d.idValue.setText(String.valueOf(d.nextId(all)));

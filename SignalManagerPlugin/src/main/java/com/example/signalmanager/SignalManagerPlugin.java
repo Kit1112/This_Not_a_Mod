@@ -17,12 +17,17 @@ public class SignalManagerPlugin extends JavaPlugin {
     public SignalManagerPlugin(Plugin plugin) {
         super(plugin);
 
+        // Когда студия загрузилась — готовим всё и добавляем меню
         addListener(MCreatorLoadedEvent.class, event -> SwingUtilities.invokeLater(() -> {
             MCreator mc = event.getMCreator();
 
             try {
+                // scaffold (JSON + registry)
                 SignalIO.ensureWorkspaceScaffold(mc);
+                // гарантируем наличие дефолтов в lang
                 SignalLocalization.ensureDefaultKeys(mc);
+                // тихо «подливаем» наши ключи из зеркала, если нужно (без рефлексии и лишних логов)
+                SignalLocalization.reapplyPersistedKeys(mc);
             } catch (Exception ex) {
                 ex.printStackTrace();
                 JOptionPane.showMessageDialog(mc,
@@ -30,13 +35,9 @@ public class SignalManagerPlugin extends JavaPlugin {
                         "SignalManager", JOptionPane.ERROR_MESSAGE);
             }
 
+            // Регистрируем экшены и добавляем выпадающее меню «Сигналы» сразу после «Справка»
             SMPluginEventTriggers.ACTIONS = new SMPluginActions(mc);
-
-            // Новый способ: пункт «Сигналы» сразу после «Справка»
             SMPluginEventTriggers.modifyMenuBarAfterHelp(mc);
-
-            // Если хочешь оставить ещё и в «Инструменты», можно добросить:
-            // SMPluginEventTriggers.modifyMenus(mc);
         }));
     }
 }

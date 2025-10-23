@@ -51,6 +51,12 @@ public class ThisnotamodModSounds {
 	public static final RegistryObject<SoundEvent> SCANNER_TURN = REGISTRY.register("scanner_turn", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "scanner_turn")));
 	public static final RegistryObject<SoundEvent> NOTIF_WARNING = REGISTRY.register("notif_warning", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "notif_warning")));
 	public static final RegistryObject<SoundEvent> NOTIF_ERROR = REGISTRY.register("notif_error", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "notif_error")));
+	public static final RegistryObject<SoundEvent> MERCURY_HIGH = REGISTRY.register("mercury_high", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "mercury_high")));
+	public static final RegistryObject<SoundEvent> MERCURY_LOW = REGISTRY.register("mercury_low", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "mercury_low")));
+	public static final RegistryObject<SoundEvent> MERCURY_NOISY = REGISTRY.register("mercury_noisy", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "mercury_noisy")));
 	public static final RegistryObject<SoundEvent> MERCURY_RAW = REGISTRY.register("mercury_raw", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "mercury_raw")));
-	public static final RegistryObject<SoundEvent> VENUS_SOUND_RAW = REGISTRY.register("venus_sound_raw", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "venus_sound_raw")));
+	public static final RegistryObject<SoundEvent> VENUS_HIGH = REGISTRY.register("venus_high", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "venus_high")));
+	public static final RegistryObject<SoundEvent> VENUS_LOW = REGISTRY.register("venus_low", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "venus_low")));
+	public static final RegistryObject<SoundEvent> VENUS_NOISY = REGISTRY.register("venus_noisy", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "venus_noisy")));
+	public static final RegistryObject<SoundEvent> VENUS_RAW = REGISTRY.register("venus_raw", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "venus_raw")));
 }
