@@ -51,4 +51,6 @@ public class ThisnotamodModSounds {
 	public static final RegistryObject<SoundEvent> SCANNER_TURN = REGISTRY.register("scanner_turn", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "scanner_turn")));
 	public static final RegistryObject<SoundEvent> NOTIF_WARNING = REGISTRY.register("notif_warning", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "notif_warning")));
 	public static final RegistryObject<SoundEvent> NOTIF_ERROR = REGISTRY.register("notif_error", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "notif_error")));
+	public static final RegistryObject<SoundEvent> MERCURY_RAW = REGISTRY.register("mercury_raw", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "mercury_raw")));
+	public static final RegistryObject<SoundEvent> VENUS_SOUND_RAW = REGISTRY.register("venus_sound_raw", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "venus_sound_raw")));
 }

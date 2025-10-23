@@ -9081,6 +9081,20 @@
         ]
       },
       "path": "~/VotVresources/Commands/modifiers"
+    },
+    {
+      "name": "SignalLinked",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "signal_linked",
+      "metadata": {
+        "files": [
+          "src/main/java/net/code/thisnotamod/procedures/SignalLinkedProcedure.java"
+        ],
+        "dependencies": []
+      },
+      "path": "~/VotVresources/Test"
     }
   ],
   "variable_elements": [
@@ -9895,6 +9909,22 @@
       ],
       "category": "neutral",
       "subtitle": ""
+    },
+    {
+      "name": "mercury_raw",
+      "files": [
+        "mercury"
+      ],
+      "category": "record",
+      "subtitle": ""
+    },
+    {
+      "name": "venus_sound_raw",
+      "files": [
+        "venus_planet_audio.mp3"
+      ],
+      "category": "record",
+      "subtitle": ""
     }
   ],
   "tag_elements": {
@@ -9963,8 +9993,8 @@
       "block.thisnotamod.warning_lamp": "Аварийный светильник",
       "gui.thisnotamod.delivery_gui.Music_disc_main": "Пластинка главной темы",
       "block.thisnotamod.w_canim": "Унитаз",
-      "block.thisnotamod.lamp_middle_plus_1_upped": "Электрическая лампа ",
       "block.thisnotamod.lamp_middle_plus_1": "Электрическая лампа ",
+      "block.thisnotamod.lamp_middle_plus_1_upped": "Электрическая лампа ",
       "item.tnam.blood_guidebook": "Иконка гайдбука Blood Magic",
       "block.thisnotamod.lamp": "Электрическая лампа",
       "block.thisnotamod.start_point": "Стартовая точка для дрона",
@@ -9987,17 +10017,17 @@
       "block.thisnotamod.window_right_d": "Окно с решётками",
       "gui.thisnotamod.kerfu_int.button_ispolzovat1": "Погладить",
       "block.thisnotamod.radiotielieskop": "Радиотелескоп",
-      "item.thisnotamod.mannequin_spawn_egg": "Яйцо призыва Манекена",
       "gui.thisnotamod.kerfu_int.button_ispolzovat2": "Патрулировать",
-      "gui.thisnotamod.passlock_gui.button_444": "4",
+      "item.thisnotamod.mannequin_spawn_egg": "Яйцо призыва Манекена",
       "block.thisnotamod.argemiapurple": "Аргемия",
+      "gui.thisnotamod.passlock_gui.button_444": "4",
       "item.modname.blood_guidebook": "Иконка гайдбука Blood Magic",
       "block.thisnotamod.argemiawhite": "Аргемия",
       "gui.thisnotamod.kerfu_int.label_patrulirovaniie": "Патруль",
       "item.thisnotamod.minecells_guidebook": "Minecells Guidebook",
-      "gui.thisnotamod.server_interface.sosal2": "",
-      "subtitles.dish_moves_30s": "",
       "block.thisnotamod.concrete_wall_side": "Стена вариант 3",
+      "subtitles.dish_moves_30s": "",
+      "gui.thisnotamod.server_interface.sosal2": "",
       "entity.thisnotamod.kerfu_omega": "Керфур-О",
       "block.thisnotamod.vent_corner": "Угол вентиляции",
       "gui.thisnotamod.passlock_gui.button_777": "7",
@@ -10036,8 +10066,8 @@
       "block.thisnotamod.term_rt": "Терминал",
       "block.thisnotamod.kerfu_block": "Керфур-О",
       "block.thisnotamod.votv_locker": "Шкафчик",
-      "biome.thisnotamod.voices_void": "Voices of the Void",
       "gui.thisnotamod.passlock_gui.button_000": "0",
+      "biome.thisnotamod.voices_void": "Voices of the Void",
       "subtitles.wc_off": "",
       "block.thisnotamod.concrete_wall_right": "Стена вариант 2",
       "subtitles.startup": "",
@@ -10062,6 +10092,7 @@
       "block.thisnotamod.lamp_round_middle": "Небольшая лампа",
       "subtitles.doorslide1": "",
       "gui.thisnotamod.passlock_gui.button_222": "2",
+      "subtitles.mercury_raw": "",
       "block.thisnotamod.votv_locker_middle": "Шкафчик",
       "gui.thisnotamod.pass_change_gui_n.passChangeField": "",
       "item.thisnotamod.simply_guidebook": "Simply Guidebook",
@@ -10088,6 +10119,7 @@
       "item.thisnotamod.music_disk_votv.desc": "VotV Title theme - Wolfeni",
       "item.modname.ars_guidebook": "Иконка гайдбука Ars Nouveau",
       "item.thisnotamod.music_disk_votv_winter": "Пластинка",
+      "subtitles.venus_sound_raw": "",
       "subtitles.votv_theme_winter": "VotV Winter theme - VtOS21",
       "item.tnam.ars_guidebook": "Иконка гайдбука Ars Nouveau",
       "block.thisnotamod.window_aleft_d": "Окно с решётками",
@@ -10172,8 +10204,8 @@
       "block.thisnotamod.warning_lamp": "Аварийный светильник",
       "gui.thisnotamod.delivery_gui.Music_disc_main": "Пластинка главной темы",
       "block.thisnotamod.w_canim": "Унитаз",
-      "block.thisnotamod.lamp_middle_plus_1": "Электрическая лампа ",
       "block.thisnotamod.lamp_middle_plus_1_upped": "Электрическая лампа ",
+      "block.thisnotamod.lamp_middle_plus_1": "Электрическая лампа ",
       "item.tnam.blood_guidebook": "Blood Guidebook",
       "block.thisnotamod.lamp": "Электрическая лампа ",
       "block.thisnotamod.start_point": "Стартовая точка для дрона",
@@ -10196,17 +10228,17 @@
       "block.thisnotamod.window_right_d": "Окно с решётками",
       "gui.thisnotamod.kerfu_int.button_ispolzovat1": "Погладить",
       "block.thisnotamod.radiotielieskop": "Радиотелескоп (нажми ПКМ по нижнему блоку)",
-      "gui.thisnotamod.kerfu_int.button_ispolzovat2": "Патрулировать",
       "item.thisnotamod.mannequin_spawn_egg": "Манекен Spawn Egg",
-      "gui.thisnotamod.passlock_gui.button_444": "4",
+      "gui.thisnotamod.kerfu_int.button_ispolzovat2": "Патрулировать",
       "block.thisnotamod.argemiapurple": "Аргемия",
+      "gui.thisnotamod.passlock_gui.button_444": "4",
       "item.modname.blood_guidebook": "Blood Guidebook",
       "block.thisnotamod.argemiawhite": "Аргемия",
       "gui.thisnotamod.kerfu_int.label_patrulirovaniie": "Патруль",
       "item.thisnotamod.minecells_guidebook": "Minecells Guidebook",
-      "gui.thisnotamod.server_interface.sosal2": "",
-      "subtitles.dish_moves_30s": "",
       "block.thisnotamod.concrete_wall_side": "Стена вариант 3",
+      "subtitles.dish_moves_30s": "",
+      "gui.thisnotamod.server_interface.sosal2": "",
       "entity.thisnotamod.kerfu_omega": "Керфур Омега",
       "block.thisnotamod.vent_corner": "Угол вентиляции",
       "gui.thisnotamod.passlock_gui.button_777": "7",
@@ -10245,8 +10277,8 @@
       "block.thisnotamod.term_rt": "Терминал",
       "block.thisnotamod.kerfu_block": "Керфур-О",
       "block.thisnotamod.votv_locker": "Шкафчик v",
-      "biome.thisnotamod.voices_void": "Voices of the Void",
       "gui.thisnotamod.passlock_gui.button_000": "0",
+      "biome.thisnotamod.voices_void": "Voices of the Void",
       "subtitles.wc_off": "",
       "block.thisnotamod.concrete_wall_right": "Стена вариант 2",
       "subtitles.startup": "",
@@ -10271,6 +10303,7 @@
       "block.thisnotamod.lamp_round_middle": "Небольшая лампа",
       "subtitles.doorslide1": "",
       "gui.thisnotamod.passlock_gui.button_222": "2",
+      "subtitles.mercury_raw": "",
       "block.thisnotamod.votv_locker_middle": "Votv Locker Middle",
       "gui.thisnotamod.pass_change_gui_n.passChangeField": "",
       "item.thisnotamod.simply_guidebook": "Simply Guidebook",
@@ -10297,6 +10330,7 @@
       "item.thisnotamod.music_disk_votv.desc": "VotV Title theme - Wolfeni",
       "item.modname.ars_guidebook": "Ars Guidebook",
       "item.thisnotamod.music_disk_votv_winter": "Пластинка",
+      "subtitles.venus_sound_raw": "",
       "subtitles.votv_theme_winter": "субтитр музыки ",
       "item.tnam.ars_guidebook": "Ars Guidebook",
       "block.thisnotamod.window_aleft_d": "Окно с решётками",

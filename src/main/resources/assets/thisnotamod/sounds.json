@@ -291,5 +291,21 @@
         "stream": false
       }
     ]
+  },
+  "mercury_raw": {
+    "sounds": [
+      {
+        "name": "thisnotamod:mercury",
+        "stream": true
+      }
+    ]
+  },
+  "venus_sound_raw": {
+    "sounds": [
+      {
+        "name": "thisnotamod:venus_planet_audio.mp3",
+        "stream": true
+      }
+    ]
   }
 }
