@@ -21,7 +21,7 @@ import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
-import net.minecraft.client.resources.language.I18n; // <— используем для получения перевода
+import net.minecraft.client.resources.language.I18n; // локализация
 
 import net.code.thisnotamod.world.inventory.SignalTunerMenu;
 
@@ -36,7 +36,7 @@ import java.util.Locale;
  */
 public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> {
 
-    // --- ключи локализации UI (для удобства, чтобы не писать строки руками) ---
+    // --- ключи локализации UI ---
     private static final String K_DETECTOR_STATUS   = "signalmanager.ui.tuner.label.detector_status";
     private static final String K_OBJECT             = "signalmanager.ui.tuner.label.object";
     private static final String K_SIGNAL_QUALITY    = "signalmanager.ui.tuner.label.signal_quality";
@@ -56,10 +56,12 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
     private static final String K_UNIT_HZ_PER_S     = "signalmanager.ui.tuner.unit.hz_per_s";
 
     private static final class Background {
+        // Таргеты — используются только когда есть сигнал
         static int    targetPolarityDir  = clamp(1, 0, 2);
         static double targetPolarityDeg  = wrapAngle(25.0);
         static double targetFrequency    = clampDouble(75.0, 0, 1000);
 
+        // Текущие значения "ручек"/регуляторов
         static int    currentPolarityDir = 0;
         static double currentPolarityDeg = 0.0;
         static double currentFrequency   = 0.0;
@@ -67,14 +69,17 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         static int polaritySpeedPerSec   = 0;
         static int frequencySpeedPerSec  = 0;
 
-        static double detectorPercent     = 0.0;
-        static double downloadedPercent   = 0.0;
+        // Детектор и загрузка
+        static double detectorPercent     = 0.0;  // 0..100 — влияет на пикселизацию области 2
+        static double downloadedPercent   = 0.0;  // прогресс скачивания
 
+        // Выход фильтров (расчётные проценты совпадения)
         static double polarityOutputPercent              = 0.0;
         static double frequencyOutputPercent             = 0.0;
         static double polarityOutputPercentSmoothed      = 0.0;
         static double frequencyOutputPercentSmoothed     = 0.0;
 
+        // Тайминг
         static long   lastTickNano   = -1L;
         static long   lastRenderNano = -1L;
         static double timeSeconds = 0.0;
@@ -93,27 +98,53 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         private static boolean registered = false;
     }
 
-    private static String sDetectedObjectKey = null;
-    private static String sQuality = null;
-    private static String sFrequency = null;
-    private static ResourceLocation sObjectImageTex = null;
+    // Текущее "состояние сигнала"
+    private static String sDetectedObjectKey = null;    // lang-ключ объекта
+    private static String sQuality = null;              // "low|middle|high"
+    private static String sFrequency = null;            // "low|middle|high"
+    private static ResourceLocation sObjectImageTex = null; // текстура 16×16 предмета
 
+    // Простой демо-рендер айтема (если текстуры нет) — не используется при отсутствии сигнала
     private final net.minecraft.world.item.ItemStack demoStack =
             new net.minecraft.world.item.ItemStack(net.minecraft.world.item.Items.DIAMOND);
 
+    /** Есть ли активный сигнал? */
+    private static boolean hasSignal() {
+        return sDetectedObjectKey != null && !sDetectedObjectKey.isBlank();
+    }
+
+    /** Полная очистка сигнала (кнопка Delete Signal) */
+    private static void clearSignal() {
+        sDetectedObjectKey = null;
+        sQuality = null;
+        sFrequency = null;
+        sObjectImageTex = null;
+
+        Background.detectorPercent = 0.0;
+        Background.downloadedPercent = 0.0;
+
+        // Выходы фильтров в ноль (и сглаженные значения тоже)
+        Background.polarityOutputPercent = 0.0;
+        Background.frequencyOutputPercent = 0.0;
+        Background.polarityOutputPercentSmoothed = 0.0;
+        Background.frequencyOutputPercentSmoothed = 0.0;
+    }
+
+    // Внешние вызовы (из сканера)
     public static void applyPickedSignal(net.code.thisnotamod.client.SignalPicker.PickedSignal p) {
         if (p == null) return;
 
         sDetectedObjectKey = p.objectNameKey;
         sQuality           = p.quality;
         sFrequency         = p.frequency;
-        sObjectImageTex    = p.objectImageTex; // корректное поле
+        sObjectImageTex    = p.objectImageTex;
 
         Background.targetPolarityDir = clamp(p.targetPolarityDir, 0, 2);
         Background.targetPolarityDeg = wrapAngle(p.targetPolarityDeg);
         Background.targetFrequency   = clampDouble(p.targetFrequency, 0, 1000);
 
-        Background.detectorPercent   = 100.0;
+        // Детектор активируется только когда сигнал есть
+        Background.detectorPercent   = 0.0;
         Background.downloadedPercent = 0.0;
     }
 
@@ -131,7 +162,7 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         Background.targetPolarityDeg = wrapAngle(deg);
         Background.targetFrequency   = clampDouble(freq, 0, 1000);
 
-        Background.detectorPercent   = 100.0;
+        Background.detectorPercent   = 0.0;
         Background.downloadedPercent = 0.0;
     }
 
@@ -156,8 +187,10 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
 
     public static final int GRID_COLS = 3;
     public static final int GRID_ROWS = 2;
+
     private static final int BTN_ROW1_Y = SCREEN_Y + SCREEN_H + 27;
     private static final int BTN_ROW2_Y = SCREEN_Y + SCREEN_H + 49;
+    private static final int BTN_DELETE_Y_OFFSET = -19;
     private static final float ITEM_SCALE = 1.35f;
 
     private static final ResourceLocation BACKGROUND =
@@ -198,6 +231,7 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
     private static final int PIXEL_MIN_RES = 2;
     private static final int OBJECT_TEX_SIZE = 16;
 
+    // Кнопки управления
     private final IntRect btn0      = new IntRect(SCREEN_X + 12,  BTN_ROW1_Y, 20, 20);
     private final IntRect btn1      = new IntRect(SCREEN_X + 52,  BTN_ROW1_Y, 17, 20);
     private final IntRect btn2      = new IntRect(SCREEN_X + 71,  BTN_ROW1_Y, 17, 20);
@@ -205,6 +239,9 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
     private final IntRect btn4      = new IntRect(SCREEN_X + 52,  BTN_ROW2_Y, 17, 20);
     private final IntRect btn5      = new IntRect(SCREEN_X + 71,  BTN_ROW2_Y, 17, 20);
     private final IntRect btn6      = new IntRect(SCREEN_X + 90,  BTN_ROW2_Y, 17, 20);
+
+    // Кнопка удаления сигнала
+    private final IntRect btnDelete = new IntRect(SCREEN_X + 513, BTN_ROW2_Y + BTN_DELETE_Y_OFFSET, 26, 26);
 
     public SignalTunerScreen(SignalTunerMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
@@ -282,79 +319,94 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
                 starYs[i] = r2.y + 6 + rnd.nextInt(Math.max(1, r2.h - 12));
             }
         }
+
+        // Базовый контент области 2 (звёзды + объект при наличии сигнала)
         renderArea2Content(gg, r2);
 
         gg.flush();
 
-        IntRect px = insetRect(r2, 2, 1, 2, 1);
+        // Пикселизация ТОЛЬКО при наличии сигнала
+        if (hasSignal()) {
+            IntRect px = insetRect(r2, 2, 1, 2, 1);
 
-        double tDet = clampDouble(Background.detectorPercent / 100.0, 0.0, 1.0);
-        int lowW = Math.max(PIXEL_MIN_RES, (int)Math.round(PIXEL_MIN_RES + tDet * (px.w - PIXEL_MIN_RES)));
-        int lowH = Math.max(PIXEL_MIN_RES, (int)Math.round(PIXEL_MIN_RES + tDet * (px.h - PIXEL_MIN_RES)));
+            double tDet = clampDouble(Background.detectorPercent / 100.0, 0.0, 1.0);
+            int lowW = Math.max(PIXEL_MIN_RES, (int)Math.round(PIXEL_MIN_RES + tDet * (px.w - PIXEL_MIN_RES)));
+            int lowH = Math.max(PIXEL_MIN_RES, (int)Math.round(PIXEL_MIN_RES + tDet * (px.h - PIXEL_MIN_RES)));
 
-        ensurePixelRT(lowW, lowH);
-        copyScreenAreaToPixelRT(px, lowW, lowH);
-        blitPixelRTToArea(gg, px);
+            ensurePixelRT(lowW, lowH);
+            copyScreenAreaToPixelRT(px, lowW, lowH);
+            blitPixelRTToArea(gg, px);
+        } else {
+            // «NO SIGNAL» — мерцание красным и крупная надпись
+            boolean red = ((int)Math.floor(Background.timeSeconds * 2.0)) % 2 == 1; // 2 Гц
+            int fillCol = red ? 0xFF550000 : 0xFF000000;
+            gg.fill(r2.x + 1, r2.y + 1, r2.x + r2.w - 1, r2.y + r2.h - 1, fillCol);
 
+            gg.pose().pushPose();
+            gg.pose().translate(r2.x + r2.w / 2f, r2.y + r2.h / 2f, 0);
+            gg.pose().scale(2.0f, 2.0f, 1f);
+            String txt = "NO SIGNAL";
+            int tw = this.font.width(txt);
+            int th = this.font.lineHeight;
+            gg.drawString(this.font, txt, -tw / 2, -th / 2, 0xFFFF4040, false);
+            gg.pose().popPose();
+        }
+
+        // Рендер кругов/осциллографа и блоков текста
         drawPolarityRadar(gg, r0);
         drawFrequencyOscilloscope(gg, r3);
 
         drawPolarityTextBlock(gg, r1);
         drawFrequencyTextBlock(gg, r4);
 
-        boolean ready = Background.detectorPercent >= 100.0 - 1e-6;
+        boolean ready = hasSignal() && (Background.detectorPercent >= 100.0 - 1e-6);
 
         int line = 0;
+        double detectorShown = hasSignal() ? Background.detectorPercent : 0.0;
         drawLabelValue(gg, r5, line++, I18n.get(K_DETECTOR_STATUS),
-                String.format(Locale.ROOT, "%.1f%%", Background.detectorPercent),
-                0xFFFFFFFF, 0xFF00FF00);
+                String.format(Locale.ROOT, "%.1f%%", detectorShown),
+                0xFFFFFFFF, hasSignal() ? 0xFF00FF00 : 0xFFFF4040);
 
-        String objectNameShown = "unknown";
-        if (sDetectedObjectKey != null && !sDetectedObjectKey.isEmpty()) {
+        // Имя объекта
+        String objectNameShown = hasSignal() ? "unknown" : "0";
+        if (hasSignal()) {
             String langKey = sDetectedObjectKey.trim();
             int colon = langKey.indexOf(':');
             if (colon >= 0) langKey = langKey.substring(colon + 1);
-            String translated = net.minecraft.client.resources.language.I18n.get(langKey);
+            String translated = I18n.get(langKey);
             objectNameShown = (translated != null && !translated.equals(langKey)) ? translated : langKey;
         }
 
         drawLabelValue(gg, r5, line++, I18n.get(K_OBJECT),
-                ready ? objectNameShown : I18n.get(K_VAL_NONE),
+                objectNameShown,
                 0xFFBBBBBB, 0xFFBBBBBB);
 
-        // значение для качества/частоты берём из таблицы перевода, если строка известна
-        String qualityShown = I18n.get(K_VAL_LOW);
-        if (ready) {
-            if (sQuality != null && !sQuality.isBlank()) {
-                String qKey = "signalmanager.ui.tuner.value." + sQuality.toLowerCase(Locale.ROOT);
-                String tr = I18n.get(qKey);
-                qualityShown = (tr != null && !tr.equals(qKey)) ? tr : sQuality;
-            }
-        } else {
-            qualityShown = I18n.get(K_VAL_NONE);
+        // Качество
+        String qualityShown = hasSignal() ? I18n.get(K_VAL_LOW) : "0";
+        if (hasSignal() && sQuality != null && !sQuality.isBlank()) {
+            String qKey = "signalmanager.ui.tuner.value." + sQuality.toLowerCase(Locale.ROOT);
+            String tr = I18n.get(qKey);
+            qualityShown = (tr != null && !tr.equals(qKey)) ? tr : sQuality;
         }
-
         drawLabelValue(gg, r5, line++, I18n.get(K_SIGNAL_QUALITY),
                 qualityShown,
                 0xFFBBBBBB, 0xFFBBBBBB);
 
-        String frequencyShown = I18n.get(K_VAL_MIDDLE);
-        if (ready) {
-            if (sFrequency != null && !sFrequency.isBlank()) {
-                String fKey = "signalmanager.ui.tuner.value." + sFrequency.toLowerCase(Locale.ROOT);
-                String tr = I18n.get(fKey);
-                frequencyShown = (tr != null && !tr.equals(fKey)) ? tr : sFrequency;
-            }
-        } else {
-            frequencyShown = I18n.get(K_VAL_NONE);
+        // Частота (категория)
+        String frequencyShown = hasSignal() ? I18n.get(K_VAL_MIDDLE) : "0";
+        if (hasSignal() && sFrequency != null && !sFrequency.isBlank()) {
+            String fKey = "signalmanager.ui.tuner.value." + sFrequency.toLowerCase(Locale.ROOT);
+            String tr = I18n.get(fKey);
+            frequencyShown = (tr != null && !tr.equals(fKey)) ? tr : sFrequency;
         }
-
         drawLabelValue(gg, r5, line++, I18n.get(K_SIGNAL_FREQUENCY),
                 frequencyShown,
                 0xFFBBBBBB, 0xFFBBBBBB);
 
+        // Загрузка
+        double downloadedShown = hasSignal() ? Background.downloadedPercent : 0.0;
         drawLabelValue(gg, r5, line++, I18n.get(K_DOWNLOADED),
-                String.format(Locale.ROOT, "%.1f%%", Background.downloadedPercent),
+                String.format(Locale.ROOT, "%.1f%%", downloadedShown),
                 0xFF00FF00, 0xFF00FF00);
 
         if (DEBUG_BUTTONS) {
@@ -365,6 +417,7 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
             debugRect(gg, btn4, 0x4020FFFF);
             debugRect(gg, btn5, 0x4020FFFF);
             debugRect(gg, btn6, 0x4020FFFF);
+            debugRect(gg, btnDelete, 0x40FF2020); // красный хитбокс кнопки удаления
         }
 
         gg.pose().popPose();
@@ -380,6 +433,11 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (button == 0 && isHovering(btn0, mouseX, mouseY)) {
             Background.currentPolarityDir = (Background.currentPolarityDir + 1) % 3;
+            return true;
+        }
+        // Новая кнопка удаления сигнала
+        if (button == 0 && isHovering(btnDelete, mouseX, mouseY)) {
+            clearSignal();
             return true;
         }
         return super.mouseClicked(mouseX, mouseY, button);
@@ -548,6 +606,11 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
             gg.fill(sx, sy, sx + 1, sy + 1, 0xFFFFFFFF);
         }
 
+        if (!hasSignal()) {
+            // При отсутствии сигнала объект не рисуем вовсе (никакого diamond)
+            return;
+        }
+
         int itemX = r2.centerX();
         int itemY = r2.centerY();
 
@@ -562,8 +625,6 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
             RenderSystem.setShaderTexture(0, sObjectImageTex);
             RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
             gg.blit(sObjectImageTex, 0, 0, 0, 0, OBJECT_TEX_SIZE, OBJECT_TEX_SIZE, OBJECT_TEX_SIZE, OBJECT_TEX_SIZE);
-        } else {
-            renderItemSprite(gg, demoStack, 0, 0);
         }
 
         gg.pose().popPose();
@@ -766,6 +827,7 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         Background.currentPolarityDeg = wrapAngle(Background.currentPolarityDeg + Background.polaritySpeedPerSec * dt);
         Background.currentFrequency   = clampDouble(Background.currentFrequency + Background.frequencySpeedPerSec * dt, 0, 1000);
 
+        // Погодные дрейфы — не зависят от наличия сигнала (это на "ручке"), но небольшие
         if (mc.level != null) {
             boolean thunder = mc.level.isThundering();
             boolean rain    = mc.level.isRaining();
@@ -797,9 +859,30 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
 
         Background.timeSeconds += dt;
 
-        double polPct = computePolarityPercentFineStatic(Background.currentPolarityDeg, Background.targetPolarityDeg, mc);
-        double frqPct = computeFrequencyPercentFineStatic(Background.currentFrequency,   Background.targetFrequency,   mc);
-        if (Background.currentPolarityDir != Background.targetPolarityDir) polPct = 0.0;
+        // Детектор работает только когда есть сигнал и заполняется постепенно
+if (hasSignal()) {
+    if (Background.detectorPercent < 100.0) {
+        double rate = getDetectorRatePerSec(mc); // процентов в секунду
+        Background.detectorPercent = clampDouble(
+                Background.detectorPercent + rate * dt,
+                0.0, 100.0
+        );
+    }
+} else {
+    // на всякий случай держим в нуле, если сигнала нет
+    Background.detectorPercent = 0.0;
+}
+
+
+        // Расчёты фильтров только при наличии сигнала
+        double polPct = 0.0;
+        double frqPct = 0.0;
+
+        if (hasSignal()) {
+            polPct = computePolarityPercentFineStatic(Background.currentPolarityDeg, Background.targetPolarityDeg, mc);
+            frqPct = computeFrequencyPercentFineStatic(Background.currentFrequency,   Background.targetFrequency,   mc);
+            if (Background.currentPolarityDir != Background.targetPolarityDir) polPct = 0.0;
+        }
 
         Background.polarityOutputPercent  = polPct;
         Background.frequencyOutputPercent = frqPct;
@@ -810,12 +893,13 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         Background.polarityOutputPercentSmoothed  += (polPct - Background.polarityOutputPercentSmoothed)  * alpha;
         Background.frequencyOutputPercentSmoothed += (frqPct - Background.frequencyOutputPercentSmoothed) * alpha;
 
-        double polNorm  = clampDouble(Background.polarityOutputPercentSmoothed  / 100.0, 0.0, 1.0);
-        double freqNorm = clampDouble(Background.frequencyOutputPercentSmoothed / 100.0, 0.0, 1.0);
+        // Загрузка — только при наличии сигнала
+        double polNorm  = hasSignal() ? clampDouble(Background.polarityOutputPercentSmoothed  / 100.0, 0.0, 1.0) : 0.0;
+        double freqNorm = hasSignal() ? clampDouble(Background.frequencyOutputPercentSmoothed / 100.0, 0.0, 1.0) : 0.0;
         double normalized = polNorm * freqNorm;
 
         double perSecondAtFull = getDownloadRatePercentPerSecAtFull(mc);
-        if (normalized > 0.0 && Background.downloadedPercent < 100.0) {
+        if (hasSignal() && normalized > 0.0 && Background.downloadedPercent < 100.0) {
             Background.downloadedPercent = clampDouble(
                     Background.downloadedPercent + dt * perSecondAtFull * normalized,
                     0.0, 100.0
@@ -862,7 +946,7 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
                 .getCapability(ThisnotamodModVariables.PLAYER_VARIABLES_CAPABILITY, null)
                 .map(vars -> vars.DetectorSpeed)
                 .orElse(DETECTOR_RATE_DEFAULT);
-        return (v <= 0) ? DETECTOR_RATE_DEFAULT : v;
+        return Math.max(0.0, v); // 1 => 1%/сек, 0 или меньше => не растёт
     }
 
     private static double getDownloadRatePercentPerSecAtFull(Minecraft mc) {
