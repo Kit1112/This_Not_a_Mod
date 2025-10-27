@@ -234,7 +234,7 @@ public final class EditTableDialog extends JDialog {
                 case COL_ID -> o.get("id").getAsInt();
                 case COL_NAME -> o.get("name").getAsString();
                 case COL_TYPE -> o.get("type").getAsString();
-                case COL_SIZE -> String.format(Locale.US,"%.1f", o.get("size").getAsFloat());
+                case COL_SIZE -> String.format(Locale.US,"%.4f", o.get("size").getAsDouble());
                 case COL_SPECIAL -> (o.get("special_response").getAsBoolean()? "R":"") +
                                     (o.get("special_price").getAsBoolean()? "P": "");
                 case COL_EDIT -> "✎";

@@ -59,4 +59,6 @@ public class ThisnotamodModSounds {
 	public static final RegistryObject<SoundEvent> VENUS_LOW = REGISTRY.register("venus_low", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "venus_low")));
 	public static final RegistryObject<SoundEvent> VENUS_NOISY = REGISTRY.register("venus_noisy", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "venus_noisy")));
 	public static final RegistryObject<SoundEvent> VENUS_RAW = REGISTRY.register("venus_raw", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "venus_raw")));
+	public static final RegistryObject<SoundEvent> SCAN_STARTED = REGISTRY.register("scan_started", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "scan_started")));
+	public static final RegistryObject<SoundEvent> SUCCESFUL_PING = REGISTRY.register("succesful_ping", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "succesful_ping")));
 }

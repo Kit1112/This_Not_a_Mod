@@ -12,6 +12,11 @@ import net.mcreator.ui.init.L10N;
 import net.mcreator.ui.minecraft.SoundSelector;
 import net.mcreator.ui.minecraft.TextureSelectionButton;
 import net.mcreator.ui.workspace.resources.TextureType;
+import javax.swing.text.AbstractDocument;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DocumentFilter;
+import javax.swing.text.PlainDocument;
 
 import javax.swing.*;
 import java.awt.*;
@@ -25,6 +30,7 @@ public final class CreateFormDialog extends JDialog {
     private final JLabel idValue = new JLabel("-");
     private final JTextField nameField = new JTextField();
     private final JSpinner sizeField = new JSpinner(new SpinnerNumberModel(1.0, 0.1, 10.0, 0.1));
+	private final JSpinner weightField = new JSpinner(new SpinnerNumberModel(0.0, 0.0, 1_000_000.0, 0.1));
     private final JComboBox<String> typeCombo = new JComboBox<>(new String[] {"regular","trigger_event","story"});
 
     // Object name (локализуемо)
@@ -115,6 +121,8 @@ public final class CreateFormDialog extends JDialog {
                 de.getTextField().setMaximumSize(spd);
             }
         } catch (Throwable ignored) {}
+		// показываем size с 4 знаками после запятой
+		sizeField.setEditor(new JSpinner.NumberEditor(sizeField, "#0.0000"));
 
         typeCombo.setPrototypeDisplayValue("trigger_event");
         Dimension cbd = new Dimension(200, typeCombo.getPreferredSize().height);
@@ -151,11 +159,27 @@ public final class CreateFormDialog extends JDialog {
         sgc.gridx = 0; sgc.gridy = 0; sgc.fill = GridBagConstraints.NONE; sizeLine.add(sizeField, sgc);
         JButton rnd = new JButton("Random");
         rnd.addActionListener(e -> {
-            double rndv = Math.round((0.1 + Math.random()*(10-0.1))*10.0)/10.0;
-            sizeField.setValue(rndv);
-        });
+			// 4 знака после запятой
+			double v = 0.1 + Math.random() * (10.0 - 0.1);
+			double rndv = Math.round(v * 10000.0) / 10000.0;
+			sizeField.setValue(rndv);
+		});
         sgc.gridx = 1; sgc.gridy = 0; sizeLine.add(rnd, sgc);
         lf.gridx = 1; lf.gridy = row; formGrid.add(sizeLine, lf); row++;
+				
+				// weight: один знак после запятой
+		try {
+			if (weightField.getEditor() instanceof JSpinner.DefaultEditor wde) {
+				wde.getTextField().setColumns(4);
+				Dimension spd = new Dimension(60, wde.getPreferredSize().height);
+				wde.getTextField().setPreferredSize(spd);
+				wde.getTextField().setMaximumSize(spd);
+			}
+		} catch (Throwable ignored) {}
+		weightField.setEditor(new JSpinner.NumberEditor(weightField, "#0.0"));
+		
+		lf.gridx = 0; lf.gridy = row; formGrid.add(new JLabel("weight:"), lf);
+		lf.gridx = 1; lf.gridy = row; formGrid.add(weightField, lf); row++;
 
         lf.gridx = 0; lf.gridy = row; formGrid.add(new JLabel("type:"), lf);
         lf.gridx = 1; lf.gridy = row; formGrid.add(typeCombo, lf); row++;
@@ -226,6 +250,7 @@ public final class CreateFormDialog extends JDialog {
         pricesPanel.add(labeled("price_low",   priceLowField));
         pricesPanel.add(labeled("price_noisy", priceNoisyField));
         pricesPanel.add(labeled("price_high",  priceHighField));
+		installIntegerFilter(priceRawField, priceLowField, priceNoisyField, priceHighField);
         pricesPanel.setVisible(false);
 
         // ---------- ТЕКСТЫ ----------
@@ -324,42 +349,156 @@ public final class CreateFormDialog extends JDialog {
 
     private void setTextureFromKey(TextureSelectionButton b, String key) {
         if (key == null || key.isBlank()) return;
-        String name = key.contains(":") ? key.substring(key.indexOf(':') + 1) : key;
-        // попробуем вызвать любые «устанавливающие» методы
-        for (String m : new String[]{"setSelectedTextureName","setTextureName","setTexture"}) {
-            try {
-                Method mm = b.getClass().getMethod(m, String.class);
-                mm.invoke(b, name);
-                return;
-            } catch (Throwable ignored) {}
-        }
-        // если методов нет — хотя бы поставим tooltip, чтобы было видно старое значение
-        try {
-            b.setToolTipText(name);
-        } catch (Throwable ignored) {}
+		String name = key.contains(":") ? key.substring(key.indexOf(':') + 1) : key;
+		
+		// 1) пробуем «официальные» сеттеры по строке
+		for (String m : new String[]{"setSelectedTextureName","setTextureName","setSelectedTexture"}) {
+			try {
+				Method mm = b.getClass().getMethod(m, String.class);
+				mm.invoke(b, name);
+				b.setToolTipText(name);
+				b.setText(name); // чтобы было видно даже если превью не обновится
+				b.revalidate(); b.repaint();
+				return;
+			} catch (Throwable ignored) {}
+		}
+		
+		// 2) пробуем засетать поле-холдер и заставить кнопку перерисоваться
+		for (String fName : new String[]{"selected_texture","selectedTexture","selected"}) {
+			try {
+				Field f = b.getClass().getDeclaredField(fName);
+				f.setAccessible(true);
+				Object holder = f.get(b);
+				if (holder != null) {
+					// попытаемся записать имя в холдер (если есть такой метод/поле)
+					for (String hm : new String[]{"setTextureName","setUnmappedTextureName","setName"}) {
+						try {
+							Method m = holder.getClass().getMethod(hm, String.class);
+							m.invoke(holder, name);
+							b.setToolTipText(name);
+							b.setText(name);
+							b.revalidate(); b.repaint();
+							return;
+						} catch (Throwable ignored) {}
+					}
+				}
+			} catch (Throwable ignored) {}
+		}
+		
+		// 3) минимум — показать текстом и подсказкой
+		try { b.setText(name); b.setToolTipText(name); b.revalidate(); b.repaint(); } catch (Throwable ignored) {}
     }
 
     private String soundKey(SoundSelector s, String fallback) {
-        try {
-            Sound snd = s.getSound();
-            if (snd == null) return fallback == null ? "" : fallback;
-            try {
-                Object v = snd.getClass().getMethod("getUnmappedValue").invoke(snd);
-                if (v instanceof String str && !str.isBlank()) return str;
-            } catch (Throwable ignored){}
-            return snd.toString();
-        } catch (Throwable t) { return fallback == null ? "" : fallback; }
+		try {
+			Sound snd = s.getSound();
+			if (snd == null) return (fallback == null ? "" : fallback);
+		
+			// пробуем «сырое» имя
+			for (String m : new String[]{"getUnmappedValue","getValue","getName","getSoundName"}) {
+				try {
+					Object v = snd.getClass().getMethod(m).invoke(snd);
+					if (v instanceof String str && !str.isBlank()) return str;
+				} catch (Throwable ignored) {}
+			}
+			// toString как последний шанс, но фильтруем пустоту/заглушки
+			String ts = String.valueOf(snd);
+			if (ts != null && !ts.isBlank() && !ts.equalsIgnoreCase("null")) return ts;
+		
+			return (fallback == null ? "" : fallback);
+		} catch (Throwable t) {
+			return (fallback == null ? "" : fallback);
+		}
     }
 
     private void setSoundFromKey(SoundSelector s, String key) {
         if (key == null || key.isBlank()) return;
-        try {
-            Method m = s.getClass().getMethod("setSoundByName", String.class);
-            m.invoke(s, key);
-        } catch (Throwable ignored) {
-            // не получилось — оставим фолбэк через soundKey(...)
-        }
+		// 1) прямой сеттер «по имени», если есть
+		try {
+			Method m = s.getClass().getMethod("setSoundByName", String.class);
+			m.invoke(s, key);
+			repaintSoundSelectorVisual(s, key);
+			return;
+		} catch (Throwable ignored) {}
+		
+		// 2) сеттер объектом Sound (если доступен конструктор/фабрика)
+		try {
+			// пробуем конструктор Sound(String)
+			Sound snd = null;
+			try {
+				snd = Sound.class.getConstructor(String.class).newInstance(key);
+			} catch (Throwable ignored2) {
+				// пробуем статические фабрики
+				for (String fm : new String[]{"fromString","of","parse"}) {
+					try {
+						Method f = Sound.class.getMethod(fm, String.class);
+						Object obj = f.invoke(null, key);
+						if (obj instanceof Sound so) { snd = so; break; }
+					} catch (Throwable ignored3) {}
+				}
+			}
+			if (snd != null) {
+				try {
+					Method m = s.getClass().getMethod("setSound", Sound.class);
+					m.invoke(s, snd);
+					repaintSoundSelectorVisual(s, key);
+					return;
+				} catch (Throwable ignored4) {}
+			}
+		} catch (Throwable ignored) {}
+		
+		// 3) как минимум — показать имя в любом вложенном текстовом поле, чтобы визуально было видно
+		repaintSoundSelectorVisual(s, key);
     }
+	
+	private void repaintSoundSelectorVisual(JComponent comp, String text) {
+		try {
+			// Проставим текст/tooltip во вложенных компонентах, чтобы было видно выбранный звук
+			java.util.function.Consumer<Container> dfs = new java.util.function.Consumer<>() {
+				@Override public void accept(Container c) {
+					for (Component ch : c.getComponents()) {
+						if (ch instanceof JTextField tf) {
+							tf.setText(text);
+							tf.setToolTipText(text);
+							tf.revalidate(); tf.repaint();
+						} else if (ch instanceof JLabel lb) {
+							lb.setText(text);
+							lb.setToolTipText(text);
+							lb.revalidate(); lb.repaint();
+						} else if (ch instanceof Container cc) {
+							accept(cc);
+						}
+					}
+				}
+			};
+			if (comp instanceof Container c) dfs.accept(c);
+			comp.setToolTipText(text);
+			comp.revalidate(); comp.repaint();
+		} catch (Throwable ignored) {}
+	}
+	
+	
+	
+	private static void installIntegerFilter(JTextField... fields) {
+	DocumentFilter onlyDigits = new DocumentFilter() {
+			@Override
+			public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+				if (string != null && string.matches("\\d+")) {
+					super.insertString(fb, offset, string, attr);
+				}
+			}
+			@Override
+			public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+				if (text != null && text.matches("\\d*")) {
+					super.replace(fb, offset, length, text, attrs);
+				}
+			}
+		};
+		for (JTextField f : fields) {
+			((AbstractDocument) f.getDocument()).setDocumentFilter(onlyDigits);
+		}
+	}
+	
 
     /* ---------- save ---------- */
 
@@ -371,14 +510,31 @@ public final class CreateFormDialog extends JDialog {
 
             JsonArray arr = SignalIO.loadSignals(mc);
             int id = (editingId != null) ? editingId : nextId(arr);
+			
+			boolean wasCatchedPrev = false;
+			if (editingId != null) {
+				for (int i = 0; i < arr.size(); i++) {
+					var el = arr.get(i).getAsJsonObject();
+					if (el.get("id").getAsInt() == editingId) {
+						if (el.has("wasCatched")) {
+							try { wasCatchedPrev = el.get("wasCatched").getAsBoolean(); } catch (Exception ignored) {}
+						}
+						break;
+					}
+				}
+			}
 
             JsonObject o = new JsonObject();
             o.addProperty("id", id);
             o.addProperty("name", nameField.getText());
-            o.addProperty("size", ((Number) sizeField.getValue()).floatValue());
+            double sizeV = ((Number) sizeField.getValue()).doubleValue();
+			// сохраняем ровно с 4 знаками после запятой (как строку)
+			o.addProperty("size", String.format(Locale.ROOT, "%.4f", sizeV));
+			o.addProperty("weight", ((Number) weightField.getValue()).doubleValue());
             // картинки/звуки — с защитой от потери (если пикер ничего не отдал, берём старое)
             o.addProperty("object_image", textureKey(objectImageBtn, keyObjectImageOld));
             o.addProperty("type", (String) typeCombo.getSelectedItem());
+			o.addProperty("wasCatched", wasCatchedPrev);
 
             // ---- object_name (локализуемо) ----
             String objName = objectNameField.getText() == null ? "" : objectNameField.getText().trim();
@@ -403,10 +559,21 @@ public final class CreateFormDialog extends JDialog {
             o.addProperty("image_noisy", textureKey(imageNoisyBtn, keyImageNoisyOld));
             o.addProperty("image_high",  textureKey(imageHighBtn,  keyImageHighOld));
 
-            o.addProperty("sound_raw",   soundKey(soundRawSel,   keySoundRawOld));
-            o.addProperty("sound_low",   soundKey(soundLowSel,   keySoundLowOld));
-            o.addProperty("sound_noisy", soundKey(soundNoisySel, keySoundNoisyOld));
-            o.addProperty("sound_high",  soundKey(soundHighSel,  keySoundHighOld));
+            String svRaw   = soundKey(soundRawSel,   keySoundRawOld);
+			String svLow   = soundKey(soundLowSel,   keySoundLowOld);
+			String svNoisy = soundKey(soundNoisySel, keySoundNoisyOld);
+			String svHigh  = soundKey(soundHighSel,  keySoundHighOld);
+			
+			if (svRaw == null || svRaw.isBlank())     svRaw = keySoundRawOld;
+			if (svLow == null || svLow.isBlank())     svLow = keySoundLowOld;
+			if (svNoisy == null || svNoisy.isBlank()) svNoisy = keySoundNoisyOld;
+			if (svHigh == null || svHigh.isBlank())   svHigh = keySoundHighOld;
+			
+			o.addProperty("sound_raw",   svRaw   == null ? "" : svRaw);
+			o.addProperty("sound_low",   svLow   == null ? "" : svLow);
+			o.addProperty("sound_noisy", svNoisy == null ? "" : svNoisy);
+			o.addProperty("sound_high",  svHigh  == null ? "" : svHigh);
+			
 
             if (sp) {
                 o.addProperty("price_raw",  orZero(priceRawField.getText()));
@@ -536,11 +703,22 @@ public final class CreateFormDialog extends JDialog {
             d.idValue.setText(String.valueOf(d.editingId));
             d.nameField.setText(existingOrNull.get("name").getAsString());
             d.sizeField.setValue(existingOrNull.get("size").getAsDouble());
+			if (existingOrNull.has("weight")) {
+				d.weightField.setValue(existingOrNull.get("weight").getAsDouble());
+			} else {
+				d.weightField.setValue(0.0);
+			}
             d.typeCombo.setSelectedItem(existingOrNull.get("type").getAsString());
             d.specialResponseCheck.setSelected(existingOrNull.get("special_response").getAsBoolean());
             d.specialPriceCheck.setSelected(existingOrNull.get("special_price").getAsBoolean());
             d.pricesPanel.setVisible(d.specialPriceCheck.isSelected());
             d.srPanel.setVisible(d.specialResponseCheck.isSelected());
+			// цены из JSON 
+			if (existingOrNull.has("price_raw"))   d.priceRawField.setText(existingOrNull.get("price_raw").getAsString());
+			if (existingOrNull.has("price_low"))   d.priceLowField.setText(existingOrNull.get("price_low").getAsString());
+			if (existingOrNull.has("price_noisy")) d.priceNoisyField.setText(existingOrNull.get("price_noisy").getAsString());
+			if (existingOrNull.has("price_high"))  d.priceHighField.setText(existingOrNull.get("price_high").getAsString());
+			
 
             // object_name
             String objKey = existingOrNull.has("object_name") ? existingOrNull.get("object_name").getAsString() : "";

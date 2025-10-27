@@ -355,5 +355,23 @@
         "stream": true
       }
     ]
+  },
+  "scan_started": {
+    "subtitle": "subtitles.scan_started",
+    "sounds": [
+      {
+        "name": "thisnotamod:scan_started",
+        "stream": false
+      }
+    ]
+  },
+  "succesful_ping": {
+    "subtitle": "subtitles.succesful_ping",
+    "sounds": [
+      {
+        "name": "thisnotamod:succesful_ping",
+        "stream": false
+      }
+    ]
   }
 }

@@ -340,6 +340,7 @@ public class SignalScannerScreen extends AbstractContainerScreen<SignalScannerMe
                     captureTarget.caught = true;
                     signals.remove(captureTarget);
                     uiLogAdd(I18n.get(K_SUCCESS_PING), LOG_COLOR_OK);
+                    playUi(evt("succesful_ping"), 2.0f);
                     captureInProgress = false;
                     captureTarget = null;
 
@@ -725,7 +726,7 @@ public class SignalScannerScreen extends AbstractContainerScreen<SignalScannerMe
     }
 
     private static void playError() { playUi(evt("signal_error"), 1.0f); }
-    private static void playTurn()  { playUi(evt("scanner_turn"), 1.0f); }
+    private static void playTurn()  { playUi(evt("scan_started"), 1.0f); }
 
     private Signal makeRandomSignal(long now) {
         Signal s = new Signal();
