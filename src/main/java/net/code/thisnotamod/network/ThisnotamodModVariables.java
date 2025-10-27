@@ -143,6 +143,8 @@ public class ThisnotamodModVariables {
 			clone.downloadSpeed = original.downloadSpeed;
 			clone.polarityFilterWidth = original.polarityFilterWidth;
 			clone.frequencyFilterWidth = original.frequencyFilterWidth;
+			clone.signalsCaughtHex = original.signalsCaughtHex;
+			clone.signalsQueueCsv = original.signalsQueueCsv;
 			if (!event.isWasDeath()) {
 			}
 		}
@@ -431,6 +433,8 @@ public class ThisnotamodModVariables {
 		public double downloadSpeed = 1.0;
 		public double polarityFilterWidth = 1.0;
 		public double frequencyFilterWidth = 1.0;
+		public String signalsCaughtHex = "\"\"";
+		public String signalsQueueCsv = "\"\"";
 
 		public void syncPlayerVariables(Entity entity) {
 			if (entity instanceof ServerPlayer serverPlayer)
@@ -499,6 +503,8 @@ public class ThisnotamodModVariables {
 			nbt.putDouble("downloadSpeed", downloadSpeed);
 			nbt.putDouble("polarityFilterWidth", polarityFilterWidth);
 			nbt.putDouble("frequencyFilterWidth", frequencyFilterWidth);
+			nbt.putString("signalsCaughtHex", signalsCaughtHex);
+			nbt.putString("signalsQueueCsv", signalsQueueCsv);
 			return nbt;
 		}
 
@@ -560,6 +566,8 @@ public class ThisnotamodModVariables {
 			downloadSpeed = nbt.getDouble("downloadSpeed");
 			polarityFilterWidth = nbt.getDouble("polarityFilterWidth");
 			frequencyFilterWidth = nbt.getDouble("frequencyFilterWidth");
+			signalsCaughtHex = nbt.getString("signalsCaughtHex");
+			signalsQueueCsv = nbt.getString("signalsQueueCsv");
 		}
 	}
 
@@ -637,6 +645,8 @@ public class ThisnotamodModVariables {
 					variables.downloadSpeed = message.data.downloadSpeed;
 					variables.polarityFilterWidth = message.data.polarityFilterWidth;
 					variables.frequencyFilterWidth = message.data.frequencyFilterWidth;
+					variables.signalsCaughtHex = message.data.signalsCaughtHex;
+					variables.signalsQueueCsv = message.data.signalsQueueCsv;
 				}
 			});
 			context.setPacketHandled(true);

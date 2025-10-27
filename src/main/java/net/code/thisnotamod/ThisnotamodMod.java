@@ -54,6 +54,7 @@ public class ThisnotamodMod {
 
 	public ThisnotamodMod() {
 		// Start of user code block mod constructor
+		net.code.thisnotamod.network.NetBootstrap.ensureRegistered();
 		// End of user code block mod constructor
 		MinecraftForge.EVENT_BUS.register(this);
 		IEventBus bus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -62,11 +63,8 @@ public class ThisnotamodMod {
 		ThisnotamodModBlockEntities.REGISTRY.register(bus);
 		ThisnotamodModItems.REGISTRY.register(bus);
 		ThisnotamodModEntities.REGISTRY.register(bus);
-
 		ThisnotamodModTabs.REGISTRY.register(bus);
-
 		ThisnotamodModPaintings.REGISTRY.register(bus);
-
 		ThisnotamodModMenus.REGISTRY.register(bus);
 		// Start of user code block mod init
 		// End of user code block mod init

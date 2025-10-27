@@ -94,7 +94,7 @@ public class KerfuIntButtonMessage {
 		}
 		if (buttonID == 3) {
 
-			MeowProcedure.execute(world, x, y, z);
+			MeowProcedure.execute(world, x, y, z, entity);
 		}
 		if (buttonID == 4) {
 

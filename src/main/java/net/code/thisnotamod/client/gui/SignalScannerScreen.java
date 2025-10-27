@@ -20,7 +20,9 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
 import net.minecraft.client.resources.sounds.SoundInstance;
-import net.code.thisnotamod.client.SignalPicker; // <-- единый источник выбора сигнала
+import net.code.thisnotamod.client.SignalPicker; 
+import net.code.thisnotamod.ThisnotamodMod;
+import net.code.thisnotamod.network.RequestNextSignalC2S;
 
 import java.util.*;
 
@@ -344,7 +346,11 @@ public class SignalScannerScreen extends AbstractContainerScreen<SignalScannerMe
                     captureInProgress = false;
                     captureTarget = null;
 
-                    SignalTunerScreen.applyPickedSignal(SignalPicker.pickRandomRegular());
+                    // просим сервер выбрать следующий сигнал и прислать нам результат
+					net.code.thisnotamod.network.NetBootstrap.ensureRegistered();
+						net.code.thisnotamod.ThisnotamodMod.PACKET_HANDLER
+    						.sendToServer(new net.code.thisnotamod.network.RequestNextSignalC2S());
+
                 }
             }
         }

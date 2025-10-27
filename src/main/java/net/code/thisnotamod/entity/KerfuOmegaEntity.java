@@ -201,7 +201,7 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 					mob.getNavigation().stop();
 					// Р—Р°РїСѓСЃРєР°РµРј Р°РЅРёРјР°С†РёСЋ РѕРґРёРЅ СЂР°Р·
 					if (!animationStarted) {
-						mob.setAnimation("sits");
+						mob.setAnimation("serverFixNormal_No");
 						animationStarted = true;
 					}
 					// РћС‚СЃС‡РёС‚С‹РІР°РµРј Р·Р°РґРµСЂР¶РєСѓ СЂРµРјРѕРЅС‚Р° Рё РїСЂРёРјРµРЅСЏРµРј РµРіРѕ СЂРѕРІРЅРѕ РѕРґРёРЅ СЂР°Р· С‡РµСЂРµР· 30 С‚РёРєРѕРІ
@@ -296,8 +296,8 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 					// Р—Р°РїРѕРјРЅРёРј РїРѕР·РёС†РёСЋ РґР»СЏ СЂРµРјРѕРЅС‚Р°/СѓРґР°Р»РµРЅРёСЏ
 					removeAfterCooldownPos = currentTarget;
 					// Р—Р°РїСѓСЃРєР°РµРј 60 С‚РёРєРѕРІ РѕР¶РёРґР°РЅРёСЏ / Р°РЅРёРјР°С†РёРё
-					repairCooldownTicks = 60;
-					repairDelayTicks = 45; // РїРѕС‡РёРЅРєР° С‡РµСЂРµР· 30 С‚РёРєРѕРІ РїРѕСЃР»Рµ СЃС‚Р°СЂС‚Р° Р°РЅРёРјР°С†РёРё
+					repairCooldownTicks = 75;
+					repairDelayTicks = 62; // РїРѕС‡РёРЅРєР° С‡РµСЂРµР· 30 С‚РёРєРѕРІ РїРѕСЃР»Рµ СЃС‚Р°СЂС‚Р° Р°РЅРёРјР°С†РёРё
 					repairApplied = false;
 					animationStarted = false;
 					// РћСЃС‚Р°РЅР°РІР»РёРІР°РµРј РЅР°РІРёРіР°С†РёСЋ Рё РѕСЃРІРѕР±РѕР¶РґР°РµРј С‚РµРєСѓС‰СѓСЋ С†РµР»СЊ (С‡С‚РѕР±С‹ РЅРµ РґРІРёРіР°С‚СЊСЃСЏ)
@@ -844,7 +844,10 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 			if ((event.isMoving() || !(event.getLimbSwingAmount() > -0.15F && event.getLimbSwingAmount() < 0.15F))
 
 			) {
-				return event.setAndContinue(RawAnimation.begin().thenLoop("walk_fun"));
+				return event.setAndContinue(RawAnimation.begin().thenLoop("walk"));
+			}
+			if (this.isShiftKeyDown()) {
+				return event.setAndContinue(RawAnimation.begin().thenLoop("pat_simple"));
 			}
 			return event.setAndContinue(RawAnimation.begin().thenLoop("idle"));
 		}
