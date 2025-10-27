@@ -31,6 +31,17 @@ public final class EditTableDialog extends JDialog {
     private final JComboBox<String> type = new JComboBox<>(new String[]{"All","regular","trigger_event","story"});
     private final JTable table = new JTable();
     private final Model model = new Model();
+	
+		// --- pagination ---
+	private int pageSize = 25;
+	private int currentPage = 0;
+	private final JComboBox<Integer> pageSizeBox = new JComboBox<>(new Integer[]{10, 25, 50, 100, 200});
+	private final JLabel pageInfo = new JLabel();
+	private final JButton btnFirst = new JButton("⏮");
+	private final JButton btnPrev  = new JButton("◀");
+	private final JButton btnNext  = new JButton("▶");
+	private final JButton btnLast  = new JButton("⏭");
+	
 
     private EditTableDialog(MCreator mc) {
         super(mc, "Edit Signal Datatable", false);
@@ -77,6 +88,29 @@ public final class EditTableDialog extends JDialog {
         getContentPane().setLayout(new BorderLayout(6,6));
         getContentPane().add(top, BorderLayout.NORTH);
         getContentPane().add(scroll, BorderLayout.CENTER);
+		
+		// bottom pagination bar
+		JPanel pagination = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 6));
+		pageSizeBox.setSelectedItem(pageSize);
+		pageSizeBox.addActionListener(e -> {
+			pageSize = (Integer) pageSizeBox.getSelectedItem();
+			gotoPage(0);
+		});
+		btnFirst.addActionListener(e -> gotoPage(0));
+		btnPrev.addActionListener(e -> gotoPage(currentPage - 1));
+		btnNext.addActionListener(e -> gotoPage(currentPage + 1));
+		btnLast.addActionListener(e -> gotoPage(totalPages() - 1));
+		
+		pagination.add(new JLabel("Rows per page:"));
+		pagination.add(pageSizeBox);
+		pagination.add(btnFirst);
+		pagination.add(btnPrev);
+		pagination.add(pageInfo);
+		pagination.add(btnNext);
+		pagination.add(btnLast);
+		
+		getContentPane().add(pagination, BorderLayout.SOUTH);
+		
     }
 
     /** Навешиваем на столбцы Edit/Delete иконки-кнопки и обработчики */
@@ -125,6 +159,35 @@ public final class EditTableDialog extends JDialog {
             }
         }));
     }
+	
+	private int totalPages() {
+		int total = model.totalItems();
+		return total == 0 ? 0 : (int) Math.ceil(total / (double) pageSize);
+	}
+	private int pageOffset() {
+		int tp = totalPages();
+		if (tp == 0) return 0;
+		int off = currentPage * pageSize;
+		int maxOff = (tp - 1) * pageSize;
+		return Math.max(0, Math.min(off, maxOff));
+	}
+	private void gotoPage(int p) {
+		int tp = totalPages();
+		currentPage = (tp == 0) ? 0 : Math.max(0, Math.min(p, tp - 1));
+		table.clearSelection();
+		model.fireTableDataChanged();
+		updatePaginationControls();
+	}
+	private void updatePaginationControls() {
+		int tp = totalPages();
+		int shownPage = (tp == 0) ? 0 : (currentPage + 1);
+		pageInfo.setText(String.format("Page %d / %d • %d items", shownPage, tp, model.totalItems()));
+		btnFirst.setEnabled(currentPage > 0);
+		btnPrev.setEnabled(currentPage > 0);
+		btnNext.setEnabled(currentPage < tp - 1);
+		btnLast.setEnabled(currentPage < tp - 1);
+	}
+	
 
     private void reload() {
         // На всякий случай — подлить недостающие локализации из зеркала перед показом
@@ -133,13 +196,15 @@ public final class EditTableDialog extends JDialog {
         JsonArray arr = SignalIO.loadSignals(mc);
         model.set(arr);
         applyFilter();
+		gotoPage(0);
         installActionColumns();
     }
 
     private void applyFilter() {
-        String q = search.getText()==null? "": search.getText().toLowerCase(Locale.ROOT);
-        String t = (String) type.getSelectedItem();
-        model.setFilter(q,t);
+        String q = search.getText() == null ? "" : search.getText().toLowerCase(Locale.ROOT);
+		String t = (String) type.getSelectedItem();
+		model.setFilter(q, t);
+		gotoPage(0);
     }
 
     private void onExport() {
@@ -198,9 +263,10 @@ public final class EditTableDialog extends JDialog {
 
     /** Модель данных таблицы */
     private final class Model extends AbstractTableModel {
-        private final String[] cols = {"ID","Name","Type","Size","Special","Edit","Delete"};
+        private final String[] cols = {"ID","Name","Type","Weight","Special","Edit","Delete"};
         private List<JsonObject> all = new ArrayList<>();
         private List<JsonObject> view = new ArrayList<>();
+		int totalItems() { return view.size(); }
 
         void set(JsonArray arr){
             all.clear();
@@ -223,18 +289,26 @@ public final class EditTableDialog extends JDialog {
             fireTableDataChanged();
         }
 
-        public int getRowCount(){ return view.size(); }
+        public int getRowCount() {
+			int off = pageOffset();
+			int remain = Math.max(0, view.size() - off);
+			return Math.max(0, Math.min(pageSize, remain));
+		}
+		
         public int getColumnCount(){ return cols.length; }
         public String getColumnName(int c){ return cols[c]; }
         public boolean isCellEditable(int r,int c){ return c==COL_EDIT || c==COL_DELETE; }
 
         public Object getValueAt(int r,int c){
-            var o = view.get(r);
-            return switch (c){
+			int idx = pageOffset() + r;
+			var o = view.get(idx);
+			return switch (c){
                 case COL_ID -> o.get("id").getAsInt();
                 case COL_NAME -> o.get("name").getAsString();
                 case COL_TYPE -> o.get("type").getAsString();
-                case COL_SIZE -> String.format(Locale.US,"%.4f", o.get("size").getAsDouble());
+                case COL_SIZE -> o.has("weight")
+						? String.format(Locale.US, "%.1f", o.get("weight").getAsFloat())
+						: "0.0";
                 case COL_SPECIAL -> (o.get("special_response").getAsBoolean()? "R":"") +
                                     (o.get("special_price").getAsBoolean()? "P": "");
                 case COL_EDIT -> "✎";
@@ -245,8 +319,8 @@ public final class EditTableDialog extends JDialog {
 
         /** Доступ к объекту по *модельной* строке (после convertRowIndexToModel) */
         JsonObject getAtModelRow(int modelRow) {
-            return view.get(modelRow);
-        }
+			return view.get(pageOffset() + modelRow);
+		}
     }
 
     // ---- Кнопка-иконка: рендерер

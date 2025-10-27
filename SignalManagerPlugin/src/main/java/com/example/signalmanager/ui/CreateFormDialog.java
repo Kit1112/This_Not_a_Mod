@@ -510,19 +510,6 @@ public final class CreateFormDialog extends JDialog {
 
             JsonArray arr = SignalIO.loadSignals(mc);
             int id = (editingId != null) ? editingId : nextId(arr);
-			
-			boolean wasCatchedPrev = false;
-			if (editingId != null) {
-				for (int i = 0; i < arr.size(); i++) {
-					var el = arr.get(i).getAsJsonObject();
-					if (el.get("id").getAsInt() == editingId) {
-						if (el.has("wasCatched")) {
-							try { wasCatchedPrev = el.get("wasCatched").getAsBoolean(); } catch (Exception ignored) {}
-						}
-						break;
-					}
-				}
-			}
 
             JsonObject o = new JsonObject();
             o.addProperty("id", id);
@@ -534,7 +521,6 @@ public final class CreateFormDialog extends JDialog {
             // картинки/звуки — с защитой от потери (если пикер ничего не отдал, берём старое)
             o.addProperty("object_image", textureKey(objectImageBtn, keyObjectImageOld));
             o.addProperty("type", (String) typeCombo.getSelectedItem());
-			o.addProperty("wasCatched", wasCatchedPrev);
 
             // ---- object_name (локализуемо) ----
             String objName = objectNameField.getText() == null ? "" : objectNameField.getText().trim();
