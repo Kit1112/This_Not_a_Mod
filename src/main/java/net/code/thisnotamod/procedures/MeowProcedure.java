@@ -10,6 +10,8 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.BlockPos;
 
+import net.code.thisnotamod.entity.KerfuOmegaEntity;
+
 public class MeowProcedure {
 	public static void execute(LevelAccessor world, double x, double y, double z, Entity entity) {
 		if (entity == null)
@@ -23,11 +25,14 @@ public class MeowProcedure {
 		}
 		if (entity instanceof Player _player)
 			_player.closeContainer();
-		if (world instanceof net.minecraft.world.level.Level _level) {
+		if (world instanceof net.minecraft.world.level.Level _level && !_level.isClientSide()) {
 			Entity nearest = world.getEntitiesOfClass(net.code.thisnotamod.entity.KerfuOmegaEntity.class, net.minecraft.world.phys.AABB.ofSize(new net.minecraft.world.phys.Vec3(x, y, z), 3, 3, 3), e -> true).stream()
 					.min(java.util.Comparator.comparingDouble(e -> e.distanceToSqr(x, y, z))).orElse(null);
 			if (nearest instanceof net.code.thisnotamod.entity.KerfuOmegaEntity mob) {
-				mob.setAnimation("pat_simple"); // работает и на клиенте, и на сервере
+				mob.getPersistentData().putInt("meow_ticks", 150);
+				// На всякий: отключим режимы, чтобы при выходе не пересеклось
+				mob.getEntityData().set(KerfuOmegaEntity.DATA_DATA_idle, false);
+				mob.getEntityData().set(KerfuOmegaEntity.DATA_patroul, false);
 			}
 		}
 	}

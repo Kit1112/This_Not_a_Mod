@@ -71,6 +71,7 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 	public static final EntityDataAccessor<String> DATA_serverList = SynchedEntityData.defineId(KerfuOmegaEntity.class, EntityDataSerializers.STRING);
 	public static final EntityDataAccessor<Boolean> DATA_patroul = SynchedEntityData.defineId(KerfuOmegaEntity.class, EntityDataSerializers.BOOLEAN);
 	public static final EntityDataAccessor<Boolean> DATA_DATA_idle = SynchedEntityData.defineId(KerfuOmegaEntity.class, EntityDataSerializers.BOOLEAN);
+	public static final EntityDataAccessor<Integer> DATA_meow_ticks = SynchedEntityData.defineId(KerfuOmegaEntity.class, EntityDataSerializers.INT);
 	private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 	private boolean swinging;
 	private boolean lastloop;
@@ -99,6 +100,7 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 		this.entityData.define(DATA_serverList, "");
 		this.entityData.define(DATA_patroul, false);
 		this.entityData.define(DATA_DATA_idle, false);
+		this.entityData.define(DATA_meow_ticks, 0);
 	}
 
 	public void setTexture(String texture) {
@@ -118,6 +120,58 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 	protected void registerGoals() {
 		super.registerGoals();
 		this.goalSelector.addGoal(0, new Goal() {
+			private final KerfuOmegaEntity mob = KerfuOmegaEntity.this;
+			{
+				this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
+			}
+
+			@Override
+			public boolean isInterruptable() {
+				return false;
+			} // блокируем прерывания
+
+			@Override
+			public boolean requiresUpdateEveryTick() {
+				return true;
+			}
+
+			@Override
+			public boolean canUse() {
+				// активируемся, если установлен таймер мяу
+				return mob.getPersistentData().getInt("meow_ticks") > 0;
+			}
+
+			@Override
+			public boolean canContinueToUse() {
+				return mob.getPersistentData().getInt("meow_ticks") > 0;
+			}
+
+			@Override
+			public void start() {
+				// стопаем любое движение/анимации и запускаем pat_simple
+				mob.getNavigation().stop();
+				mob.setAnimation("pat_simple");
+				// выключаем другие режимы
+				mob.getEntityData().set(KerfuOmegaEntity.DATA_DATA_idle, false);
+				mob.getEntityData().set(KerfuOmegaEntity.DATA_patroul, false);
+			}
+
+			@Override
+			public void tick() {
+				// держим на месте и тикаем таймер
+				mob.getNavigation().stop();
+				int t = mob.getPersistentData().getInt("meow_ticks");
+				if (t > 0)
+					mob.getPersistentData().putInt("meow_ticks", t - 1);
+			}
+
+			@Override
+			public void stop() {
+				// по окончании — очищаем анимацию
+				mob.setAnimation("empty");
+			}
+		});
+		this.goalSelector.addGoal(1, new Goal() {
 			private final KerfuOmegaEntity mob = KerfuOmegaEntity.this;
 			// === СЃРѕСЃС‚РѕСЏРЅРёРµ ===
 			private BlockPos currentTarget = null;
@@ -150,6 +204,8 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 
 			@Override
 			public boolean canUse() {
+				if (mob.getPersistentData().getInt("meow_ticks") > 0)
+					return false;
 				// РёРіРЅРѕСЂРёСЂСѓРµРј С„Р»Р°Рі РїРѕРєРѕСЏ вЂ” СЂРµРјРѕРЅС‚ РґРѕР»Р¶РµРЅ СѓРјРµС‚СЊ СЃС‚Р°СЂС‚РѕРІР°С‚СЊ РёР· "РѕР¶РёРґР°РЅРёСЏ"
 				String list = mob.getEntityData().get(KerfuOmegaEntity.DATA_serverList);
 				if (list != null && !list.equals(lastServerList)) {
@@ -160,6 +216,8 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 
 			@Override
 			public boolean canContinueToUse() {
+				if (mob.getPersistentData().getInt("meow_ticks") > 0)
+					return false;
 				Boolean idle = mob.getEntityData().get(KerfuOmegaEntity.DATA_DATA_idle);
 				if (idle != null && idle)
 					return false; // РЅРµ РїСЂРѕРґРѕР»Р¶Р°РµРј СЂР°Р±РѕС‚Р°С‚СЊ РІ СЂРµР¶РёРјРµ РїРѕРєРѕСЏ
@@ -388,7 +446,7 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 				return sb.toString();
 			}
 		});
-		this.goalSelector.addGoal(1, new Goal() {
+		this.goalSelector.addGoal(2, new Goal() {
 			private final KerfuOmegaEntity mob = KerfuOmegaEntity.this;
 			// === состояние патруля ===
 			private BlockPos patrolAnchor = null; // где стартовали патруль
@@ -414,12 +472,16 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 
 			@Override
 			public boolean canUse() {
+				if (mob.getPersistentData().getInt("meow_ticks") > 0)
+					return false;
 				Boolean pat = mob.getEntityData().get(KerfuOmegaEntity.DATA_patroul);
 				return pat != null && pat; // стартуем, когда процедура установила DATA_patroul = true
 			}
 
 			@Override
 			public boolean canContinueToUse() {
+				if (mob.getPersistentData().getInt("meow_ticks") > 0)
+					return false;
 				Boolean pat = mob.getEntityData().get(KerfuOmegaEntity.DATA_patroul);
 				return pat != null && pat; // держим goal активным пока флаг включён
 			}
@@ -518,7 +580,7 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 				return patrolAnchor;
 			}
 		});
-		this.goalSelector.addGoal(2, new Goal() {
+		this.goalSelector.addGoal(3, new Goal() {
 			private final KerfuOmegaEntity mob = KerfuOmegaEntity.this;
 			private Player target;
 			// === настройки ===
@@ -539,6 +601,8 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 
 			@Override
 			public boolean canUse() {
+				if (mob.getPersistentData().getInt("meow_ticks") > 0)
+					return false;
 				// Не использовать эту цель, если есть задачи на ремонт
 				String list = mob.getEntityData().get(KerfuOmegaEntity.DATA_serverList);
 				if (list != null && !list.isEmpty())
@@ -556,6 +620,8 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 
 			@Override
 			public boolean canContinueToUse() {
+				if (mob.getPersistentData().getInt("meow_ticks") > 0)
+					return false;
 				String list = mob.getEntityData().get(KerfuOmegaEntity.DATA_serverList);
 				if (list != null && !list.isEmpty())
 					return false;
@@ -678,7 +744,7 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 				return false;
 			}
 		});
-		this.goalSelector.addGoal(3, new Goal() {
+		this.goalSelector.addGoal(4, new Goal() {
 			private final KerfuOmegaEntity mob = KerfuOmegaEntity.this;
 			{
 				this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
@@ -686,12 +752,16 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 
 			@Override
 			public boolean canUse() {
+				if (mob.getPersistentData().getInt("meow_ticks") > 0)
+					return false;
 				Boolean idle = mob.getEntityData().get(KerfuOmegaEntity.DATA_DATA_idle);
 				return idle != null && idle; // Р°РєС‚РёРІРёСЂСѓРµС‚СЃСЏ, РєРѕРіРґР° РІРєР»СЋС‡С‘РЅ С„Р»Р°Рі РїРѕРєРѕСЏ
 			}
 
 			@Override
 			public boolean canContinueToUse() {
+				if (mob.getPersistentData().getInt("meow_ticks") > 0)
+					return false;
 				Boolean idle = mob.getEntityData().get(KerfuOmegaEntity.DATA_DATA_idle);
 				return idle != null && idle; // РґРµСЂР¶РёРј goal, РїРѕРєР° С„Р»Р°Рі РІРєР»СЋС‡С‘РЅ
 			}
@@ -714,7 +784,7 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 				mob.setAnimation("empty");
 			}
 		});
-		this.goalSelector.addGoal(4, new RandomStrollGoal(this, 1));
+		this.goalSelector.addGoal(5, new RandomStrollGoal(this, 1));
 		this.goalSelector.addGoal(1, new FloatGoal(this));
 	}
 
@@ -777,6 +847,7 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 		compound.putString("DataserverList", this.entityData.get(DATA_serverList));
 		compound.putBoolean("Datapatroul", this.entityData.get(DATA_patroul));
 		compound.putBoolean("DataDATA_idle", this.entityData.get(DATA_DATA_idle));
+		compound.putInt("Datameow_ticks", this.entityData.get(DATA_meow_ticks));
 	}
 
 	@Override
@@ -792,6 +863,8 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 			this.entityData.set(DATA_patroul, compound.getBoolean("Datapatroul"));
 		if (compound.contains("DataDATA_idle"))
 			this.entityData.set(DATA_DATA_idle, compound.getBoolean("DataDATA_idle"));
+		if (compound.contains("Datameow_ticks"))
+			this.entityData.set(DATA_meow_ticks, compound.getInt("Datameow_ticks"));
 	}
 
 	@Override
