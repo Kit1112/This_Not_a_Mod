@@ -9099,6 +9099,114 @@
         "dependencies": []
       },
       "path": "~/VotVresources/Test"
+    },
+    {
+      "name": "PanelPlayback",
+      "type": "gui",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "panel_playback",
+      "metadata": {
+        "files": [
+          "src/main/java/net/code/thisnotamod/world/inventory/PanelPlaybackMenu.java",
+          "src/main/java/net/code/thisnotamod/client/gui/PanelPlaybackScreen.java"
+        ]
+      },
+      "path": "~/VotVresources/Test"
+    },
+    {
+      "name": "TestPlayback",
+      "type": "block",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "test_playback",
+      "metadata": {
+        "files": [
+          "src/main/java/net/code/thisnotamod/block/TestPlaybackBlock.java",
+          "src/main/resources/assets/thisnotamod/blockstates/test_playback.json",
+          "src/main/resources/assets/thisnotamod/models/item/test_playback.json",
+          "src/main/java/net/code/thisnotamod/block/entity/TestPlaybackBlockEntity.java",
+          "src/main/resources/assets/thisnotamod/models/block/test_playback.json",
+          "src/main/resources/data/thisnotamod/loot_tables/blocks/test_playback.json"
+        ]
+      },
+      "path": "~/VotVresources/Test"
+    },
+    {
+      "name": "MusicDiscVotvHalloween",
+      "type": "musicdisc",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "music_disc_votv_halloween",
+      "metadata": {
+        "files": [
+          "src/main/java/net/code/thisnotamod/item/MusicDiscVotvHalloweenItem.java",
+          "src/main/resources/assets/thisnotamod/models/item/music_disc_votv_halloween.json"
+        ]
+      },
+      "path": "~/VotVresources/musicDiscs"
+    },
+    {
+      "name": "DebugMenu",
+      "type": "gui",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "debug_menu",
+      "metadata": {
+        "files": [
+          "src/main/java/net/code/thisnotamod/world/inventory/DebugMenuMenu.java",
+          "src/main/java/net/code/thisnotamod/client/gui/DebugMenuScreen.java"
+        ]
+      },
+      "path": "~/VotVresources/DebugMenu"
+    },
+    {
+      "name": "OpenDebugMenuKeybind",
+      "type": "procedure",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "open_debug_menu_keybind",
+      "metadata": {
+        "files": [
+          "src/main/java/net/code/thisnotamod/procedures/OpenDebugMenuKeybindProcedure.java"
+        ],
+        "dependencies": [
+          {
+            "name": "entity",
+            "type": "entity"
+          },
+          {
+            "name": "x",
+            "type": "number"
+          },
+          {
+            "name": "y",
+            "type": "number"
+          },
+          {
+            "name": "z",
+            "type": "number"
+          },
+          {
+            "name": "world",
+            "type": "world"
+          }
+        ]
+      },
+      "path": "~/VotVresources/DebugMenu"
+    },
+    {
+      "name": "OpenDebugMenu",
+      "type": "keybind",
+      "compiles": true,
+      "locked_code": false,
+      "registry_name": "open_debug_menu",
+      "metadata": {
+        "files": [
+          "src/main/java/net/code/thisnotamod/network/OpenDebugMenuMessage.java"
+        ]
+      },
+      "path": "~/VotVresources/DebugMenu"
     }
   ],
   "variable_elements": [
@@ -10005,10 +10113,19 @@
       ],
       "category": "player",
       "subtitle": "Успешная поимка сигнала"
+    },
+    {
+      "name": "halloween_theme",
+      "files": [
+        "halloween_spook_theme"
+      ],
+      "category": "record",
+      "subtitle": ""
     }
   ],
   "tag_elements": {
     "ITEMS:minecraft:music_discs": [
+      "~CUSTOM:MusicDiscVotvHalloween",
       "~CUSTOM:MusicDiskVotvWinter",
       "~CUSTOM:MusicDiskVotv"
     ]
@@ -10064,7 +10181,8 @@
       "KerfuBody",
       "KerfuHead",
       "KerfuBlock",
-      "KerfuBlueprint"
+      "KerfuBlueprint",
+      "MusicDiscVotvHalloween"
     ]
   },
   "language_map": {
@@ -10105,6 +10223,7 @@
       "block.thisnotamod.radiotielieskop": "Радиотелескоп",
       "gui.thisnotamod.kerfu_int.button_ispolzovat2": "Патрулировать",
       "item.thisnotamod.mannequin_spawn_egg": "Яйцо призыва Манекена",
+      "key.thisnotamod.open_debug_menu": "Open Debug Menu",
       "block.thisnotamod.argemiapurple": "Аргемия",
       "gui.thisnotamod.passlock_gui.button_444": "4",
       "item.modname.blood_guidebook": "Иконка гайдбука Blood Magic",
@@ -10131,6 +10250,7 @@
       "block.thisnotamod.table_l": "Металлический стол",
       "subtitles.scanner_move": "",
       "item.thisnotamod.kerfu_spawn_egg": "Яйцо призыва Керфура",
+      "item.thisnotamod.music_disc_votv_halloween": "Пластинка",
       "block.thisnotamod.lampplus_1": "Электрическая лампа ",
       "block.thisnotamod.server_b_top": "Сервер",
       "subtitles.mercury_noisy": "",
@@ -10196,6 +10316,7 @@
       "gui.thisnotamod.passlock_gui.button_333": "3",
       "subtitles.wc_on": "",
       "block.thisnotamod.terminal": "Терминал",
+      "subtitles.halloween_theme": "",
       "block.thisnotamod.lamp_middle": "Электрическая лампа ",
       "subtitles.notif_warning": "",
       "painting.thisnotamod.kartina.author": "some guy from internet",
@@ -10277,6 +10398,7 @@
       "gui.thisnotamod.passlock_gui.button_empty1": "2",
       "signal_2_low": "",
       "subtitles.sosal": "",
+      "item.thisnotamod.music_disc_votv_halloween.desc": "VotV Winter theme - VtOS21",
       "block.thisnotamod.concrete_wall_n": "Стена вариант 4",
       "signalmanager.ui.scanner.log.sensor_error": "ошибка датчика",
       "subtitles.term_off": "",
@@ -10284,6 +10406,7 @@
       "block.thisnotamod.argemiagreen": "Аргемия",
       "block.thisnotamod.test_signal": "Test Signal",
       "subtitles.button_switch": "",
+      "signalmanager.ui.playback.list_title": "Список сигналов",
       "block.thisnotamod.argemiablue": "Аргемия",
       "gui.thisnotamod.passlock_gui.button_999": "9",
       "subtitles.passlock_deny": "",
@@ -10313,6 +10436,7 @@
       "block.thisnotamod.window_aleft_t": "Окно с решётками",
       "signalmanager.ui.tuner.label.detector_status": "Статус детектора:",
       "subtitles.pinger": "",
+      "block.thisnotamod.test_playback": "Test Signal",
       "subtitles.term_work": "",
       "block.thisnotamod.shop_int_test": "Тестовый блок для использования магазина",
       "gui.thisnotamod.delivery_gui.button_zakazat": "Заказать",
@@ -10375,6 +10499,7 @@
       "block.thisnotamod.radiotielieskop": "Радиотелескоп (нажми ПКМ по нижнему блоку)",
       "gui.thisnotamod.kerfu_int.button_ispolzovat2": "Patroul",
       "item.thisnotamod.mannequin_spawn_egg": "Mannequen Spawn Egg",
+      "key.thisnotamod.open_debug_menu": "Open Debug Menu",
       "gui.thisnotamod.passlock_gui.button_444": "4",
       "block.thisnotamod.argemiapurple": "Argemia",
       "item.modname.blood_guidebook": "Blood Guidebook",
@@ -10401,6 +10526,7 @@
       "block.thisnotamod.table_l": "Iron table",
       "subtitles.scanner_move": "",
       "item.thisnotamod.kerfu_spawn_egg": "Kerfur Spawn Egg",
+      "item.thisnotamod.music_disc_votv_halloween": "Пластинка",
       "block.thisnotamod.lampplus_1": "Электрическая лампа ",
       "block.thisnotamod.server_b_top": "Server",
       "subtitles.passlock_button": "",
@@ -10466,6 +10592,7 @@
       "gui.thisnotamod.passlock_gui.button_333": "3",
       "subtitles.wc_on": "",
       "block.thisnotamod.terminal": "Terminal",
+      "subtitles.halloween_theme": "",
       "block.thisnotamod.lamp_middle": "Электрическая лампа ",
       "subtitles.notif_warning": "",
       "painting.thisnotamod.kartina.author": "some guy from internet",
@@ -10547,6 +10674,7 @@
       "gui.thisnotamod.passlock_gui.button_empty1": "2",
       "signal_2_low": "",
       "subtitles.sosal": "",
+      "item.thisnotamod.music_disc_votv_halloween.desc": "VotV Halloween theme - VtOS21",
       "block.thisnotamod.concrete_wall_n": "Стена вариант 4",
       "signalmanager.ui.scanner.log.sensor_error": "sensor error",
       "subtitles.term_off": "",
@@ -10554,6 +10682,7 @@
       "block.thisnotamod.argemiagreen": "Argemia",
       "block.thisnotamod.test_signal": "Test Signal",
       "subtitles.button_switch": "",
+      "signalmanager.ui.playback.list_title": "Signals list",
       "block.thisnotamod.argemiablue": "Argemia",
       "gui.thisnotamod.passlock_gui.button_999": "9",
       "subtitles.passlock_deny": "",
@@ -10583,6 +10712,7 @@
       "block.thisnotamod.window_aleft_t": "Окно с решётками",
       "signalmanager.ui.tuner.label.detector_status": "Detector status:",
       "subtitles.pinger": "",
+      "block.thisnotamod.test_playback": "Test Signal",
       "subtitles.term_work": "",
       "block.thisnotamod.shop_int_test": "Тестовый блок для использования магазина",
       "gui.thisnotamod.delivery_gui.button_zakazat": "Заказать",
@@ -10834,6 +10964,10 @@
           },
           {
             "name": "Test",
+            "children": []
+          },
+          {
+            "name": "DebugMenu",
             "children": []
           }
         ]

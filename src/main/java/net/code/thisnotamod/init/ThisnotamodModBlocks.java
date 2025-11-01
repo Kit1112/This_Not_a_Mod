@@ -25,6 +25,7 @@ import net.code.thisnotamod.block.VotvDoorBlock;
 import net.code.thisnotamod.block.VentCornerHorizontalBlock;
 import net.code.thisnotamod.block.VentCornerBlock;
 import net.code.thisnotamod.block.TestSignalBlock;
+import net.code.thisnotamod.block.TestPlaybackBlock;
 import net.code.thisnotamod.block.TerminalBlock;
 import net.code.thisnotamod.block.TermRTBlock;
 import net.code.thisnotamod.block.TermLTBlock;
@@ -140,6 +141,7 @@ public class ThisnotamodModBlocks {
 	public static final RegistryObject<Block> CRAFTING_TABLE_R = REGISTRY.register("crafting_table_r", () -> new CraftingTableRBlock());
 	public static final RegistryObject<Block> KERFU_HEAD = REGISTRY.register("kerfu_head", () -> new KerfuHeadBlock());
 	public static final RegistryObject<Block> KERFU_BLOCK = REGISTRY.register("kerfu_block", () -> new KerfuBlockBlock());
+	public static final RegistryObject<Block> TEST_PLAYBACK = REGISTRY.register("test_playback", () -> new TestPlaybackBlock());
 	// Start of user code block custom blocks
 	// End of user code block custom blocks
 }

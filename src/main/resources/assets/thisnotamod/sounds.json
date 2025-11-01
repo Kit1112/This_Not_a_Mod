@@ -373,5 +373,13 @@
         "stream": false
       }
     ]
+  },
+  "halloween_theme": {
+    "sounds": [
+      {
+        "name": "thisnotamod:halloween_spook_theme",
+        "stream": true
+      }
+    ]
   }
 }

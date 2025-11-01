@@ -19,6 +19,7 @@ import net.code.thisnotamod.item.SimplyGuidebookItem;
 import net.code.thisnotamod.item.PassChangeItem;
 import net.code.thisnotamod.item.MusicDiskVotvWinterItem;
 import net.code.thisnotamod.item.MusicDiskVotvItem;
+import net.code.thisnotamod.item.MusicDiscVotvHalloweenItem;
 import net.code.thisnotamod.item.MinecellsGuidebookItem;
 import net.code.thisnotamod.item.KerfuWombItem;
 import net.code.thisnotamod.item.KerfuLegItem;
@@ -167,6 +168,8 @@ public class ThisnotamodModItems {
 	public static final RegistryObject<Item> KERFU_HEAD = REGISTRY.register(ThisnotamodModBlocks.KERFU_HEAD.getId().getPath(), () -> new KerfuHeadDisplayItem(ThisnotamodModBlocks.KERFU_HEAD.get(), new Item.Properties()));
 	public static final RegistryObject<Item> KERFU_BLOCK = REGISTRY.register(ThisnotamodModBlocks.KERFU_BLOCK.getId().getPath(), () -> new KerfuBlockDisplayItem(ThisnotamodModBlocks.KERFU_BLOCK.get(), new Item.Properties()));
 	public static final RegistryObject<Item> KERFU_BLUEPRINT = REGISTRY.register("kerfu_blueprint", () -> new KerfuBlueprintItem());
+	public static final RegistryObject<Item> TEST_PLAYBACK = block(ThisnotamodModBlocks.TEST_PLAYBACK);
+	public static final RegistryObject<Item> MUSIC_DISC_VOTV_HALLOWEEN = REGISTRY.register("music_disc_votv_halloween", () -> new MusicDiscVotvHalloweenItem());
 
 	// Start of user code block custom items
 	// End of user code block custom items

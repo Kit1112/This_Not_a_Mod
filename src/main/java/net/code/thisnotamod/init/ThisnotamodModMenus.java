@@ -17,9 +17,11 @@ import net.code.thisnotamod.world.inventory.ServerInterfaceMenu;
 import net.code.thisnotamod.world.inventory.PasslockGUIMenu;
 import net.code.thisnotamod.world.inventory.PassChangeGuiNMenu;
 import net.code.thisnotamod.world.inventory.PassChangeGuiMenu;
+import net.code.thisnotamod.world.inventory.PanelPlaybackMenu;
 import net.code.thisnotamod.world.inventory.KerfuIntMenu;
 import net.code.thisnotamod.world.inventory.FridgeDownIntMenu;
 import net.code.thisnotamod.world.inventory.DeliveryGuiMenu;
+import net.code.thisnotamod.world.inventory.DebugMenuMenu;
 import net.code.thisnotamod.world.inventory.CraftingTableKerfuInterfaceMenu;
 import net.code.thisnotamod.world.inventory.CraftingTableBaseInterfaceMenu;
 import net.code.thisnotamod.ThisnotamodMod;
@@ -37,4 +39,6 @@ public class ThisnotamodModMenus {
 	public static final RegistryObject<MenuType<CraftingTableBaseInterfaceMenu>> CRAFTING_TABLE_BASE_INTERFACE = REGISTRY.register("crafting_table_base_interface", () -> IForgeMenuType.create(CraftingTableBaseInterfaceMenu::new));
 	public static final RegistryObject<MenuType<CraftingTableKerfuInterfaceMenu>> CRAFTING_TABLE_KERFU_INTERFACE = REGISTRY.register("crafting_table_kerfu_interface", () -> IForgeMenuType.create(CraftingTableKerfuInterfaceMenu::new));
 	public static final RegistryObject<MenuType<SignalTunerMenu>> SIGNAL_TUNER = REGISTRY.register("signal_tuner", () -> IForgeMenuType.create(SignalTunerMenu::new));
+	public static final RegistryObject<MenuType<PanelPlaybackMenu>> PANEL_PLAYBACK = REGISTRY.register("panel_playback", () -> IForgeMenuType.create(PanelPlaybackMenu::new));
+	public static final RegistryObject<MenuType<DebugMenuMenu>> DEBUG_MENU = REGISTRY.register("debug_menu", () -> IForgeMenuType.create(DebugMenuMenu::new));
 }

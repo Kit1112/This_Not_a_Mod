@@ -26,6 +26,7 @@ import net.code.thisnotamod.block.entity.VotvDoorTileEntity;
 import net.code.thisnotamod.block.entity.VentCornerTileEntity;
 import net.code.thisnotamod.block.entity.VentCornerHorizontalTileEntity;
 import net.code.thisnotamod.block.entity.TestSignalBlockEntity;
+import net.code.thisnotamod.block.entity.TestPlaybackBlockEntity;
 import net.code.thisnotamod.block.entity.TerminalTileEntity;
 import net.code.thisnotamod.block.entity.TermRTTileEntity;
 import net.code.thisnotamod.block.entity.TermLTTileEntity;
@@ -121,6 +122,7 @@ public class ThisnotamodModBlockEntities {
 			() -> BlockEntityType.Builder.of(CraftingTableRTileEntity::new, ThisnotamodModBlocks.CRAFTING_TABLE_R.get()).build(null));
 	public static final RegistryObject<BlockEntityType<KerfuHeadTileEntity>> KERFU_HEAD = REGISTRY.register("kerfu_head", () -> BlockEntityType.Builder.of(KerfuHeadTileEntity::new, ThisnotamodModBlocks.KERFU_HEAD.get()).build(null));
 	public static final RegistryObject<BlockEntityType<KerfuBlockTileEntity>> KERFU_BLOCK = REGISTRY.register("kerfu_block", () -> BlockEntityType.Builder.of(KerfuBlockTileEntity::new, ThisnotamodModBlocks.KERFU_BLOCK.get()).build(null));
+	public static final RegistryObject<BlockEntityType<?>> TEST_PLAYBACK = register("test_playback", ThisnotamodModBlocks.TEST_PLAYBACK, TestPlaybackBlockEntity::new);
 
 	private static RegistryObject<BlockEntityType<?>> register(String registryname, RegistryObject<Block> block, BlockEntityType.BlockEntitySupplier<?> supplier) {
 		return REGISTRY.register(registryname, () -> BlockEntityType.Builder.of(supplier, block.get()).build(null));
