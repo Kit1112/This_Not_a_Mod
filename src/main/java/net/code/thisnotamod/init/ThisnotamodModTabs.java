@@ -27,6 +27,7 @@ public class ThisnotamodModTabs {
 				tabData.accept(ThisnotamodModBlocks.ARGEMIAWHITE.get().asItem());
 				tabData.accept(ThisnotamodModItems.MUSIC_DISK_VOTV.get());
 				tabData.accept(ThisnotamodModItems.MUSIC_DISK_VOTV_WINTER.get());
+				tabData.accept(ThisnotamodModItems.MUSIC_DISC_VOTV_HALLOWEEN.get());
 				tabData.accept(ThisnotamodModBlocks.VOTV_DOOR.get().asItem());
 				tabData.accept(ThisnotamodModBlocks.VOTV_LOCKER.get().asItem());
 				tabData.accept(ThisnotamodModBlocks.TABLE_L.get().asItem());
@@ -68,7 +69,6 @@ public class ThisnotamodModTabs {
 				tabData.accept(ThisnotamodModBlocks.KERFU_HEAD.get().asItem());
 				tabData.accept(ThisnotamodModBlocks.KERFU_BLOCK.get().asItem());
 				tabData.accept(ThisnotamodModItems.KERFU_BLUEPRINT.get());
-				tabData.accept(ThisnotamodModItems.MUSIC_DISC_VOTV_HALLOWEEN.get());
 			})
 
 					.build());

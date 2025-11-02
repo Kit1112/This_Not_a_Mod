@@ -9199,7 +9199,7 @@
       "name": "OpenDebugMenu",
       "type": "keybind",
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "open_debug_menu",
       "metadata": {
         "files": [
@@ -10141,6 +10141,7 @@
       "Argemiawhite",
       "MusicDiskVotv",
       "MusicDiskVotvWinter",
+      "MusicDiscVotvHalloween",
       "VotvDoor",
       "VotvLocker",
       "TableL",
@@ -10181,8 +10182,7 @@
       "KerfuBody",
       "KerfuHead",
       "KerfuBlock",
-      "KerfuBlueprint",
-      "MusicDiscVotvHalloween"
+      "KerfuBlueprint"
     ]
   },
   "language_map": {
@@ -10398,7 +10398,7 @@
       "gui.thisnotamod.passlock_gui.button_empty1": "2",
       "signal_2_low": "",
       "subtitles.sosal": "",
-      "item.thisnotamod.music_disc_votv_halloween.desc": "VotV Winter theme - VtOS21",
+      "item.thisnotamod.music_disc_votv_halloween.desc": "VotV Halloween theme - VtOS21",
       "block.thisnotamod.concrete_wall_n": "Стена вариант 4",
       "signalmanager.ui.scanner.log.sensor_error": "ошибка датчика",
       "subtitles.term_off": "",
@@ -10466,8 +10466,8 @@
       "subtitles.radar_sound": "",
       "block.thisnotamod.warning_lamp": "Аварийный светильник",
       "gui.thisnotamod.delivery_gui.Music_disc_main": "Music disc Main Theme",
-      "subtitles.mercury_low": "",
       "signalmanager.default_special_response": " ",
+      "subtitles.mercury_low": "",
       "block.thisnotamod.w_canim": "Toilet",
       "block.thisnotamod.lamp_middle_plus_1": "Электрическая лампа ",
       "block.thisnotamod.lamp_middle_plus_1_upped": "Электрическая лампа ",
@@ -10497,11 +10497,11 @@
       "block.thisnotamod.window_right_d": "Окно с решётками",
       "gui.thisnotamod.kerfu_int.button_ispolzovat1": "Pet",
       "block.thisnotamod.radiotielieskop": "Радиотелескоп (нажми ПКМ по нижнему блоку)",
-      "gui.thisnotamod.kerfu_int.button_ispolzovat2": "Patroul",
       "item.thisnotamod.mannequin_spawn_egg": "Mannequen Spawn Egg",
+      "gui.thisnotamod.kerfu_int.button_ispolzovat2": "Patroul",
       "key.thisnotamod.open_debug_menu": "Open Debug Menu",
-      "gui.thisnotamod.passlock_gui.button_444": "4",
       "block.thisnotamod.argemiapurple": "Argemia",
+      "gui.thisnotamod.passlock_gui.button_444": "4",
       "item.modname.blood_guidebook": "Blood Guidebook",
       "signalmanager.special_response.0.high": "фы",
       "block.thisnotamod.argemiawhite": "Argemia",
@@ -10632,7 +10632,7 @@
       "item.thisnotamod.music_disk_votv.desc": "VotV Title theme - Wolfeni",
       "signalmanager.ui.tuner.value.none": "none",
       "item.modname.ars_guidebook": "Ars Guidebook",
-      "item.thisnotamod.music_disk_votv_winter": "Music disc",
+      "item.thisnotamod.music_disk_votv_winter": "Пластинка",
       "subtitles.venus_sound_raw": "",
       "signal_1_raw": "signal_1_raw",
       "subtitles.votv_theme_winter": "субтитр музыки ",

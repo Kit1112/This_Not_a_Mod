@@ -188,6 +188,9 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 			private boolean animationStarted = false;// С‡С‚РѕР±С‹ Р°РЅРёРјР°С†РёСЏ Р·Р°РїСѓСЃРєР°Р»Р°СЃСЊ СЂРѕРІРЅРѕ 1 СЂР°Р·
 			private boolean repairApplied = false; // С‡С‚РѕР±С‹ СЂРµРјРѕРЅС‚ РїСЂРёРјРµРЅСЏР»СЃСЏ 1 СЂР°Р·
 			private BlockPos removeAfterCooldownPos = null; // РєР°РєСѓСЋ С‚РѕС‡РєСѓ СѓРґР°Р»РёС‚СЊ РёР· СЃРїРёСЃРєР° РџРћРЎР›Р• РѕР¶РёРґР°РЅРёСЏ
+			// === ПОДХОД К ПЕРЕДНЕЙ СТОРОНЕ СЕРВЕРА ===
+			private BlockPos approachPos = null; // блок ПЕРЕД сервером, куда нужно встать
+			private net.minecraft.core.Direction approachFacing = net.minecraft.core.Direction.NORTH; // запасной вариант
 			{
 				this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
 			}
@@ -244,6 +247,7 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 			@Override
 			public void stop() {
 				mob.getNavigation().stop();
+				approachPos = null;
 			}
 
 			@Override
@@ -253,13 +257,24 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 					mob.getNavigation().stop();
 					return;
 				}
+				// Если цель выбрана, но точка подхода к передней стороне ещё не посчитана — посчитать
+				if (currentTarget != null && approachPos == null) {
+					computeApproachForCurrentTarget();
+				}
 				// === Р¤РђР—Рђ РћР–РР”РђРќРРЇ / РђРќРРњРђР¦РР РџРћРЎР›Р• Р Р•РњРћРќРўРђ ===
 				if (repairCooldownTicks > 0) {
 					// Р’ СЂРµР¶РёРјРµ РѕР¶РёРґР°РЅРёСЏ СЃС‚РѕРёРј Рё РЅРёС‡РµРіРѕ РЅРµ РґРµР»Р°РµРј
 					mob.getNavigation().stop();
+					// Держим взгляд на сервере всё время анимации
+					if (removeAfterCooldownPos != null) {
+						double sx = removeAfterCooldownPos.getX() + 0.5;
+						double sy = removeAfterCooldownPos.getY() + 0.5;
+						double sz = removeAfterCooldownPos.getZ() + 0.5;
+						mob.getLookControl().setLookAt(sx, sy, sz);
+					}
 					// Р—Р°РїСѓСЃРєР°РµРј Р°РЅРёРјР°С†РёСЋ РѕРґРёРЅ СЂР°Р·
 					if (!animationStarted) {
-						mob.setAnimation("serverFixNormal_No");
+						mob.setAnimation("serverFixNormal");
 						animationStarted = true;
 					}
 					// РћС‚СЃС‡РёС‚С‹РІР°РµРј Р·Р°РґРµСЂР¶РєСѓ СЂРµРјРѕРЅС‚Р° Рё РїСЂРёРјРµРЅСЏРµРј РµРіРѕ СЂРѕРІРЅРѕ РѕРґРёРЅ СЂР°Р· С‡РµСЂРµР· 30 С‚РёРєРѕРІ
@@ -275,6 +290,7 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 					if (repairCooldownTicks == 0) {
 						// РђРЅРёРјР°С†РёСЏ С‚РѕС‡РЅРѕ РґРѕРёРіСЂР°Р»Р°
 						mob.setAnimation("empty");
+						approachPos = null;
 						animationStarted = false;
 						// РўРµРїРµСЂСЊ (Рё С‚РѕР»СЊРєРѕ С‚РµРїРµСЂСЊ) СѓРґР°Р»СЏРµРј С†РµР»СЊ РёР· СЃРїРёСЃРєР°, РµСЃР»Рё РѕРЅР° Р±С‹Р»Р°
 						if (removeAfterCooldownPos != null) {
@@ -286,6 +302,7 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 						repairDelayTicks = 0;
 						// РЎР±СЂР°СЃС‹РІР°РµРј С†РµР»СЊ Рё Р±РµСЂС‘Рј СЃР»РµРґСѓСЋС‰СѓСЋ, РµСЃР»Рё РµСЃС‚СЊ
 						currentTarget = null;
+						approachPos = null;
 						lastHadTarget = false;
 						selectNextTarget();
 					}
@@ -302,7 +319,8 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 					lastHadTarget = true;
 				}
 				// === РџР РћР‘РЈР•Рњ РџРћРЎРўР РћРРўР¬ РџРЈРўР¬ ===
-				Path path = mob.getNavigation().createPath(currentTarget, 0);
+				BlockPos dest = (approachPos != null ? approachPos : currentTarget);
+				Path path = mob.getNavigation().createPath(dest, 1);
 				if (path == null) {
 					pathNullTicks++;
 					// РґР°С‘Рј С€Р°РЅСЃ РЅРµСЃРєРѕР»СЊРєРѕ С‚РёРєРѕРІ вЂ” РёРЅРѕРіРґР° РїСѓС‚СЊ РЅРµ СЃС‚СЂРѕРёС‚СЃСЏ РїСЂСЏРјРѕ РЅР° РјРµСЃС‚Рµ
@@ -311,6 +329,7 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 						removePosFromList(currentTarget);
 						resetNavState();
 						currentTarget = null;
+						approachPos = null;
 						selectNextTarget();
 						return;
 					}
@@ -318,16 +337,27 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 					pathNullTicks = 0;
 				}
 				// Р”РІРёРіР°РµРјСЃСЏ Рє С†РµРЅС‚СЂСѓ Р±Р»РѕРєР° (РєР°Рє Сѓ С‚РµР±СЏ Р±С‹Р»Рѕ вЂ” РєРѕРѕСЂРґРёРЅР°С‚Р°РјРё)
-				mob.getNavigation().moveTo(currentTarget.getX() + 0.5, currentTarget.getY(), currentTarget.getZ() + 0.5, 1.0);
-				// Р•СЃР»Рё РЅР°РІРёРіР°С†РёСЏ РЅРµ СЃС‚Р°СЂС‚СѓРµС‚ вЂ” Р¶РґС‘Рј РґРѕ 1 СЃРµРєСѓРЅРґС‹ Рё СЃРєРёРїР°РµРј С†РµР»СЊ
+				BlockPos dest2 = (approachPos != null ? approachPos : currentTarget);
+				mob.getNavigation().moveTo(dest2.getX() + 0.5, dest2.getY(), dest2.getZ() + 0.5, 1.0);
+				// Если навигация не идёт — но мы близко к центру approachPos, то доталкиваемся MoveControl'ом, не считая это за фейл
 				if (!mob.getNavigation().isInProgress()) {
-					failPathTicks++;
-					if (failPathTicks > 20) {
-						removePosFromList(currentTarget);
-						resetNavState();
-						currentTarget = null;
-						selectNextTarget();
-						return;
+					double rx2 = dest2.getX() + 0.5;
+					double ry2 = dest2.getY();
+					double rz2 = dest2.getZ() + 0.5;
+					double dsq2 = mob.position().distanceToSqr(rx2, ry2, rz2);
+					if (dsq2 <= 4.0) { // в пределах 2 блоков — подойдём напрямую к центру
+						mob.getMoveControl().setWantedPosition(rx2, ry2, rz2, 1.0);
+						failPathTicks = 0; // не накапливаем фейл, пока «доталкиваемся»
+					} else {
+						failPathTicks++;
+						if (failPathTicks > 20) {
+							removePosFromList(currentTarget);
+							resetNavState();
+							currentTarget = null;
+							approachPos = null;
+							selectNextTarget();
+							return;
+						}
 					}
 				} else {
 					failPathTicks = 0;
@@ -340,6 +370,7 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 						removePosFromList(currentTarget);
 						resetNavState();
 						currentTarget = null;
+						approachPos = null;
 						selectNextTarget();
 						return;
 					}
@@ -347,20 +378,29 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 					stuckTicks = 0;
 				}
 				lastPos = now;
-				// === Р”РћРЎРўРР“Р›Р Р¦Р•Р›Р? (РєР°Рє РІ С‚РІРѕРµР№ РІРµСЂСЃРёРё) ===
-				if (mob.blockPosition().closerThan(currentTarget, 1.5)) {
-					// РќР• РїСЂРёРјРµРЅСЏРµРј СЂРµРјРѕРЅС‚ СЃСЂР°Р·Сѓ!
-					// РЎРЅР°С‡Р°Р»Р° Р·Р°РїСѓСЃРєР°РµРј СЂРµР¶РёРј РѕР¶РёРґР°РЅРёСЏ/Р°РЅРёРјР°С†РёРё Рё С‚РѕР»СЊРєРѕ С‡РµСЂРµР· 30 С‚РёРєРѕРІ РїРѕС‡РёРЅРёРј Р±Р»РѕРє
-					// Р—Р°РїРѕРјРЅРёРј РїРѕР·РёС†РёСЋ РґР»СЏ СЂРµРјРѕРЅС‚Р°/СѓРґР°Р»РµРЅРёСЏ
+				BlockPos reach = (approachPos != null ? approachPos : currentTarget);
+				double rx = reach.getX() + 0.5;
+				double ry = reach.getY();
+				double rz = reach.getZ() + 0.5;
+				double dsqToReach = mob.position().distanceToSqr(rx, ry, rz);
+				if (dsqToReach <= 0.49) { // ~0.7 блока до центра точки подхода
+					// Встать ровно в центр блока ПЕРЕД сервером и смотреть на сервер
+					mob.setPos(rx, ry, rz);
+					double sx = currentTarget.getX() + 0.5;
+					double sy = currentTarget.getY() + 0.5;
+					double sz = currentTarget.getZ() + 0.5;
+					mob.getLookControl().setLookAt(sx, sy, sz);
+					faceTowards(mob, sx, sy, sz);
 					removeAfterCooldownPos = currentTarget;
 					// Р—Р°РїСѓСЃРєР°РµРј 60 С‚РёРєРѕРІ РѕР¶РёРґР°РЅРёСЏ / Р°РЅРёРјР°С†РёРё
-					repairCooldownTicks = 75;
-					repairDelayTicks = 62; // РїРѕС‡РёРЅРєР° С‡РµСЂРµР· 30 С‚РёРєРѕРІ РїРѕСЃР»Рµ СЃС‚Р°СЂС‚Р° Р°РЅРёРјР°С†РёРё
+					repairCooldownTicks = 129;
+					repairDelayTicks = 129; // РїРѕС‡РёРЅРєР° С‡РµСЂРµР· 30 С‚РёРєРѕРІ РїРѕСЃР»Рµ СЃС‚Р°СЂС‚Р° Р°РЅРёРјР°С†РёРё
 					repairApplied = false;
 					animationStarted = false;
 					// РћСЃС‚Р°РЅР°РІР»РёРІР°РµРј РЅР°РІРёРіР°С†РёСЋ Рё РѕСЃРІРѕР±РѕР¶РґР°РµРј С‚РµРєСѓС‰СѓСЋ С†РµР»СЊ (С‡С‚РѕР±С‹ РЅРµ РґРІРёРіР°С‚СЊСЃСЏ)
 					mob.getNavigation().stop();
 					currentTarget = null;
+					approachPos = null;
 					lastHadTarget = false;
 					return;
 				}
@@ -385,6 +425,7 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 				List<BlockPos> poses = parseServerList(list);
 				if (poses.isEmpty()) {
 					currentTarget = null;
+					approachPos = null;
 					return;
 				}
 				currentTarget = poses.get(0); // Р±РµСЂС‘Рј РїРµСЂРІСѓСЋ
@@ -444,6 +485,66 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 					sb.append("(").append(p.getX()).append(", ").append(p.getY()).append(", ").append(p.getZ()).append(")");
 				}
 				return sb.toString();
+			}
+
+			// Вычисляем, куда подходить: блок ПЕРЕД сервером по его "лицу"
+			private void computeApproachForCurrentTarget() {
+				if (currentTarget == null)
+					return;
+				final net.minecraft.world.level.Level level = mob.level();
+				net.minecraft.world.level.block.state.BlockState bs = level.getBlockState(currentTarget);
+				// Пытаемся прочитать любую DirectionProperty из состояния блока (первая попавшаяся)
+				net.minecraft.core.Direction facing = detectFacing(bs);
+				if (facing == null)
+					facing = approachFacing;
+				// Блок перед сервером по facing
+				BlockPos front = currentTarget.relative(facing);
+				// Если там нельзя встать (занято), пробуем другие стороны по кругу
+				if (!isFree2x1(front)) {
+					for (net.minecraft.core.Direction d : net.minecraft.core.Direction.Plane.HORIZONTAL) {
+						BlockPos alt = currentTarget.relative(d);
+						if (isFree2x1(alt)) {
+							facing = d;
+							front = alt;
+							break;
+						}
+					}
+				}
+				approachFacing = facing; // запомним как последний известный
+				approachPos = front;
+			}
+
+			// Достаём Direction из BlockState, если есть DirectionProperty
+			private net.minecraft.core.Direction detectFacing(net.minecraft.world.level.block.state.BlockState bs) {
+				for (net.minecraft.world.level.block.state.properties.Property<?> p : bs.getProperties()) {
+					if (p instanceof net.minecraft.world.level.block.state.properties.DirectionProperty dp) {
+						// Берём значение этого свойства (обычно это FACING/HORIZONTAL_FACING)
+						return bs.getValue(dp);
+					}
+				}
+				return null;
+			}
+
+			// Можно ли встать в блок и в блоке над ним (пространство 2х1 по высоте)
+			private boolean isFree2x1(BlockPos pos) {
+				final net.minecraft.world.level.Level level = mob.level();
+				// Пространство для тела 2 блока: сам блок и блок над ним — пустая коллизия
+				boolean spaceOk = level.getBlockState(pos).getCollisionShape(level, pos).isEmpty() && level.getBlockState(pos.above()).getCollisionShape(level, pos.above()).isEmpty();
+				if (!spaceOk)
+					return false;
+				// Под ногами должен быть «несущий» блок (не воздух/не жидкость)
+				net.minecraft.world.level.block.state.BlockState below = level.getBlockState(pos.below());
+				boolean floorOk = !below.getCollisionShape(level, pos.below()).isEmpty();
+				return floorOk;
+			}
+
+			// Повернуть мордой к точке (только yaw, pitch не трогаем)
+			private void faceTowards(net.minecraft.world.entity.Mob e, double x, double y, double z) {
+				double dx = x - e.getX();
+				double dz = z - e.getZ();
+				float yaw = (float) (net.minecraft.util.Mth.atan2(dz, dx) * (180.0F / Math.PI)) - 90.0F;
+				e.setYRot(yaw);
+				e.setYHeadRot(yaw);
 			}
 		});
 		this.goalSelector.addGoal(2, new Goal() {
@@ -904,7 +1005,7 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 
 	public static AttributeSupplier.Builder createAttributes() {
 		AttributeSupplier.Builder builder = Mob.createMobAttributes();
-		builder = builder.add(Attributes.MOVEMENT_SPEED, 0.3);
+		builder = builder.add(Attributes.MOVEMENT_SPEED, 0.75);
 		builder = builder.add(Attributes.MAX_HEALTH, 0);
 		builder = builder.add(Attributes.ARMOR, 0);
 		builder = builder.add(Attributes.ATTACK_DAMAGE, 3);
@@ -917,7 +1018,7 @@ public class KerfuOmegaEntity extends PathfinderMob implements GeoEntity {
 			if ((event.isMoving() || !(event.getLimbSwingAmount() > -0.15F && event.getLimbSwingAmount() < 0.15F))
 
 			) {
-				return event.setAndContinue(RawAnimation.begin().thenLoop("walk"));
+				return event.setAndContinue(RawAnimation.begin().thenLoop("run"));
 			}
 			if (this.isShiftKeyDown()) {
 				return event.setAndContinue(RawAnimation.begin().thenLoop("pat_simple"));
