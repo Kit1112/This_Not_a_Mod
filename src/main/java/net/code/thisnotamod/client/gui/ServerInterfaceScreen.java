@@ -22,96 +22,55 @@ import net.code.thisnotamod.network.ServerInterfaceButtonMessage;
 import net.code.thisnotamod.ThisnotamodMod;
 
 import java.util.HashMap;
+import java.util.Arrays;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import org.lwjgl.glfw.GLFW;
 
+/**
+ * Экран сервера с линией IN->ответы->OUT и отладочными хитбоксами.
+ * Привязка ID к (digit,row): id = digit*8 + row; row = id % 8; digit = id / 8.
+ */
 public class ServerInterfaceScreen extends AbstractContainerScreen<ServerInterfaceMenu> {
+	// guistate/textstate остаются совместимыми с MCreator
 	private final static HashMap<String, Object> guistate = ServerInterfaceMenu.guistate;
+	private final static HashMap<String, String> textstate = new HashMap<>();
+
 	private final Level world;
 	private final int x, y, z;
 	private final Player entity;
-	private final static HashMap<String, String> textstate = new HashMap<>();
-	ImageButton imagebutton_0butt;
-	ImageButton imagebutton_0butt1;
-	ImageButton imagebutton_0butt2;
-	ImageButton imagebutton_0butt3;
-	ImageButton imagebutton_0butt4;
-	ImageButton imagebutton_0butt5;
-	ImageButton imagebutton_0butt6;
-	ImageButton imagebutton_0butt7;
-	ImageButton imagebutton_1butt;
-	ImageButton imagebutton_1butt1;
-	ImageButton imagebutton_1butt2;
-	ImageButton imagebutton_1butt3;
-	ImageButton imagebutton_1butt4;
-	ImageButton imagebutton_1butt5;
-	ImageButton imagebutton_1butt6;
-	ImageButton imagebutton_1butt7;
-	ImageButton imagebutton_2butt;
-	ImageButton imagebutton_2butt1;
-	ImageButton imagebutton_2butt2;
-	ImageButton imagebutton_2butt3;
-	ImageButton imagebutton_2butt4;
-	ImageButton imagebutton_2butt5;
-	ImageButton imagebutton_2butt6;
-	ImageButton imagebutton_2butt7;
-	ImageButton imagebutton_3butt;
-	ImageButton imagebutton_3butt1;
-	ImageButton imagebutton_3butt2;
-	ImageButton imagebutton_3butt3;
-	ImageButton imagebutton_3butt4;
-	ImageButton imagebutton_3butt5;
-	ImageButton imagebutton_3butt6;
-	ImageButton imagebutton_3butt7;
-	ImageButton imagebutton_4butt;
-	ImageButton imagebutton_4butt1;
-	ImageButton imagebutton_4butt2;
-	ImageButton imagebutton_4butt3;
-	ImageButton imagebutton_4butt4;
-	ImageButton imagebutton_4butt5;
-	ImageButton imagebutton_4butt6;
-	ImageButton imagebutton_4butt7;
-	ImageButton imagebutton_5butt;
-	ImageButton imagebutton_5butt1;
-	ImageButton imagebutton_5butt2;
-	ImageButton imagebutton_5butt3;
-	ImageButton imagebutton_5butt4;
-	ImageButton imagebutton_5butt5;
-	ImageButton imagebutton_5butt6;
-	ImageButton imagebutton_5butt7;
-	ImageButton imagebutton_6butt;
-	ImageButton imagebutton_6butt1;
-	ImageButton imagebutton_6butt2;
-	ImageButton imagebutton_6butt3;
-	ImageButton imagebutton_6butt4;
-	ImageButton imagebutton_6butt5;
-	ImageButton imagebutton_6butt6;
-	ImageButton imagebutton_6butt7;
-	ImageButton imagebutton_7butt;
-	ImageButton imagebutton_7butt1;
-	ImageButton imagebutton_7butt2;
-	ImageButton imagebutton_7butt3;
-	ImageButton imagebutton_7butt4;
-	ImageButton imagebutton_7butt5;
-	ImageButton imagebutton_7butt6;
-	ImageButton imagebutton_7butt7;
-	ImageButton imagebutton_8butt;
-	ImageButton imagebutton_8butt1;
-	ImageButton imagebutton_8butt2;
-	ImageButton imagebutton_8butt3;
-	ImageButton imagebutton_8butt4;
-	ImageButton imagebutton_8butt5;
-	ImageButton imagebutton_8butt6;
-	ImageButton imagebutton_8butt7;
-	ImageButton imagebutton_9butt;
-	ImageButton imagebutton_9butt1;
-	ImageButton imagebutton_9butt2;
-	ImageButton imagebutton_9butt3;
-	ImageButton imagebutton_9butt4;
-	ImageButton imagebutton_9butt5;
-	ImageButton imagebutton_9butt6;
-	ImageButton imagebutton_9butt7;
-	ImageButton imagebutton_exitbutton;
+
+	// Геометрия сетки кнопок (оставил как у тебя)
+	private static final int COLS = 10;
+	private static final int ROWS = 8;
+	private static final int CELL_W = 16;
+	private static final int CELL_H = 14;
+	private static final int GRID_ORIGIN_X = 1;   // от leftPos
+	private static final int GRID_ORIGIN_Y = 20;  // от topPos
+	private static final int COL_STEP = 16;
+	private static final int ROW_STEP = 16;
+
+	// Смещение фона из renderBg (важно для якорей IN/OUT)
+	private static final int BG_X_OFFSET = 0;
+	private static final int BG_Y_OFFSET = 3;
+
+
+	private static final int IN_ANCHOR_REL_X  = 81;
+	private static final int IN_ANCHOR_REL_Y  = 15;
+	private static final int OUT_ANCHOR_REL_X = 81;
+	private static final int OUT_ANCHOR_REL_Y = 144;
+
+	// Визуальные настройки линии
+	private static final int LINE_COLOR_ARGB = 0xFFFF00FF; // фиолетовый, 100% альфа
+	private static final int DEBUG_COLOR_ARGB = 0x66FF00FF; // фиолетовый с альфой
+	private static final int LINE_THICKNESS = 2;            // толщина линии (пиксели)
+
+	// Выборы по строкам (-1 = ничего не выбрано)
+	private final int[] selectedByRow = new int[ROWS];
+
+	// Кнопки (в матрице для удобства)
+	private ImageButton[][] digitButtons = new ImageButton[COLS][ROWS];
+	private ImageButton imagebutton_exitbutton;
 
 	public ServerInterfaceScreen(ServerInterfaceMenu container, Inventory inventory, Component text) {
 		super(container, inventory, text);
@@ -122,6 +81,8 @@ public class ServerInterfaceScreen extends AbstractContainerScreen<ServerInterfa
 		this.entity = container.entity;
 		this.imageWidth = 200;
 		this.imageHeight = 166;
+
+		Arrays.fill(this.selectedByRow, -1);
 	}
 
 	@Override
@@ -129,6 +90,10 @@ public class ServerInterfaceScreen extends AbstractContainerScreen<ServerInterfa
 		this.renderBackground(guiGraphics);
 		super.render(guiGraphics, mouseX, mouseY, partialTicks);
 		this.renderTooltip(guiGraphics, mouseX, mouseY);
+
+		// Рисуем линию поверх UI
+		renderPath(guiGraphics);
+
 	}
 
 	@Override
@@ -137,698 +102,176 @@ public class ServerInterfaceScreen extends AbstractContainerScreen<ServerInterfa
 		RenderSystem.enableBlend();
 		RenderSystem.defaultBlendFunc();
 
-		guiGraphics.blit(new ResourceLocation("thisnotamod:textures/screens/background.png"), this.leftPos + 0, this.topPos + 3, 0, 0, 200, 160, 200, 160);
+		// Фон — как у тебя (смещение Y +3 сохраняем)
+		guiGraphics.blit(new ResourceLocation("thisnotamod:textures/screens/background.png"),
+				this.leftPos + 0, this.topPos + 3, 0, 0, 200, 160, 200, 160);
 
 		RenderSystem.disableBlend();
 	}
 
 	@Override
-	public boolean keyPressed(int key, int b, int c) {
-		if (key == 256) {
-			this.minecraft.player.closeContainer();
-			return true;
-		}
-		return super.keyPressed(key, b, c);
+	protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+		// Тексты примеров справа — без изменений
+		guiGraphics.drawString(this.font, ExampleOneProcedure.execute(entity),   172,  23, -4475136, false);
+		guiGraphics.drawString(this.font, ExampleTwoProcedure.execute(entity),   172,  39, -4475136, false);
+		guiGraphics.drawString(this.font, ExampleThreeProcedure.execute(entity), 172,  55, -4475136, false);
+		guiGraphics.drawString(this.font, ExampleFourProcedure.execute(entity),  172,  71, -4475136, false);
+		guiGraphics.drawString(this.font, ExampleFiveProcedure.execute(entity),  172,  87, -4475136, false);
+		guiGraphics.drawString(this.font, ExampleSixProcedure.execute(entity),   172, 103, -4475136, false);
+		guiGraphics.drawString(this.font, ExampleSevenProcedure.execute(entity), 172, 119, -4475136, false);
+		guiGraphics.drawString(this.font, ExampleEightProcedure.execute(entity), 172, 135, -4475136, false);
 	}
 
 	@Override
-	protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-		guiGraphics.drawString(this.font,
+public boolean keyPressed(int key, int scan, int modifiers) {
+    if (key == org.lwjgl.glfw.GLFW.GLFW_KEY_ESCAPE) {
+        if (this.minecraft != null && this.minecraft.player != null) {
+            this.minecraft.player.closeContainer();
+        }
+        return true;
+    }
+    return super.keyPressed(key, scan, modifiers);
+}
 
-				ExampleOneProcedure.execute(entity), 172, 23, -4475136, false);
-		guiGraphics.drawString(this.font,
-
-				ExampleTwoProcedure.execute(entity), 172, 39, -4475136, false);
-		guiGraphics.drawString(this.font,
-
-				ExampleThreeProcedure.execute(entity), 172, 55, -4475136, false);
-		guiGraphics.drawString(this.font,
-
-				ExampleFourProcedure.execute(entity), 172, 71, -4475136, false);
-		guiGraphics.drawString(this.font,
-
-				ExampleFiveProcedure.execute(entity), 172, 87, -4475136, false);
-		guiGraphics.drawString(this.font,
-
-				ExampleSixProcedure.execute(entity), 172, 103, -4475136, false);
-		guiGraphics.drawString(this.font,
-
-				ExampleSevenProcedure.execute(entity), 172, 119, -4475136, false);
-		guiGraphics.drawString(this.font,
-
-				ExampleEightProcedure.execute(entity), 172, 135, -4475136, false);
-	}
 
 	@Override
 	public void init() {
 		super.init();
-		imagebutton_0butt = new ImageButton(this.leftPos + 1, this.topPos + 20, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_0butt.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(0, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 0, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_0butt", imagebutton_0butt);
-		this.addRenderableWidget(imagebutton_0butt);
-		imagebutton_0butt1 = new ImageButton(this.leftPos + 1, this.topPos + 36, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_0butt1.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(1, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 1, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_0butt1", imagebutton_0butt1);
-		this.addRenderableWidget(imagebutton_0butt1);
-		imagebutton_0butt2 = new ImageButton(this.leftPos + 1, this.topPos + 52, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_0butt2.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(2, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 2, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_0butt2", imagebutton_0butt2);
-		this.addRenderableWidget(imagebutton_0butt2);
-		imagebutton_0butt3 = new ImageButton(this.leftPos + 1, this.topPos + 68, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_0butt3.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(3, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 3, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_0butt3", imagebutton_0butt3);
-		this.addRenderableWidget(imagebutton_0butt3);
-		imagebutton_0butt4 = new ImageButton(this.leftPos + 1, this.topPos + 84, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_0butt4.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(4, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 4, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_0butt4", imagebutton_0butt4);
-		this.addRenderableWidget(imagebutton_0butt4);
-		imagebutton_0butt5 = new ImageButton(this.leftPos + 1, this.topPos + 100, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_0butt5.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(5, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 5, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_0butt5", imagebutton_0butt5);
-		this.addRenderableWidget(imagebutton_0butt5);
-		imagebutton_0butt6 = new ImageButton(this.leftPos + 1, this.topPos + 116, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_0butt6.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(6, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 6, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_0butt6", imagebutton_0butt6);
-		this.addRenderableWidget(imagebutton_0butt6);
-		imagebutton_0butt7 = new ImageButton(this.leftPos + 1, this.topPos + 132, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_0butt7.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(7, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 7, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_0butt7", imagebutton_0butt7);
-		this.addRenderableWidget(imagebutton_0butt7);
-		imagebutton_1butt = new ImageButton(this.leftPos + 17, this.topPos + 20, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_1butt.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(8, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 8, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_1butt", imagebutton_1butt);
-		this.addRenderableWidget(imagebutton_1butt);
-		imagebutton_1butt1 = new ImageButton(this.leftPos + 17, this.topPos + 36, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_1butt1.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(9, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 9, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_1butt1", imagebutton_1butt1);
-		this.addRenderableWidget(imagebutton_1butt1);
-		imagebutton_1butt2 = new ImageButton(this.leftPos + 17, this.topPos + 52, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_1butt2.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(10, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 10, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_1butt2", imagebutton_1butt2);
-		this.addRenderableWidget(imagebutton_1butt2);
-		imagebutton_1butt3 = new ImageButton(this.leftPos + 17, this.topPos + 68, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_1butt3.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(11, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 11, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_1butt3", imagebutton_1butt3);
-		this.addRenderableWidget(imagebutton_1butt3);
-		imagebutton_1butt4 = new ImageButton(this.leftPos + 17, this.topPos + 84, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_1butt4.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(12, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 12, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_1butt4", imagebutton_1butt4);
-		this.addRenderableWidget(imagebutton_1butt4);
-		imagebutton_1butt5 = new ImageButton(this.leftPos + 17, this.topPos + 100, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_1butt5.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(13, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 13, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_1butt5", imagebutton_1butt5);
-		this.addRenderableWidget(imagebutton_1butt5);
-		imagebutton_1butt6 = new ImageButton(this.leftPos + 17, this.topPos + 116, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_1butt6.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(14, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 14, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_1butt6", imagebutton_1butt6);
-		this.addRenderableWidget(imagebutton_1butt6);
-		imagebutton_1butt7 = new ImageButton(this.leftPos + 17, this.topPos + 132, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_1butt7.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(15, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 15, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_1butt7", imagebutton_1butt7);
-		this.addRenderableWidget(imagebutton_1butt7);
-		imagebutton_2butt = new ImageButton(this.leftPos + 33, this.topPos + 20, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_2butt.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(16, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 16, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_2butt", imagebutton_2butt);
-		this.addRenderableWidget(imagebutton_2butt);
-		imagebutton_2butt1 = new ImageButton(this.leftPos + 33, this.topPos + 36, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_2butt1.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(17, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 17, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_2butt1", imagebutton_2butt1);
-		this.addRenderableWidget(imagebutton_2butt1);
-		imagebutton_2butt2 = new ImageButton(this.leftPos + 33, this.topPos + 52, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_2butt2.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(18, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 18, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_2butt2", imagebutton_2butt2);
-		this.addRenderableWidget(imagebutton_2butt2);
-		imagebutton_2butt3 = new ImageButton(this.leftPos + 33, this.topPos + 68, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_2butt3.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(19, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 19, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_2butt3", imagebutton_2butt3);
-		this.addRenderableWidget(imagebutton_2butt3);
-		imagebutton_2butt4 = new ImageButton(this.leftPos + 33, this.topPos + 84, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_2butt4.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(20, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 20, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_2butt4", imagebutton_2butt4);
-		this.addRenderableWidget(imagebutton_2butt4);
-		imagebutton_2butt5 = new ImageButton(this.leftPos + 33, this.topPos + 100, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_2butt5.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(21, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 21, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_2butt5", imagebutton_2butt5);
-		this.addRenderableWidget(imagebutton_2butt5);
-		imagebutton_2butt6 = new ImageButton(this.leftPos + 33, this.topPos + 116, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_2butt6.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(22, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 22, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_2butt6", imagebutton_2butt6);
-		this.addRenderableWidget(imagebutton_2butt6);
-		imagebutton_2butt7 = new ImageButton(this.leftPos + 33, this.topPos + 132, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_2butt7.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(23, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 23, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_2butt7", imagebutton_2butt7);
-		this.addRenderableWidget(imagebutton_2butt7);
-		imagebutton_3butt = new ImageButton(this.leftPos + 49, this.topPos + 20, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_3butt.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(24, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 24, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_3butt", imagebutton_3butt);
-		this.addRenderableWidget(imagebutton_3butt);
-		imagebutton_3butt1 = new ImageButton(this.leftPos + 49, this.topPos + 36, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_3butt1.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(25, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 25, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_3butt1", imagebutton_3butt1);
-		this.addRenderableWidget(imagebutton_3butt1);
-		imagebutton_3butt2 = new ImageButton(this.leftPos + 49, this.topPos + 52, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_3butt2.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(26, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 26, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_3butt2", imagebutton_3butt2);
-		this.addRenderableWidget(imagebutton_3butt2);
-		imagebutton_3butt3 = new ImageButton(this.leftPos + 49, this.topPos + 68, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_3butt3.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(27, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 27, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_3butt3", imagebutton_3butt3);
-		this.addRenderableWidget(imagebutton_3butt3);
-		imagebutton_3butt4 = new ImageButton(this.leftPos + 49, this.topPos + 84, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_3butt4.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(28, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 28, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_3butt4", imagebutton_3butt4);
-		this.addRenderableWidget(imagebutton_3butt4);
-		imagebutton_3butt5 = new ImageButton(this.leftPos + 49, this.topPos + 100, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_3butt5.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(29, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 29, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_3butt5", imagebutton_3butt5);
-		this.addRenderableWidget(imagebutton_3butt5);
-		imagebutton_3butt6 = new ImageButton(this.leftPos + 49, this.topPos + 116, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_3butt6.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(30, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 30, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_3butt6", imagebutton_3butt6);
-		this.addRenderableWidget(imagebutton_3butt6);
-		imagebutton_3butt7 = new ImageButton(this.leftPos + 49, this.topPos + 132, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_3butt7.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(31, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 31, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_3butt7", imagebutton_3butt7);
-		this.addRenderableWidget(imagebutton_3butt7);
-		imagebutton_4butt = new ImageButton(this.leftPos + 65, this.topPos + 20, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_4butt.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(32, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 32, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_4butt", imagebutton_4butt);
-		this.addRenderableWidget(imagebutton_4butt);
-		imagebutton_4butt1 = new ImageButton(this.leftPos + 65, this.topPos + 36, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_4butt1.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(33, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 33, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_4butt1", imagebutton_4butt1);
-		this.addRenderableWidget(imagebutton_4butt1);
-		imagebutton_4butt2 = new ImageButton(this.leftPos + 65, this.topPos + 52, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_4butt2.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(34, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 34, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_4butt2", imagebutton_4butt2);
-		this.addRenderableWidget(imagebutton_4butt2);
-		imagebutton_4butt3 = new ImageButton(this.leftPos + 65, this.topPos + 68, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_4butt3.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(35, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 35, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_4butt3", imagebutton_4butt3);
-		this.addRenderableWidget(imagebutton_4butt3);
-		imagebutton_4butt4 = new ImageButton(this.leftPos + 65, this.topPos + 84, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_4butt4.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(36, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 36, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_4butt4", imagebutton_4butt4);
-		this.addRenderableWidget(imagebutton_4butt4);
-		imagebutton_4butt5 = new ImageButton(this.leftPos + 65, this.topPos + 100, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_4butt5.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(37, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 37, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_4butt5", imagebutton_4butt5);
-		this.addRenderableWidget(imagebutton_4butt5);
-		imagebutton_4butt6 = new ImageButton(this.leftPos + 65, this.topPos + 116, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_4butt6.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(38, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 38, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_4butt6", imagebutton_4butt6);
-		this.addRenderableWidget(imagebutton_4butt6);
-		imagebutton_4butt7 = new ImageButton(this.leftPos + 65, this.topPos + 132, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_4butt7.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(39, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 39, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_4butt7", imagebutton_4butt7);
-		this.addRenderableWidget(imagebutton_4butt7);
-		imagebutton_5butt = new ImageButton(this.leftPos + 81, this.topPos + 20, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_5butt.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(40, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 40, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_5butt", imagebutton_5butt);
-		this.addRenderableWidget(imagebutton_5butt);
-		imagebutton_5butt1 = new ImageButton(this.leftPos + 81, this.topPos + 36, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_5butt1.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(41, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 41, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_5butt1", imagebutton_5butt1);
-		this.addRenderableWidget(imagebutton_5butt1);
-		imagebutton_5butt2 = new ImageButton(this.leftPos + 81, this.topPos + 52, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_5butt2.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(42, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 42, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_5butt2", imagebutton_5butt2);
-		this.addRenderableWidget(imagebutton_5butt2);
-		imagebutton_5butt3 = new ImageButton(this.leftPos + 81, this.topPos + 68, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_5butt3.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(43, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 43, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_5butt3", imagebutton_5butt3);
-		this.addRenderableWidget(imagebutton_5butt3);
-		imagebutton_5butt4 = new ImageButton(this.leftPos + 81, this.topPos + 84, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_5butt4.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(44, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 44, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_5butt4", imagebutton_5butt4);
-		this.addRenderableWidget(imagebutton_5butt4);
-		imagebutton_5butt5 = new ImageButton(this.leftPos + 81, this.topPos + 100, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_5butt5.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(45, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 45, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_5butt5", imagebutton_5butt5);
-		this.addRenderableWidget(imagebutton_5butt5);
-		imagebutton_5butt6 = new ImageButton(this.leftPos + 81, this.topPos + 116, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_5butt6.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(46, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 46, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_5butt6", imagebutton_5butt6);
-		this.addRenderableWidget(imagebutton_5butt6);
-		imagebutton_5butt7 = new ImageButton(this.leftPos + 81, this.topPos + 132, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_5butt7.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(47, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 47, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_5butt7", imagebutton_5butt7);
-		this.addRenderableWidget(imagebutton_5butt7);
-		imagebutton_6butt = new ImageButton(this.leftPos + 97, this.topPos + 20, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_6butt.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(48, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 48, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_6butt", imagebutton_6butt);
-		this.addRenderableWidget(imagebutton_6butt);
-		imagebutton_6butt1 = new ImageButton(this.leftPos + 97, this.topPos + 36, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_6butt1.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(49, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 49, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_6butt1", imagebutton_6butt1);
-		this.addRenderableWidget(imagebutton_6butt1);
-		imagebutton_6butt2 = new ImageButton(this.leftPos + 97, this.topPos + 52, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_6butt2.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(50, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 50, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_6butt2", imagebutton_6butt2);
-		this.addRenderableWidget(imagebutton_6butt2);
-		imagebutton_6butt3 = new ImageButton(this.leftPos + 97, this.topPos + 68, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_6butt3.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(51, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 51, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_6butt3", imagebutton_6butt3);
-		this.addRenderableWidget(imagebutton_6butt3);
-		imagebutton_6butt4 = new ImageButton(this.leftPos + 97, this.topPos + 84, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_6butt4.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(52, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 52, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_6butt4", imagebutton_6butt4);
-		this.addRenderableWidget(imagebutton_6butt4);
-		imagebutton_6butt5 = new ImageButton(this.leftPos + 97, this.topPos + 100, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_6butt5.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(53, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 53, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_6butt5", imagebutton_6butt5);
-		this.addRenderableWidget(imagebutton_6butt5);
-		imagebutton_6butt6 = new ImageButton(this.leftPos + 97, this.topPos + 116, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_6butt6.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(54, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 54, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_6butt6", imagebutton_6butt6);
-		this.addRenderableWidget(imagebutton_6butt6);
-		imagebutton_6butt7 = new ImageButton(this.leftPos + 97, this.topPos + 132, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_6butt7.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(55, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 55, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_6butt7", imagebutton_6butt7);
-		this.addRenderableWidget(imagebutton_6butt7);
-		imagebutton_7butt = new ImageButton(this.leftPos + 113, this.topPos + 20, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_7butt.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(56, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 56, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_7butt", imagebutton_7butt);
-		this.addRenderableWidget(imagebutton_7butt);
-		imagebutton_7butt1 = new ImageButton(this.leftPos + 113, this.topPos + 36, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_7butt1.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(57, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 57, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_7butt1", imagebutton_7butt1);
-		this.addRenderableWidget(imagebutton_7butt1);
-		imagebutton_7butt2 = new ImageButton(this.leftPos + 113, this.topPos + 52, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_7butt2.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(58, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 58, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_7butt2", imagebutton_7butt2);
-		this.addRenderableWidget(imagebutton_7butt2);
-		imagebutton_7butt3 = new ImageButton(this.leftPos + 113, this.topPos + 68, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_7butt3.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(59, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 59, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_7butt3", imagebutton_7butt3);
-		this.addRenderableWidget(imagebutton_7butt3);
-		imagebutton_7butt4 = new ImageButton(this.leftPos + 113, this.topPos + 84, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_7butt4.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(60, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 60, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_7butt4", imagebutton_7butt4);
-		this.addRenderableWidget(imagebutton_7butt4);
-		imagebutton_7butt5 = new ImageButton(this.leftPos + 113, this.topPos + 100, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_7butt5.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(61, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 61, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_7butt5", imagebutton_7butt5);
-		this.addRenderableWidget(imagebutton_7butt5);
-		imagebutton_7butt6 = new ImageButton(this.leftPos + 113, this.topPos + 116, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_7butt6.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(62, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 62, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_7butt6", imagebutton_7butt6);
-		this.addRenderableWidget(imagebutton_7butt6);
-		imagebutton_7butt7 = new ImageButton(this.leftPos + 113, this.topPos + 132, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_7butt7.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(63, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 63, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_7butt7", imagebutton_7butt7);
-		this.addRenderableWidget(imagebutton_7butt7);
-		imagebutton_8butt = new ImageButton(this.leftPos + 129, this.topPos + 20, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_8butt.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(64, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 64, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_8butt", imagebutton_8butt);
-		this.addRenderableWidget(imagebutton_8butt);
-		imagebutton_8butt1 = new ImageButton(this.leftPos + 129, this.topPos + 36, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_8butt1.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(65, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 65, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_8butt1", imagebutton_8butt1);
-		this.addRenderableWidget(imagebutton_8butt1);
-		imagebutton_8butt2 = new ImageButton(this.leftPos + 129, this.topPos + 52, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_8butt2.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(66, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 66, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_8butt2", imagebutton_8butt2);
-		this.addRenderableWidget(imagebutton_8butt2);
-		imagebutton_8butt3 = new ImageButton(this.leftPos + 129, this.topPos + 68, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_8butt3.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(67, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 67, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_8butt3", imagebutton_8butt3);
-		this.addRenderableWidget(imagebutton_8butt3);
-		imagebutton_8butt4 = new ImageButton(this.leftPos + 129, this.topPos + 84, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_8butt4.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(68, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 68, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_8butt4", imagebutton_8butt4);
-		this.addRenderableWidget(imagebutton_8butt4);
-		imagebutton_8butt5 = new ImageButton(this.leftPos + 129, this.topPos + 100, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_8butt5.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(69, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 69, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_8butt5", imagebutton_8butt5);
-		this.addRenderableWidget(imagebutton_8butt5);
-		imagebutton_8butt6 = new ImageButton(this.leftPos + 129, this.topPos + 116, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_8butt6.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(70, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 70, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_8butt6", imagebutton_8butt6);
-		this.addRenderableWidget(imagebutton_8butt6);
-		imagebutton_8butt7 = new ImageButton(this.leftPos + 129, this.topPos + 132, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_8butt7.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(71, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 71, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_8butt7", imagebutton_8butt7);
-		this.addRenderableWidget(imagebutton_8butt7);
-		imagebutton_9butt = new ImageButton(this.leftPos + 145, this.topPos + 20, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_9butt.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(72, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 72, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_9butt", imagebutton_9butt);
-		this.addRenderableWidget(imagebutton_9butt);
-		imagebutton_9butt1 = new ImageButton(this.leftPos + 145, this.topPos + 36, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_9butt1.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(73, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 73, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_9butt1", imagebutton_9butt1);
-		this.addRenderableWidget(imagebutton_9butt1);
-		imagebutton_9butt2 = new ImageButton(this.leftPos + 145, this.topPos + 52, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_9butt2.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(74, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 74, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_9butt2", imagebutton_9butt2);
-		this.addRenderableWidget(imagebutton_9butt2);
-		imagebutton_9butt3 = new ImageButton(this.leftPos + 145, this.topPos + 68, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_9butt3.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(75, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 75, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_9butt3", imagebutton_9butt3);
-		this.addRenderableWidget(imagebutton_9butt3);
-		imagebutton_9butt4 = new ImageButton(this.leftPos + 145, this.topPos + 84, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_9butt4.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(76, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 76, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_9butt4", imagebutton_9butt4);
-		this.addRenderableWidget(imagebutton_9butt4);
-		imagebutton_9butt5 = new ImageButton(this.leftPos + 145, this.topPos + 100, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_9butt5.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(77, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 77, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_9butt5", imagebutton_9butt5);
-		this.addRenderableWidget(imagebutton_9butt5);
-		imagebutton_9butt6 = new ImageButton(this.leftPos + 145, this.topPos + 116, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_9butt6.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(78, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 78, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_9butt6", imagebutton_9butt6);
-		this.addRenderableWidget(imagebutton_9butt6);
-		imagebutton_9butt7 = new ImageButton(this.leftPos + 145, this.topPos + 132, 16, 14, 0, 0, 14, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_9butt7.png"), 16, 28, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(79, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 79, x, y, z, textstate);
-			}
-		});
-		guistate.put("button:imagebutton_9butt7", imagebutton_9butt7);
-		this.addRenderableWidget(imagebutton_9butt7);
-		imagebutton_exitbutton = new ImageButton(this.leftPos + 161, this.topPos + 147, 39, 16, 0, 0, 16, new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_exitbutton.png"), 39, 32, e -> {
-			if (true) {
-				ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(80, x, y, z, textstate));
-				ServerInterfaceButtonMessage.handleButtonAction(entity, 80, x, y, z, textstate);
-			}
-		});
+
+		// Генерация 10x8 кнопок одной петлёй
+		for (int d = 0; d < COLS; d++) {
+			for (int r = 0; r < ROWS; r++) {
+				final int id = d * ROWS + r; // соответствует ServerInterfaceButtonMessage
+				int bx = this.leftPos + GRID_ORIGIN_X + COL_STEP * d;
+				int by = this.topPos + GRID_ORIGIN_Y + ROW_STEP * r;
+
+				String atlasName = (r == 0)
+						? "imagebutton_" + d + "butt.png"
+						: "imagebutton_" + d + "butt" + r + ".png";
+
+				ImageButton btn = new ImageButton(
+						bx, by, CELL_W, CELL_H, 0, 0, CELL_H,
+						new ResourceLocation("thisnotamod:textures/screens/atlas/" + atlasName),
+						CELL_W, CELL_H * 2,
+						e -> {
+							// 1) Зафиксировать локально выбор для отрисовки линии
+							onDigitClick(id);
+							// 2) Синхронизация/вызов процедур — как у тебя
+							ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(id, x, y, z, textstate));
+							ServerInterfaceButtonMessage.handleButtonAction(entity, id, x, y, z, textstate);
+						}
+				);
+
+				digitButtons[d][r] = btn;
+				// Ключи в guistate оставлю совместимыми с генератором MCreator
+				guistate.put("button:imagebutton_" + d + "butt" + (r == 0 ? "" : r), btn);
+				this.addRenderableWidget(btn);
+			}
+		}
+
+		// Exit — без изменений
+		imagebutton_exitbutton = new ImageButton(this.leftPos + 161, this.topPos + 147, 39, 16, 0, 0, 16,
+				new ResourceLocation("thisnotamod:textures/screens/atlas/imagebutton_exitbutton.png"),
+				39, 32,
+				e -> {
+					ThisnotamodMod.PACKET_HANDLER.sendToServer(new ServerInterfaceButtonMessage(80, x, y, z, textstate));
+					ServerInterfaceButtonMessage.handleButtonAction(entity, 80, x, y, z, textstate);
+				});
 		guistate.put("button:imagebutton_exitbutton", imagebutton_exitbutton);
 		this.addRenderableWidget(imagebutton_exitbutton);
+	}
+
+	/* ==========================
+	   ВНУТРЕННИЕ ВСПОМОГАТЕЛЬНЫЕ
+	   ========================== */
+
+	private void onDigitClick(int buttonId) {
+		// 0..79 — наши кнопки; 80 — Exit
+		if (buttonId < 0 || buttonId >= ROWS * COLS) return;
+
+		int row = buttonId % ROWS;
+		int digit = buttonId / ROWS;
+
+		// Перезаписываем выбор для строки (можно менять ответ)
+		selectedByRow[row] = digit;
+
+		// При желании можно отправлять это и в textstate, если знаешь,
+		// что дальше будешь читать это на сервере:
+		// textstate.put("sel_row_" + row, Integer.toString(digit));
+	}
+
+	private int cellCenterX(int digit) {
+		return this.leftPos + GRID_ORIGIN_X + COL_STEP * digit + (CELL_W / 2);
+	}
+	private int cellCenterY(int row) {
+		return this.topPos + GRID_ORIGIN_Y + ROW_STEP * row + (CELL_H / 2);
+	}
+
+	private int inAnchorAbsX() {
+		return this.leftPos + BG_X_OFFSET + IN_ANCHOR_REL_X;
+	}
+	private int inAnchorAbsY() {
+		return this.topPos + BG_Y_OFFSET + IN_ANCHOR_REL_Y;
+	}
+	private int outAnchorAbsX() {
+		return this.leftPos + BG_X_OFFSET + OUT_ANCHOR_REL_X;
+	}
+	private int outAnchorAbsY() {
+		return this.topPos + BG_Y_OFFSET + OUT_ANCHOR_REL_Y;
+	}
+
+	private void renderPath(GuiGraphics g) {
+		// Начинаем от IN
+		int lastX = inAnchorAbsX();
+		int lastY = inAnchorAbsY();
+
+		boolean any = false;
+		// Идём сверху вниз, останавливаемся на первой неполной строке
+		for (int r = 0; r < ROWS; r++) {
+			int d = selectedByRow[r];
+			if (d == -1) break; // последовательность оборвана
+			int cx = cellCenterX(d);
+			int cy = cellCenterY(r);
+			drawThickLine(g, lastX, lastY, cx, cy, LINE_COLOR_ARGB, LINE_THICKNESS);
+			lastX = cx;
+			lastY = cy;
+			any = true;
+		}
+
+		// Если все выбраны — замыкаем в OUT
+		boolean allFilled = true;
+		for (int r = 0; r < ROWS; r++) if (selectedByRow[r] == -1) { allFilled = false; break; }
+		if (any && allFilled) {
+			drawThickLine(g, lastX, lastY, outAnchorAbsX(), outAnchorAbsY(), LINE_COLOR_ARGB, LINE_THICKNESS);
+		}
+	}
+
+
+	/**
+	 * Простая DDA-линия толщиной thickness (в пикселях), без GL-линий — кросс‑версия.
+	 */
+	private void drawThickLine(GuiGraphics g, int x1, int y1, int x2, int y2, int argb, int thickness) {
+		int dx = x2 - x1;
+		int dy = y2 - y1;
+		int steps = Math.max(Math.abs(dx), Math.abs(dy));
+		if (steps <= 0) {
+			int half = thickness / 2;
+			g.fill(x1 - half, y1 - half, x1 - half + Math.max(1, thickness), y1 - half + Math.max(1, thickness), argb);
+			return;
+		}
+		double ix = dx / (double) steps;
+		double iy = dy / (double) steps;
+		double x = x1;
+		double y = y1;
+		int half = thickness / 2;
+		int pad  = (thickness % 2 == 0) ? half : half + 1;
+
+		for (int i = 0; i <= steps; i++) {
+			int rx = (int) Math.round(x);
+			int ry = (int) Math.round(y);
+			g.fill(rx - half, ry - half, rx + pad, ry + pad, argb);
+			x += ix;
+			y += iy;
+		}
 	}
 }
