@@ -20,38 +20,50 @@ import java.util.function.Supplier;
  */
 public class DebugMenuNetwork {
     // Используем канал MCreator
-public static void sendToServer(Object msg) {
-    ThisnotamodMod.PACKET_HANDLER.sendToServer(msg);
-}
-public static void sendToPlayer(ServerPlayer player, Object msg) {
-    ThisnotamodMod.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), msg);
-}
-
-// Регистрируем наши сообщения через стандартный механизм MCreator
-static {
-    try {
-        ThisnotamodMod.addNetworkMessage(
-                C2SSetVarMessage.class,
-                C2SSetVarMessage::encode,
-                C2SSetVarMessage::decode,
-                C2SSetVarMessage::handle
-        );
-        ThisnotamodMod.addNetworkMessage(
-                C2SRequestInit.class,
-                C2SRequestInit::encode,
-                C2SRequestInit::decode,
-                C2SRequestInit::handle
-        );
-        ThisnotamodMod.addNetworkMessage(
-                S2CInitState.class,
-                S2CInitState::encode,
-                S2CInitState::decode,
-                S2CInitState::handle
-        );
-    } catch (Throwable ignored) {
-        // если метод недоступен — проигнорируем (в стандартной сборке MCreator он есть)
+    public static void sendToServer(Object msg) {
+        ThisnotamodMod.PACKET_HANDLER.sendToServer(msg);
     }
-}
+    public static void sendToPlayer(ServerPlayer player, Object msg) {
+        ThisnotamodMod.PACKET_HANDLER.send(PacketDistributor.PLAYER.with(() -> player), msg);
+    }
+
+    // Регистрируем наши сообщения через стандартный механизм MCreator
+    static {
+        try {
+            ThisnotamodMod.addNetworkMessage(
+                    C2SSetVarMessage.class,
+                    C2SSetVarMessage::encode,
+                    C2SSetVarMessage::decode,
+                    C2SSetVarMessage::handle
+            );
+            ThisnotamodMod.addNetworkMessage(
+                    C2SRequestInit.class,
+                    C2SRequestInit::encode,
+                    C2SRequestInit::decode,
+                    C2SRequestInit::handle
+            );
+            ThisnotamodMod.addNetworkMessage(
+                    S2CInitState.class,
+                    S2CInitState::encode,
+                    S2CInitState::decode,
+                    S2CInitState::handle
+            );
+            ThisnotamodMod.addNetworkMessage(
+                    C2SServersAction.class,
+                    C2SServersAction::encode,
+                    C2SServersAction::decode,
+                    C2SServersAction::handle
+            );
+            ThisnotamodMod.addNetworkMessage(
+                    C2SWeatherAction.class,
+                    C2SWeatherAction::encode,
+                    C2SWeatherAction::decode,
+                    C2SWeatherAction::handle
+            );
+        } catch (Throwable ignored) {
+            // если метод недоступен — проигнорируем (в стандартной сборке MCreator он есть)
+        }
+    }
 
 
     // ----- Сообщение: установка переменной с клиента -----
@@ -119,20 +131,36 @@ static {
                         }
                     } else {
                         // Global map:
+                        var level = player.level();
                         net.code.thisnotamod.network.ThisnotamodModVariables.MapVariables map =
-                                net.code.thisnotamod.network.ThisnotamodModVariables.MapVariables.get(player.level());
+                                net.code.thisnotamod.network.ThisnotamodModVariables.MapVariables.get(level);
                         if (map != null) {
-                            if ("worldDebug".equals(m.name)) map.worldDebug = (m.type == Type.BOOL) ? m.bool : (m.number != 0);
-                            map.syncData(player.level());
+                            if ("worldDebug".equals(m.name)) {
+                                map.worldDebug = (m.type == Type.BOOL) ? m.bool : (m.number != 0);
+                                map.syncData(level);
+                            } else if ("Alarm".equals(m.name) && m.type == Type.BOOL) {
+                                if (m.bool) {
+                                    // START alarm: только запуск, без подсказок/эффектов
+                                    try { net.code.thisnotamod.procedures.AlarmstartProcedure.execute(level); } catch (Exception ignored) {}
+                                    map.AlarmSoundIsPlayed = true;
+                                    map.syncData(level);
+                                } else {
+                                    // STOP alarm: сброс флага и остановка, без подсказок/эффектов
+                                    map.AlarmSoundIsPlayed = false;
+                                    map.syncData(level);
+                                    try { net.code.thisnotamod.procedures.AlarmStopProcedure.execute(level); } catch (Exception ignored) {}
+                                }
+                            }
                         }
                     }
+
                 } catch (Exception ignored) {
                     // Если по каким-то причинам структура переменных иная — просто игнорируем (но канал не ломаем)
                 }
 
                 // После изменения отправим актуальные значения обратно клиенту
                 S2CInitState state = S2CInitState.fromPlayer(player);
-				DebugMenuNetwork.sendToPlayer(player, state);
+                DebugMenuNetwork.sendToPlayer(player, state);
 
             });
             ctx.get().setPacketHandled(true);
@@ -148,13 +176,125 @@ static {
                 ServerPlayer player = ctx.get().getSender();
                 if (player == null) return;
                 S2CInitState state = S2CInitState.fromPlayer(player);
-				DebugMenuNetwork.sendToPlayer(player, state);
+                DebugMenuNetwork.sendToPlayer(player, state);
 
 
             });
             ctx.get().setPacketHandled(true);
         }
     }
+
+    public static class C2SServersAction {
+        public String action; // "break_all" | "repair_all" | "clear_list"
+        public C2SServersAction() {}
+        public C2SServersAction(String action) { this.action = action; }
+        public static void encode(C2SServersAction m, FriendlyByteBuf buf) { buf.writeUtf(m.action); }
+        public static C2SServersAction decode(FriendlyByteBuf buf) { return new C2SServersAction(buf.readUtf()); }
+        public static void handle(C2SServersAction m, Supplier<NetworkEvent.Context> ctx) {
+            ctx.get().enqueueWork(() -> {
+                ServerPlayer player = ctx.get().getSender();
+                if (player == null) return;
+                var level = player.level();
+                var map = net.code.thisnotamod.network.ThisnotamodModVariables.MapVariables.get(level);
+                if (map == null) return;
+
+                // datamap1: ожидается CompoundTag (ключ = "x,y,z", значение = "enabled"/"disabled")
+                var tag = map.datamap1;
+                if (tag == null) return;
+
+                java.util.List<String> keys = new java.util.ArrayList<>(tag.getAllKeys());
+
+                switch (m.action) {
+                    case "break_all" -> {
+                        for (String key : keys) {
+                            String[] arr = key.split(",");
+                            if (arr.length < 3) continue;
+                            double x = parseD(arr[0]), y = parseD(arr[1]), z = parseD(arr[2]);
+                            var pos = net.minecraft.core.BlockPos.containing(x, y, z);
+                            var bs = level.getBlockState(pos);
+                            var def = bs.getBlock().getStateDefinition();
+                            var prop = def.getProperty("blockstate");
+                            if (prop instanceof net.minecraft.world.level.block.state.properties.IntegerProperty ip && ip.getPossibleValues().contains(2)) {
+                                level.setBlock(pos, bs.setValue(ip, 2), 3);
+                            }
+                            tag.put(key, net.minecraft.nbt.StringTag.valueOf("disabled"));
+                        }
+                        map.syncData(level);
+                    }
+                    case "repair_all" -> {
+                        for (String key : keys) {
+                            String[] arr = key.split(",");
+                            if (arr.length < 3) continue;
+                            double x = parseD(arr[0]), y = parseD(arr[1]), z = parseD(arr[2]);
+                            var pos = net.minecraft.core.BlockPos.containing(x, y, z);
+                            var bs = level.getBlockState(pos);
+                            var def = bs.getBlock().getStateDefinition();
+                            var prop = def.getProperty("blockstate");
+                            if (prop instanceof net.minecraft.world.level.block.state.properties.IntegerProperty ip && ip.getPossibleValues().contains(1)) {
+                                level.setBlock(pos, bs.setValue(ip, 1), 3);
+                            }
+                            tag.put(key, net.minecraft.nbt.StringTag.valueOf("enabled"));
+                        }
+                        map.syncData(level);
+                    }
+                    case "clear_list" -> {
+                        for (String key : keys) tag.remove(key);
+                        map.syncData(level);
+                    }
+                }
+
+                // Отправим клиенту обновлённое состояние
+                DebugMenuNetwork.sendToPlayer(player, S2CInitState.fromPlayer(player));
+            });
+            ctx.get().setPacketHandled(true);
+        }
+
+        private static double parseD(String s) {
+            try { return Double.parseDouble(s.trim()); } catch (Exception e) { return 0; }
+        }
+    }
+
+    public static class C2SWeatherAction {
+        public String action; // "weather_clear" | "weather_rain" | "weather_thunder"
+        public C2SWeatherAction() {}
+        public C2SWeatherAction(String action) { this.action = action; }
+        public static void encode(C2SWeatherAction m, FriendlyByteBuf buf) { buf.writeUtf(m.action); }
+        public static C2SWeatherAction decode(FriendlyByteBuf buf) { return new C2SWeatherAction(buf.readUtf()); }
+        public static void handle(C2SWeatherAction m, java.util.function.Supplier<NetworkEvent.Context> ctx) {
+            ctx.get().enqueueWork(() -> {
+                ServerPlayer player = ctx.get().getSender();
+                if (player == null) return;
+
+                // целимся в OVERWORLD и выполняем чистую команду без подсказок/эффектов
+                var server = player.server;
+                if (server == null) return;
+                var overworld = server.getLevel(net.minecraft.world.level.Level.OVERWORLD);
+                if (overworld == null) return;
+
+                String cmd = switch (m.action) {
+                    case "weather_clear" -> "weather clear";
+                    case "weather_rain" -> "weather rain";
+                    case "weather_thunder" -> "weather thunder";
+                    default -> null;
+                };
+                if (cmd != null) {
+                    // execute in minecraft:overworld run <cmd>, без вывода
+                    net.minecraft.commands.CommandSourceStack src =
+                            new net.minecraft.commands.CommandSourceStack(
+                                    net.minecraft.commands.CommandSource.NULL,
+                                    net.minecraft.world.phys.Vec3.atCenterOf(player.blockPosition()),
+                                    net.minecraft.world.phys.Vec2.ZERO,
+                                    overworld, 4, "", net.minecraft.network.chat.Component.literal(""),
+                                    server, null
+                            ).withSuppressedOutput();
+                    server.getCommands().performPrefixedCommand(src, "execute in minecraft:overworld run " + cmd);
+                }
+            });
+            ctx.get().setPacketHandled(true);
+        }
+    }
+
+
 
     // ----- Состояние для клиента -----
     public static class S2CInitState {
@@ -164,6 +304,8 @@ static {
         public boolean debug;
         public boolean worldDebug;
         public boolean timeDisplay;
+        public boolean alarm;
+
 
         public static void encode(S2CInitState m, FriendlyByteBuf buf) {
             buf.writeDouble(m.detectorSpeed);
@@ -172,6 +314,7 @@ static {
             buf.writeBoolean(m.debug);
             buf.writeBoolean(m.worldDebug);
             buf.writeBoolean(m.timeDisplay);
+            buf.writeBoolean(m.alarm);
         }
         public static S2CInitState decode(FriendlyByteBuf buf) {
             S2CInitState m = new S2CInitState();
@@ -181,6 +324,7 @@ static {
             m.debug = buf.readBoolean();
             m.worldDebug = buf.readBoolean();
             m.timeDisplay = buf.readBoolean();
+            m.alarm = buf.readBoolean();
             return m;
         }
 
@@ -201,6 +345,7 @@ static {
                         net.code.thisnotamod.network.ThisnotamodModVariables.MapVariables.get(p.level());
                 if (map != null) {
                     s.worldDebug = map.worldDebug;
+                    try { s.alarm = map.AlarmSoundIsPlayed; } catch (Exception ignored) {}
                 }
             } catch (Exception ignored) {}
             return s;

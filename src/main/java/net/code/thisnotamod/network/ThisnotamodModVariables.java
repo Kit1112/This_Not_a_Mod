@@ -145,6 +145,7 @@ public class ThisnotamodModVariables {
 			clone.frequencyFilterWidth = original.frequencyFilterWidth;
 			clone.signalsCaughtHex = original.signalsCaughtHex;
 			clone.signalsQueueCsv = original.signalsQueueCsv;
+			clone.AllowDebug = original.AllowDebug;
 			if (!event.isWasDeath()) {
 			}
 		}
@@ -435,6 +436,7 @@ public class ThisnotamodModVariables {
 		public double frequencyFilterWidth = 1.0;
 		public String signalsCaughtHex = "\"\"";
 		public String signalsQueueCsv = "\"\"";
+		public boolean AllowDebug = false;
 
 		public void syncPlayerVariables(Entity entity) {
 			if (entity instanceof ServerPlayer serverPlayer)
@@ -505,6 +507,7 @@ public class ThisnotamodModVariables {
 			nbt.putDouble("frequencyFilterWidth", frequencyFilterWidth);
 			nbt.putString("signalsCaughtHex", signalsCaughtHex);
 			nbt.putString("signalsQueueCsv", signalsQueueCsv);
+			nbt.putBoolean("AllowDebug", AllowDebug);
 			return nbt;
 		}
 
@@ -568,6 +571,7 @@ public class ThisnotamodModVariables {
 			frequencyFilterWidth = nbt.getDouble("frequencyFilterWidth");
 			signalsCaughtHex = nbt.getString("signalsCaughtHex");
 			signalsQueueCsv = nbt.getString("signalsQueueCsv");
+			AllowDebug = nbt.getBoolean("AllowDebug");
 		}
 	}
 
@@ -647,6 +651,7 @@ public class ThisnotamodModVariables {
 					variables.frequencyFilterWidth = message.data.frequencyFilterWidth;
 					variables.signalsCaughtHex = message.data.signalsCaughtHex;
 					variables.signalsQueueCsv = message.data.signalsQueueCsv;
+					variables.AllowDebug = message.data.AllowDebug;
 				}
 			});
 			context.setPacketHandled(true);

@@ -41,12 +41,19 @@ public class DebugMenuScreen extends AbstractContainerScreen<DebugMenuMenu> {
     private int scroll; // пиксели от начала контента
     private int maxScroll;
 
-    private static final int FIELD_WIDTH = 32; 
+    private static final int FIELD_WIDTH = 32;
 
     // Кэш последних значений с сервера
-private boolean cachedDebug, cachedWorldDebug, cachedTimeDisplay;
-private double cachedDetectorSpeed, cachedDownloadSpeed, cachedPingerCooldown;
-private boolean hasCache = false;
+    private boolean cachedDebug, cachedWorldDebug, cachedTimeDisplay;
+    private boolean cachedAlarm;
+    private double cachedDetectorSpeed, cachedDownloadSpeed, cachedPingerCooldown;
+    private boolean hasCache = false;
+
+
+    @Override
+    protected void renderLabels(GuiGraphics gg, int mouseX, int mouseY) {
+        // Не рисуем ни заголовок, ни метку "Инвентарь"
+    }
 
 
     // -------- СТРУКТУРЫ ЛИНИЙ --------
@@ -79,19 +86,19 @@ private boolean hasCache = false;
         @Override
         void attach(DebugMenuScreen s) {
             field = new EditBox(s.font, s.fieldX, 0, FIELD_WIDTH, 18, Component.literal(varKey)) {
-    @Override
-    public void setFocused(boolean focused) {
-        boolean was = this.isFocused();
-        super.setFocused(focused);
-        // белый при редактировании, серый когда не в фокусе
-        this.setTextColor(focused ? 0xFFFFFF : 0xC0C0C0);
-        if (was && !focused) {
-            NumberLine.this.submit(); // отправляем при потере фокуса
-        }
-    }
-};
+                @Override
+                public void setFocused(boolean focused) {
+                    boolean was = this.isFocused();
+                    super.setFocused(focused);
+                    // белый при редактировании, серый когда не в фокусе
+                    this.setTextColor(focused ? 0xFFFFFF : 0xC0C0C0);
+                    if (was && !focused) {
+                        NumberLine.this.submit(); // отправляем при потере фокуса
+                    }
+                }
+            };
 
-            
+
             field.setBordered(true);
             field.setTextColor(0xC0C0C0);
             field.setResponder(txt -> {
@@ -122,8 +129,12 @@ private boolean hasCache = false;
         }
         @Override
         void renderLabel(GuiGraphics g, DebugMenuScreen s, int labelX) {
-            g.drawString(s.font, Component.literal(name), labelX, field.getY() + 4, 0x000000, false);
+            if (field == null || !field.visible) return;
+            int y = field.getY() + 4;
+            if (y < s.viewportTop || y > s.viewportBottom - 10) return;
+            g.drawString(s.font, Component.literal(name), labelX, y, 0x000000, false);
         }
+
         void setValueClient(double v) {
             if (field != null) {
                 String txt = (Double.toString(v));
@@ -131,21 +142,21 @@ private boolean hasCache = false;
             }
         }
         void submit() {
-    if (field == null) return;
-    String txt = field.getValue();
-    // игнорируем пустые/промежуточные состояния
-    if (txt == null || txt.isEmpty() || ".".equals(txt) || "-".equals(txt) || "+".equals(txt)
-            || "+.".equals(txt) || "-.".equals(txt))
-        return;
-    if (isNumber(txt)) {
-        try {
-            double val = Double.parseDouble(txt);
-            DebugMenuNetwork.sendToServer(new C2SSetVarMessage(
-                    C2SSetVarMessage.Type.NUMBER, scope, varKey, val, false
-            ));
-        } catch (Exception ignored) {}
-    }
-}
+            if (field == null) return;
+            String txt = field.getValue();
+            // игнорируем пустые/промежуточные состояния
+            if (txt == null || txt.isEmpty() || ".".equals(txt) || "-".equals(txt) || "+".equals(txt)
+                    || "+.".equals(txt) || "-.".equals(txt))
+                return;
+            if (isNumber(txt)) {
+                try {
+                    double val = Double.parseDouble(txt);
+                    DebugMenuNetwork.sendToServer(new C2SSetVarMessage(
+                            C2SSetVarMessage.Type.NUMBER, scope, varKey, val, false
+                    ));
+                } catch (Exception ignored) {}
+            }
+        }
 
         private static boolean isNumber(String s) {
             // допускаем знаки, точку и экспоненту
@@ -154,44 +165,181 @@ private boolean hasCache = false;
     }
 
     private static class BoolLine extends Line {
-    private final String varKey;
-    private final C2SSetVarMessage.Scope scope;
-    private Button toggle;
-    private boolean current = false;
+        private final String varKey;
+        private final C2SSetVarMessage.Scope scope;
+        private Button toggle;
+        private boolean current = false;
 
-    BoolLine(String caption, String varKey, C2SSetVarMessage.Scope scope) {
-        super(caption, 20);
-        this.varKey = varKey;
-        this.scope = scope;
+        BoolLine(String caption, String varKey, C2SSetVarMessage.Scope scope) {
+            super(caption, 20);
+            this.varKey = varKey;
+            this.scope = scope;
+        }
+        @Override
+        void attach(DebugMenuScreen s) {
+            toggle = Button.builder(Component.literal(current ? "Вкл" : "Выкл"), b -> {
+                        current = !current;
+                        toggle.setMessage(Component.literal(current ? "Вкл" : "Выкл"));
+                        DebugMenuNetwork.sendToServer(
+                                new C2SSetVarMessage(C2SSetVarMessage.Type.BOOL, scope, varKey, 0.0, current)
+                        );
+                    })
+                    .bounds(s.fieldX - (44 - FIELD_WIDTH), 0, 44, 18)
+                    .build();
+            s.addRenderableWidget(toggle);
+        }
+        @Override
+        void detach(DebugMenuScreen s) { s.removeWidget(toggle); }
+        @Override
+        void setY(int screenY) { toggle.setY(screenY + 1); }
+        @Override
+        void setVisible(boolean v) { toggle.visible = v; toggle.active = v; }
+        @Override
+        void renderLabel(GuiGraphics g, DebugMenuScreen s, int labelX) {
+            if (toggle == null || !toggle.visible) return;
+            int y = toggle.getY() + 4;
+            if (y < s.viewportTop || y > s.viewportBottom - 10) return;
+            g.drawString(s.font, Component.literal(name), labelX, y, 0x000000, false);
+        }
+
+        void setValueClient(boolean v) {
+            current = v;
+            if (toggle != null) toggle.setMessage(Component.literal(current ? "Вкл" : "Выкл"));
+        }
     }
-    @Override
-    void attach(DebugMenuScreen s) {
-        toggle = Button.builder(Component.literal(current ? "Вкл" : "Выкл"), b -> {
-                    current = !current;
-                    toggle.setMessage(Component.literal(current ? "Вкл" : "Выкл"));
-                    DebugMenuNetwork.sendToServer(
-                            new C2SSetVarMessage(C2SSetVarMessage.Type.BOOL, scope, varKey, 0.0, current)
-                    );
-                })
-                .bounds(s.fieldX - (44 - FIELD_WIDTH), 0, 44, 18)
-                .build();
-        s.addRenderableWidget(toggle);
+
+    private static class SeparatorLine extends Line {
+        private int drawY;
+        private boolean visible = true;
+        SeparatorLine() { super("", 8); }
+        @Override void attach(DebugMenuScreen s) {}
+        @Override void detach(DebugMenuScreen s) {}
+        @Override void setY(int screenY) { this.drawY = screenY + 3; }
+        @Override void setVisible(boolean v) { this.visible = v; }
+        @Override
+        void renderLabel(GuiGraphics g, DebugMenuScreen s, int labelX) {
+            if (!visible) return;
+            if (drawY < s.viewportTop || drawY > s.viewportBottom) return;
+            int x1 = s.leftPos + 8;
+            int x2 = s.leftPos + s.imageWidth - 8;
+            g.fill(x1, drawY, x2, drawY + 1, 0xFF000000);
+        }
     }
-    @Override
-    void detach(DebugMenuScreen s) { s.removeWidget(toggle); }
-    @Override
-    void setY(int screenY) { toggle.setY(screenY + 1); }
-    @Override
-    void setVisible(boolean v) { toggle.visible = v; toggle.active = v; }
-    @Override
-    void renderLabel(GuiGraphics g, DebugMenuScreen s, int labelX) {
-        g.drawString(s.font, Component.literal(name), labelX, toggle.getY() + 4, 0x000000, false);
+
+
+
+    private static class LabelLine extends Line {
+        private boolean visible = true;
+        LabelLine(String caption) { super(caption, 14); }
+        @Override void attach(DebugMenuScreen s) {}
+        @Override void detach(DebugMenuScreen s) {}
+        @Override void setY(int screenY) {}
+        @Override void setVisible(boolean v) { this.visible = v; }
+        @Override
+        void renderLabel(GuiGraphics g, DebugMenuScreen s, int labelX) {
+            if (!visible) return;
+            int drawY = s.viewportTop + 2 + (this.y - s.viewportTop) - s.scroll;
+            if (drawY < s.viewportTop || drawY > s.viewportBottom - 10) return;
+            g.drawString(s.font, Component.literal(name), labelX, drawY, 0x808080, false);
+        }
     }
-    void setValueClient(boolean v) {
-        current = v;
-        if (toggle != null) toggle.setMessage(Component.literal(current ? "Вкл" : "Выкл"));
+
+
+    private static class ActionLine extends Line {
+        private final String action; // "break_all" | "repair_all" | "clear_list"
+        private Button button;
+        private boolean clicked = false;
+
+        ActionLine(String caption, String action) {
+            super(caption, 20);
+            this.action = action;
+        }
+
+        @Override
+        void attach(DebugMenuScreen s) {
+            clicked = false; // на всякий случай при новом attach
+            button = Button.builder(Component.literal("run"), b -> {
+                if (clicked) return; // защита от даблклика
+                DebugMenuNetwork.sendToServer(new DebugMenuNetwork.C2SServersAction(action));
+                clicked = true;
+                button.active = false;
+                button.setMessage(Component.literal("done"));
+            }).bounds(s.fieldX - (44 - FIELD_WIDTH), 0, 44, 18).build();
+
+            s.addRenderableWidget(button); // <-- ЭТО ГЛАВНОЕ: добавить на экран
+        }
+
+        @Override void detach(DebugMenuScreen s) { s.removeWidget(button); }
+
+        @Override void setY(int screenY) {
+            if (button != null) button.setY(screenY + 1);
+        }
+
+        @Override
+        void setVisible(boolean v) {
+            if (button != null) {
+                button.visible = v;
+                button.active = v && !clicked; // активна только когда видна и ещё не нажата
+            }
+        }
+
+        @Override
+        void renderLabel(GuiGraphics g, DebugMenuScreen s, int labelX) {
+            if (button == null || !button.visible) return;
+            int y = button.getY() + 4;
+            if (y < s.viewportTop || y > s.viewportBottom - 10) return; // клип по вьюпорту
+            g.drawString(s.font, Component.literal(name), labelX, y, 0x000000, false);
+        }
     }
-}
+
+
+    private static class ActionLineWeather extends Line {
+        private final String action; // "weather_clear" | "weather_rain" | "weather_thunder"
+        private Button button;
+        private boolean clicked = false;
+
+        ActionLineWeather(String caption, String action) {
+            super(caption, 20);
+            this.action = action;
+        }
+
+        @Override
+        void attach(DebugMenuScreen s) {
+            clicked = false;
+            button = Button.builder(Component.literal("run"), b -> {
+                if (clicked) return;
+                DebugMenuNetwork.sendToServer(new DebugMenuNetwork.C2SWeatherAction(action));
+                clicked = true;
+                button.active = false;
+                button.setMessage(Component.literal("done"));
+            }).bounds(s.fieldX - (44 - FIELD_WIDTH), 0, 44, 18).build();
+
+            s.addRenderableWidget(button); // <-- добавить на экран
+        }
+
+        @Override void detach(DebugMenuScreen s) { s.removeWidget(button); }
+
+        @Override void setY(int screenY) {
+            if (button != null) button.setY(screenY + 1);
+        }
+
+        @Override
+        void setVisible(boolean v) {
+            if (button != null) {
+                button.visible = v;
+                button.active = v && !clicked;
+            }
+        }
+
+        @Override
+        void renderLabel(GuiGraphics g, DebugMenuScreen s, int labelX) {
+            if (button == null || !button.visible) return;
+            int y = button.getY() + 4;
+            if (y < s.viewportTop || y > s.viewportBottom - 10) return;
+            g.drawString(s.font, Component.literal(name), labelX, y, 0x000000, false);
+        }
+    }
+
 
 
     // ----------- Экран -----------
@@ -252,9 +400,30 @@ private boolean hasCache = false;
         } else {
             // ----- ВКЛАДКА "Debug": debug (player bool), worldDebug (map bool), TimeDisplay (player bool)
             // [ADD] DEBUG LINES: новые булевые строки добавлять здесь по аналогии
+            lines.add(new LabelLine("Debug"));
             lines.add(new BoolLine("debug (player)", "debug", C2SSetVarMessage.Scope.PLAYER));
             lines.add(new BoolLine("worldDebug (global-map)", "worldDebug", C2SSetVarMessage.Scope.MAP));
             lines.add(new BoolLine("TimeDisplay (player)", "TimeDisplay", C2SSetVarMessage.Scope.PLAYER));
+            // Alarm (MAP)
+            lines.add(new BoolLine("Alarm", "Alarm", C2SSetVarMessage.Scope.MAP));
+            lines.add(new SeparatorLine());
+
+            // --- Subsection: Servers ---
+            lines.add(new LabelLine("Servers"));
+            lines.add(new ActionLine("break_all", "break_all"));
+            lines.add(new ActionLine("repair_all", "repair_all"));
+            lines.add(new ActionLine("clear_list", "clear_list"));
+
+            // разделитель перед подразделом Weather
+            lines.add(new SeparatorLine());
+
+            // --- Subsection: Weather ---
+            lines.add(new LabelLine("Weather"));
+            lines.add(new ActionLineWeather("weather_clear", "weather_clear"));
+            lines.add(new ActionLineWeather("weather_rain", "weather_rain"));
+            lines.add(new ActionLineWeather("weather_thunder", "weather_thunder"));
+
+
             // ----- /DEBUG -----
         }
 
@@ -266,19 +435,20 @@ private boolean hasCache = false;
             y += l.height;
         }
         // применяем кэш, чтобы значения не терялись при смене вкладок
-if (hasCache) {
-    for (Line l : lines) {
-        if (l instanceof NumberLine nl) {
-            if ("DetectorSpeed".equals(nl.varKey)) nl.setValueClient(cachedDetectorSpeed);
-            if ("downloadSpeed".equals(nl.varKey)) nl.setValueClient(cachedDownloadSpeed);
-            if ("PingerCooldown".equals(nl.varKey)) nl.setValueClient(cachedPingerCooldown);
-        } else if (l instanceof BoolLine bl) {
-            if ("debug".equals(bl.varKey)) bl.setValueClient(cachedDebug);
-            if ("worldDebug".equals(bl.varKey)) bl.setValueClient(cachedWorldDebug);
-            if ("TimeDisplay".equals(bl.varKey)) bl.setValueClient(cachedTimeDisplay);
+        if (hasCache) {
+            for (Line l : lines) {
+                if (l instanceof NumberLine nl) {
+                    if ("DetectorSpeed".equals(nl.varKey)) nl.setValueClient(cachedDetectorSpeed);
+                    if ("downloadSpeed".equals(nl.varKey)) nl.setValueClient(cachedDownloadSpeed);
+                    if ("PingerCooldown".equals(nl.varKey)) nl.setValueClient(cachedPingerCooldown);
+                } else if (l instanceof BoolLine bl) {
+                    if ("debug".equals(bl.varKey)) bl.setValueClient(cachedDebug);
+                    if ("worldDebug".equals(bl.varKey)) bl.setValueClient(cachedWorldDebug);
+                    if ("TimeDisplay".equals(bl.varKey)) bl.setValueClient(cachedTimeDisplay);
+                    if ("Alarm".equals(bl.varKey)) bl.setValueClient(cachedAlarm);
+                }
+            }
         }
-    }
-}
 
         contentHeight = y - viewportTop;
         maxScroll = Math.max(0, contentHeight - (viewportBottom - viewportTop));
@@ -321,19 +491,19 @@ if (hasCache) {
         return super.mouseScrolled(mouseX, mouseY, delta);
     }
     @Override
-public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-    if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
-        for (Line l : lines) {
-            if (l instanceof NumberLine nl) {
-                if (nl.field != null && nl.field.isFocused()) {
-                    nl.submit();
-                    return true;
+    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+        if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
+            for (Line l : lines) {
+                if (l instanceof NumberLine nl) {
+                    if (nl.field != null && nl.field.isFocused()) {
+                        nl.submit();
+                        return true;
+                    }
                 }
             }
         }
+        return super.keyPressed(keyCode, scanCode, modifiers);
     }
-    return super.keyPressed(keyCode, scanCode, modifiers);
-}
 
     @Override
     protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
@@ -375,41 +545,38 @@ public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
     public void render(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(g);
         super.render(g, mouseX, mouseY, partialTick);
-        g.drawString(this.font, this.title, this.leftPos + 10, this.topPos + 4, 0x000000, false);
         this.renderTooltip(g, mouseX, mouseY);
-    }
-
-    @Override
-    public void onClose() {
-        INSTANCE = null;
-        super.onClose();
     }
 
     // Вызывается из S2CInitState handler — применить значения на клиенте
     public void applyInitState(S2CInitState s) {
-    	// обновляем кэш
-this.cachedDetectorSpeed = s.detectorSpeed;
-this.cachedDownloadSpeed = s.downloadSpeed;
-this.cachedPingerCooldown = s.pingerCooldown;
-this.cachedDebug = s.debug;
-this.cachedWorldDebug = s.worldDebug;
-this.cachedTimeDisplay = s.timeDisplay;
-this.hasCache = true;
+        // --- обновляем кэш ---
+        this.cachedDetectorSpeed = s.detectorSpeed;
+        this.cachedDownloadSpeed = s.downloadSpeed;
+        this.cachedPingerCooldown = s.pingerCooldown;
+        this.cachedDebug = s.debug;
+        this.cachedWorldDebug = s.worldDebug;
+        this.cachedTimeDisplay = s.timeDisplay;
+        this.cachedAlarm = s.alarm;
+        this.hasCache = true;
 
-        Consumer<Line> applier = line -> {
+        // --- применяем к текущим виджетам ---
+        for (Line line : lines) {
             if (line instanceof NumberLine nl) {
-    boolean focused = nl.field != null && nl.field.isFocused();
-    if (!focused) {
-        if ("DetectorSpeed".equals(nl.varKey)) nl.setValueClient(s.detectorSpeed);
-        if ("downloadSpeed".equals(nl.varKey)) nl.setValueClient(s.downloadSpeed);
-        if ("PingerCooldown".equals(nl.varKey)) nl.setValueClient(s.pingerCooldown);
+                boolean focused = nl.field != null && nl.field.isFocused();
+                if (!focused) {
+                    if ("DetectorSpeed".equals(nl.varKey)) nl.setValueClient(s.detectorSpeed);
+                    if ("downloadSpeed".equals(nl.varKey)) nl.setValueClient(s.downloadSpeed);
+                    if ("PingerCooldown".equals(nl.varKey)) nl.setValueClient(s.pingerCooldown);
+                }
+            } else if (line instanceof BoolLine bl) {
+                if ("debug".equals(bl.varKey)) bl.setValueClient(s.debug);
+                if ("worldDebug".equals(bl.varKey)) bl.setValueClient(s.worldDebug);
+                if ("TimeDisplay".equals(bl.varKey)) bl.setValueClient(s.timeDisplay);
+                if ("Alarm".equals(bl.varKey)) bl.setValueClient(s.alarm);
+            }
+            // LabelLine / ActionLine — пропускаем
+        }
     }
-} else if (line instanceof BoolLine bl) {
-    if ("debug".equals(bl.varKey)) bl.setValueClient(s.debug);
-    if ("TimeDisplay".equals(bl.varKey)) bl.setValueClient(s.timeDisplay);
-    if ("worldDebug".equals(bl.varKey)) bl.setValueClient(s.worldDebug);
 }
-        };
-        for (Line l : lines) applier.accept(l);
-    }
-}
+
