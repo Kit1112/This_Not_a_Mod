@@ -69,6 +69,7 @@ public class ThisnotamodModTabs {
 				tabData.accept(ThisnotamodModBlocks.KERFU_HEAD.get().asItem());
 				tabData.accept(ThisnotamodModBlocks.KERFU_BLOCK.get().asItem());
 				tabData.accept(ThisnotamodModItems.KERFU_BLUEPRINT.get());
+				tabData.accept(ThisnotamodModItems.DRIVE.get());
 			})
 
 					.build());

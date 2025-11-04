@@ -30,6 +30,11 @@ import net.minecraftforge.event.TickEvent;
 
 import java.util.Locale;
 
+
+
+
+import org.lwjgl.glfw.GLFW;
+
 /**
  * Экран тюнера сигнала.
  * Игровая логика вынесена в статический Background и тикает даже при закрытом GUI.
@@ -232,16 +237,38 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
     private static final int OBJECT_TEX_SIZE = 16;
 
     // Кнопки управления
-    private final IntRect btn0      = new IntRect(SCREEN_X + 12,  BTN_ROW1_Y, 20, 20);
-    private final IntRect btn1      = new IntRect(SCREEN_X + 52,  BTN_ROW1_Y, 17, 20);
-    private final IntRect btn2      = new IntRect(SCREEN_X + 71,  BTN_ROW1_Y, 17, 20);
-    private final IntRect btn3      = new IntRect(SCREEN_X + 90,  BTN_ROW1_Y, 17, 20);
-    private final IntRect btn4      = new IntRect(SCREEN_X + 52,  BTN_ROW2_Y, 17, 20);
-    private final IntRect btn5      = new IntRect(SCREEN_X + 71,  BTN_ROW2_Y, 17, 20);
-    private final IntRect btn6      = new IntRect(SCREEN_X + 90,  BTN_ROW2_Y, 17, 20);
+private final IntRect btn0 = new IntRect(56, 285, 15, 15); 
+private final IntRect btn1 = new IntRect(125, 289, 22, 22); 
+private final IntRect btn2 = new IntRect(153, 289, 22, 22); 
+private final IntRect btn3 = new IntRect(181, 289, 22, 22); 
+private final IntRect btn4 = new IntRect(125, 317, 22, 22); 
+private final IntRect btn5 = new IntRect(153, 317, 22, 22); 
+private final IntRect btn6 = new IntRect(181, 317, 22, 22); 
+private final IntRect btnDelete = new IntRect(428, 308, 26, 26);
 
-    // Кнопка удаления сигнала
-    private final IntRect btnDelete = new IntRect(SCREEN_X + 513, BTN_ROW2_Y + BTN_DELETE_Y_OFFSET, 26, 26);
+    // === DEBUG: подстройка позиций кнопок на лету ===
+private static final int BTN_COUNT = 8; // 0..6 и 7 = delete
+private int selectedBtn = 0; // какой сейчас двигаем
+private final int[] btnOffX = new int[BTN_COUNT];
+private final int[] btnOffY = new int[BTN_COUNT];
+
+private IntRect baseRectByIndex(int idx) {
+    switch (idx) {
+        case 0: return btn0;
+        case 1: return btn1;
+        case 2: return btn2;
+        case 3: return btn3;
+        case 4: return btn4;
+        case 5: return btn5;
+        case 6: return btn6;
+        default: return btnDelete; // 7
+    }
+}
+private IntRect rectByIndex(int idx) {
+    IntRect b = baseRectByIndex(idx);
+    return new IntRect(b.x + btnOffX[idx], b.y + btnOffY[idx], b.w, b.h);
+}
+
 
     public SignalTunerScreen(SignalTunerMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
@@ -408,17 +435,25 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         drawLabelValue(gg, r5, line++, I18n.get(K_DOWNLOADED),
                 String.format(Locale.ROOT, "%.1f%%", downloadedShown),
                 0xFF00FF00, 0xFF00FF00);
-
+/* 
         if (DEBUG_BUTTONS) {
-            debugRect(gg, btn0, 0x40FFFF00);
-            debugRect(gg, btn1, 0x40FFFFFF);
-            debugRect(gg, btn2, 0x40FFFFFF);
-            debugRect(gg, btn3, 0x40FFFFFF);
-            debugRect(gg, btn4, 0x4020FFFF);
-            debugRect(gg, btn5, 0x4020FFFF);
-            debugRect(gg, btn6, 0x4020FFFF);
-            debugRect(gg, btnDelete, 0x40FF2020); // красный хитбокс кнопки удаления
-        }
+    debugRect(gg, rectByIndex(0), 0x40FFFF00);
+    debugRect(gg, rectByIndex(1), 0x40FFFFFF);
+    debugRect(gg, rectByIndex(2), 0x40FFFFFF);
+    debugRect(gg, rectByIndex(3), 0x40FFFFFF);
+    debugRect(gg, rectByIndex(4), 0x4020FFFF);
+    debugRect(gg, rectByIndex(5), 0x4020FFFF);
+    debugRect(gg, rectByIndex(6), 0x4020FFFF);
+    debugRect(gg, rectByIndex(7), 0x40FF2020); // delete
+
+    // Выделение выбранной кнопки и мини-подсказка
+    IntRect sel = rectByIndex(selectedBtn);
+    gg.renderOutline(sel.x - 2, sel.y - 2, sel.w + 4, sel.h + 4, 0xFFFFFF00);
+    gg.drawString(this.font, "DBG[" + selectedBtn + "] x=" + sel.x + " y=" + sel.y,
+            SCREEN_X + 8, SCREEN_Y + SCREEN_H + 6, 0xFFFFFF00, false);
+}
+*/
+
 
         gg.pose().popPose();
     }
@@ -427,16 +462,22 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
     public void render(GuiGraphics gg, int mouseX, int mouseY, float partialTick) {
         super.render(gg, mouseX, mouseY, partialTick);
         this.renderTooltip(gg, mouseX, mouseY);
+        Component tip = getButtonTooltip(mouseX, mouseY);
+if (tip != null) {
+    gg.renderTooltip(this.font, tip, mouseX, mouseY);
+}
+
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == 0 && isHovering(btn0, mouseX, mouseY)) {
+        if (button == 0 && isHovering(rectByIndex(0), mouseX, mouseY)) {
             Background.currentPolarityDir = (Background.currentPolarityDir + 1) % 3;
             return true;
         }
         // Новая кнопка удаления сигнала
-        if (button == 0 && isHovering(btnDelete, mouseX, mouseY)) {
+        if (button == 0 && isHovering(rectByIndex(7), mouseX, mouseY)) {
+
             clearSignal();
             return true;
         }
@@ -447,33 +488,33 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
     public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
         int sign = delta > 0 ? 1 : -1;
 
-        if (isHovering(btn1, mouseX, mouseY)) {
+        if (isHovering(rectByIndex(1), mouseX, mouseY)) {
             Background.polaritySpeedPerSec += sign * 1;
             Background.polaritySpeedPerSec = clamp(Background.polaritySpeedPerSec, POLARITY_SPEED_MIN, POLARITY_SPEED_MAX);
             return true;
         }
-        if (isHovering(btn2, mouseX, mouseY)) {
+        if (isHovering(rectByIndex(2), mouseX, mouseY)) {
             Background.polaritySpeedPerSec += sign * 5;
             Background.polaritySpeedPerSec = clamp(Background.polaritySpeedPerSec, POLARITY_SPEED_MIN, POLARITY_SPEED_MAX);
             return true;
         }
-        if (isHovering(btn3, mouseX, mouseY)) {
+        if (isHovering(rectByIndex(3), mouseX, mouseY)) {
             Background.polaritySpeedPerSec += sign * 15;
             Background.polaritySpeedPerSec = clamp(Background.polaritySpeedPerSec, POLARITY_SPEED_MIN, POLARITY_SPEED_MAX);
             return true;
         }
 
-        if (isHovering(btn4, mouseX, mouseY)) {
+        if (isHovering(rectByIndex(4), mouseX, mouseY)) {
             Background.frequencySpeedPerSec += sign * 1;
             Background.frequencySpeedPerSec = clamp(Background.frequencySpeedPerSec, FREQUENCY_SPEED_MIN, FREQUENCY_SPEED_MAX);
             return true;
         }
-        if (isHovering(btn5, mouseX, mouseY)) {
+        if (isHovering(rectByIndex(5), mouseX, mouseY)) {
             Background.frequencySpeedPerSec += sign * 10;
             Background.frequencySpeedPerSec = clamp(Background.frequencySpeedPerSec, FREQUENCY_SPEED_MIN, FREQUENCY_SPEED_MAX);
             return true;
         }
-        if (isHovering(btn6, mouseX, mouseY)) {
+        if (isHovering(rectByIndex(6), mouseX, mouseY)) {
             Background.frequencySpeedPerSec += sign * 100;
             Background.frequencySpeedPerSec = clamp(Background.frequencySpeedPerSec, FREQUENCY_SPEED_MIN, FREQUENCY_SPEED_MAX);
             return true;
@@ -481,6 +522,63 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
 
         return super.mouseScrolled(mouseX, mouseY, delta);
     }
+/* 
+    @Override
+public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    // Переключение выбранной кнопки [ и ]
+    if (keyCode == GLFW.GLFW_KEY_RIGHT_BRACKET) { // ]
+        selectedBtn = (selectedBtn + 1) % BTN_COUNT;
+        return true;
+    }
+    if (keyCode == GLFW.GLFW_KEY_LEFT_BRACKET) { // [
+        selectedBtn = (selectedBtn - 1 + BTN_COUNT) % BTN_COUNT;
+        return true;
+    }
+
+    int step = ((modifiers & GLFW.GLFW_MOD_SHIFT) != 0) ? 5 : 1;
+
+    // Стрелки двигают выбранную кнопку
+    if (keyCode == GLFW.GLFW_KEY_LEFT)  { btnOffX[selectedBtn] -= step; return true; }
+    if (keyCode == GLFW.GLFW_KEY_RIGHT) { btnOffX[selectedBtn] += step; return true; }
+    if (keyCode == GLFW.GLFW_KEY_UP)    { btnOffY[selectedBtn] -= step; return true; }
+    if (keyCode == GLFW.GLFW_KEY_DOWN)  { btnOffY[selectedBtn] += step; return true; }
+
+    // R — сброс оффсета выбранной кнопки
+    if (keyCode == GLFW.GLFW_KEY_R) {
+        btnOffX[selectedBtn] = 0;
+        btnOffY[selectedBtn] = 0;
+        return true;
+    }
+
+    // Ctrl+S — вывести готовые строки и скопировать их в буфер обмена
+    if ((modifiers & GLFW.GLFW_MOD_CONTROL) != 0 && keyCode == GLFW.GLFW_KEY_S) {
+        String dump = dumpCurrentButtonCode();
+        Minecraft.getInstance().keyboardHandler.setClipboard(dump);
+        System.out.println("[SignalTunerScreen] New button code:\n" + dump);
+        if (Minecraft.getInstance().player != null) {
+            Minecraft.getInstance().player.displayClientMessage(Component.literal("Button code copied to clipboard"), true);
+        }
+        return true;
+    }
+
+    return super.keyPressed(keyCode, scanCode, modifiers);
+}
+
+private String dumpCurrentButtonCode() {
+    String[] names = {"btn0","btn1","btn2","btn3","btn4","btn5","btn6","btnDelete"};
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < BTN_COUNT; i++) {
+        IntRect b = baseRectByIndex(i);
+        int nx = b.x + btnOffX[i];
+        int ny = b.y + btnOffY[i];
+        sb.append("private final IntRect ").append(names[i])
+          .append(" = new IntRect(").append(nx).append(", ").append(ny)
+          .append(", ").append(b.w).append(", ").append(b.h).append(");\n");
+    }
+    return sb.toString();
+}
+*/
+
 
     private void drawScreenFrameAndGrid(GuiGraphics gg) {
         int x = SCREEN_X, y = SCREEN_Y, w = SCREEN_W, h = SCREEN_H;
@@ -798,6 +896,19 @@ public class SignalTunerScreen extends AbstractContainerScreen<SignalTunerMenu> 
         double vy = (mouseY - guiY) / guiScale;
         return r.contains((int) Math.floor(vx), (int) Math.floor(vy));
     }
+
+    private Component getButtonTooltip(double mouseX, double mouseY) {
+    if (isHovering(rectByIndex(0), mouseX, mouseY)) return Component.translatable("signalmanager.ui.tuner.but0");
+    if (isHovering(rectByIndex(1), mouseX, mouseY)) return Component.translatable("signalmanager.ui.tuner.but1");
+    if (isHovering(rectByIndex(2), mouseX, mouseY)) return Component.translatable("signalmanager.ui.tuner.but2");
+    if (isHovering(rectByIndex(3), mouseX, mouseY)) return Component.translatable("signalmanager.ui.tuner.but3");
+    if (isHovering(rectByIndex(4), mouseX, mouseY)) return Component.translatable("signalmanager.ui.tuner.but4");
+    if (isHovering(rectByIndex(5), mouseX, mouseY)) return Component.translatable("signalmanager.ui.tuner.but5");
+    if (isHovering(rectByIndex(6), mouseX, mouseY)) return Component.translatable("signalmanager.ui.tuner.but6");
+    if (isHovering(rectByIndex(7), mouseX, mouseY)) return Component.translatable("signalmanager.ui.tuner.butdel");
+    return null;
+}
+
 
     private static int angularDiffDeg(int a, int b) {
         int d = Math.abs(a - b) % 360;

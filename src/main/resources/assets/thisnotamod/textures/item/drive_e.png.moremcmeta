@@ -1,0 +1,6 @@
+{
+    "overlay": {
+        "texture": "thisnotamod:textures/item/drive_e.png",
+        "emissive": true
+    }
+}

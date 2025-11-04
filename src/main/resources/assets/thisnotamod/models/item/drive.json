@@ -1,0 +1,6 @@
+{
+  "parent": "thisnotamod:displaysettings/drive_display",
+  "textures": {
+    "layer0": "thisnotamod:item/drive"
+  }
+}

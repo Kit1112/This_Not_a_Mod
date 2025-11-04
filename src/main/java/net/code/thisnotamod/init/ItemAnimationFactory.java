@@ -15,6 +15,7 @@ import net.code.thisnotamod.item.KerfuWombItem;
 import net.code.thisnotamod.item.KerfuLegItem;
 import net.code.thisnotamod.item.KerfuHandItem;
 import net.code.thisnotamod.item.KerfuBodyItem;
+import net.code.thisnotamod.item.DriveItem;
 
 @Mod.EventBusSubscriber
 public class ItemAnimationFactory {
@@ -134,6 +135,26 @@ public class ItemAnimationFactory {
 					event.player.getOffhandItem().getOrCreateTag().putString("geckoAnim", "");
 					if (event.player.level().isClientSide()) {
 						((KerfuBodyItem) event.player.getOffhandItem().getItem()).animationprocedure = animation;
+						disableUseAnim("left");
+					}
+				}
+			}
+			if (mainhandItem.getItem() instanceof DriveItem animatable) {
+				animation = mainhandItem.getOrCreateTag().getString("geckoAnim");
+				if (!animation.isEmpty()) {
+					event.player.getMainHandItem().getOrCreateTag().putString("geckoAnim", "");
+					if (event.player.level().isClientSide()) {
+						((DriveItem) event.player.getMainHandItem().getItem()).animationprocedure = animation;
+						disableUseAnim("right");
+					}
+				}
+			}
+			if (offhandItem.getItem() instanceof DriveItem animatable) {
+				animation = offhandItem.getOrCreateTag().getString("geckoAnim");
+				if (!animation.isEmpty()) {
+					event.player.getOffhandItem().getOrCreateTag().putString("geckoAnim", "");
+					if (event.player.level().isClientSide()) {
+						((DriveItem) event.player.getOffhandItem().getItem()).animationprocedure = animation;
 						disableUseAnim("left");
 					}
 				}

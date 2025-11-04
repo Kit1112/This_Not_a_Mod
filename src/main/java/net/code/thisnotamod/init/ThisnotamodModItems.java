@@ -28,6 +28,7 @@ import net.code.thisnotamod.item.KerfuBodyItem;
 import net.code.thisnotamod.item.KerfuBlueprintItem;
 import net.code.thisnotamod.item.InfoiconItem;
 import net.code.thisnotamod.item.ErroriconItem;
+import net.code.thisnotamod.item.DriveItem;
 import net.code.thisnotamod.item.BloodGuidebookItem;
 import net.code.thisnotamod.item.ArsGuidebookItem;
 import net.code.thisnotamod.item.ApotheosisGuidebookItem;
@@ -170,6 +171,7 @@ public class ThisnotamodModItems {
 	public static final RegistryObject<Item> KERFU_BLUEPRINT = REGISTRY.register("kerfu_blueprint", () -> new KerfuBlueprintItem());
 	public static final RegistryObject<Item> TEST_PLAYBACK = block(ThisnotamodModBlocks.TEST_PLAYBACK);
 	public static final RegistryObject<Item> MUSIC_DISC_VOTV_HALLOWEEN = REGISTRY.register("music_disc_votv_halloween", () -> new MusicDiscVotvHalloweenItem());
+	public static final RegistryObject<Item> DRIVE = REGISTRY.register("drive", () -> new DriveItem());
 
 	// Start of user code block custom items
 	// End of user code block custom items
