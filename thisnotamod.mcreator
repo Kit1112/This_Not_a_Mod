@@ -10169,6 +10169,14 @@
       ],
       "category": "record",
       "subtitle": ""
+    },
+    {
+      "name": "test",
+      "files": [
+        "test"
+      ],
+      "category": "neutral",
+      "subtitle": ""
     }
   ],
   "tag_elements": {
@@ -10291,6 +10299,7 @@
       "item.thisnotamod.kerfu_omega_spawn_egg": "Яйцо призыва Керфура-О",
       "subtitles.scanner_deny": "",
       "signalmanager.ui.tuner.label.downloaded": "Загружено:",
+      "signalmanager.text.2.raw": "пизда",
       "advancements.eat_super_glock.descr": "Зачем? Зачем ты съел его?",
       "signal_2_high": "",
       "advancements.krip.title": "ЛЮТО КРИПОВЫЙ КРИПОГУСЬ",
@@ -10318,6 +10327,7 @@
       "signalmanager.object_name.0": "Планета",
       "signalmanager.ui.tuner.label.frequency_filter": "Частотный фильтр:",
       "signalmanager.object_name.1": "Планета",
+      "signalmanager.object_name.2": "shit",
       "gui.thisnotamod.passlock_gui.button_111": "1",
       "block.thisnotamod.lampplus_1_upped": "Электрическая лампа ",
       "item.thisnotamod.infoicon": "info_icon",
@@ -10417,6 +10427,7 @@
       "item_group.thisnotamod.vot_v": "VotV",
       "signalmanager.default_text": "Нет текста",
       "gui.thisnotamod.kerfu_int.label_ozhidaniie": "Ожидание",
+      "subtitles.test": "",
       "advancements.eat_super_glock.title": "Крайне странные дела",
       "gui.thisnotamod.passlock_gui.password_field": "",
       "gui.thisnotamod.kerfu_int.label_sliedovaniie": "Следование",
@@ -10427,6 +10438,7 @@
       "block.thisnotamod.argemiacyan": "Аргемия",
       "subtitles.amb2_night.ogg": "amb2_night.ogg",
       "gui.thisnotamod.pass_change_gu.button_empty": "OK",
+      "signalmanager.text.2.high": "пизда",
       "block.thisnotamod.crafting_table_votv": "Верстак",
       "block.thisnotamod.server_b": "Сервер",
       "gui.thisnotamod.passlock_gui.button_empty8": "9",
@@ -10567,6 +10579,7 @@
       "item.thisnotamod.kerfu_omega_spawn_egg": "Керфур Омега Spawn Egg",
       "subtitles.scanner_deny": "",
       "signalmanager.ui.tuner.label.downloaded": "Downloaded:",
+      "signalmanager.text.2.raw": "пизда",
       "advancements.eat_super_glock.descr": "Зачем? Зачем ты съел его?",
       "signal_2_high": "",
       "advancements.krip.title": "ЛЮТО КРИПОВЫЙ КРИПОГУСЬ",
@@ -10594,6 +10607,7 @@
       "signalmanager.object_name.0": "Планета",
       "signalmanager.ui.tuner.label.frequency_filter": "Frequency filter:",
       "signalmanager.object_name.1": "Планета",
+      "signalmanager.object_name.2": "shit",
       "gui.thisnotamod.passlock_gui.button_111": "1",
       "block.thisnotamod.lampplus_1_upped": "Электрическая лампа ",
       "item.thisnotamod.infoicon": "info_icon",
@@ -10693,6 +10707,7 @@
       "item_group.thisnotamod.vot_v": "VotV",
       "signalmanager.default_text": "No text",
       "gui.thisnotamod.kerfu_int.label_ozhidaniie": "Ожидание",
+      "subtitles.test": "",
       "advancements.eat_super_glock.title": "Крайне странные дела",
       "gui.thisnotamod.passlock_gui.password_field": "",
       "gui.thisnotamod.kerfu_int.label_sliedovaniie": "Следование",
@@ -10703,6 +10718,7 @@
       "block.thisnotamod.argemiacyan": "Argemia",
       "subtitles.amb2_night.ogg": "amb2_night.ogg",
       "gui.thisnotamod.pass_change_gu.button_empty": "OK",
+      "signalmanager.text.2.high": "пизда",
       "block.thisnotamod.crafting_table_votv": "Crafting table",
       "block.thisnotamod.server_b": "Server",
       "gui.thisnotamod.passlock_gui.button_empty8": "9",

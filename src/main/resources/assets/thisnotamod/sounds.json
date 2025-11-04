@@ -381,5 +381,13 @@
         "stream": true
       }
     ]
+  },
+  "test": {
+    "sounds": [
+      {
+        "name": "thisnotamod:test",
+        "stream": false
+      }
+    ]
   }
 }
