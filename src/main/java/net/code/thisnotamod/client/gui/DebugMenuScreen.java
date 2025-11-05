@@ -9,7 +9,6 @@ import net.code.thisnotamod.network.DebugMenuNetwork.S2CInitState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.CycleButton;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
@@ -17,10 +16,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import org.lwjgl.glfw.GLFW;
 
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class DebugMenuScreen extends AbstractContainerScreen<DebugMenuMenu> {
     public static DebugMenuScreen INSTANCE; // чтобы можно было применить серверную инициализацию из пакета
@@ -46,15 +43,25 @@ public class DebugMenuScreen extends AbstractContainerScreen<DebugMenuMenu> {
     // Кэш последних значений с сервера
     private boolean cachedDebug, cachedWorldDebug, cachedTimeDisplay;
     private boolean cachedAlarm;
-    private double cachedDetectorSpeed, cachedDownloadSpeed, cachedPingerCooldown;
-    private boolean hasCache = false;
 
+    // Signal Scanner
+    private double cachedSignalScanerSpeedMod;
+    private double cachedPingerCooldown;
+    private double cachedPingerSpeed;
+    private double cachedPingerSuccesChance;
+
+    // Signal Download
+    private double cachedDetectorSpeed;
+    private double cachedDownloadSpeed;
+    private double cachedPolarityFilterWidth;
+    private double cachedFrequencyFilterWidth;
+
+    private boolean hasCache = false;
 
     @Override
     protected void renderLabels(GuiGraphics gg, int mouseX, int mouseY) {
         // Не рисуем ни заголовок, ни метку "Инвентарь"
     }
-
 
     // -------- СТРУКТУРЫ ЛИНИЙ --------
     private abstract static class Line {
@@ -97,8 +104,6 @@ public class DebugMenuScreen extends AbstractContainerScreen<DebugMenuMenu> {
                     }
                 }
             };
-
-
             field.setBordered(true);
             field.setTextColor(0xC0C0C0);
             field.setResponder(txt -> {
@@ -226,8 +231,6 @@ public class DebugMenuScreen extends AbstractContainerScreen<DebugMenuMenu> {
         }
     }
 
-
-
     private static class LabelLine extends Line {
         private boolean visible = true;
         LabelLine(String caption) { super(caption, 14); }
@@ -243,7 +246,6 @@ public class DebugMenuScreen extends AbstractContainerScreen<DebugMenuMenu> {
             g.drawString(s.font, Component.literal(name), labelX, drawY, 0x808080, false);
         }
     }
-
 
     private static class ActionLine extends Line {
         private final String action; // "break_all" | "repair_all" | "clear_list"
@@ -266,7 +268,7 @@ public class DebugMenuScreen extends AbstractContainerScreen<DebugMenuMenu> {
                 button.setMessage(Component.literal("done"));
             }).bounds(s.fieldX - (44 - FIELD_WIDTH), 0, 44, 18).build();
 
-            s.addRenderableWidget(button); // <-- ЭТО ГЛАВНОЕ: добавить на экран
+            s.addRenderableWidget(button); // добавить на экран
         }
 
         @Override void detach(DebugMenuScreen s) { s.removeWidget(button); }
@@ -292,7 +294,6 @@ public class DebugMenuScreen extends AbstractContainerScreen<DebugMenuMenu> {
         }
     }
 
-
     private static class ActionLineWeather extends Line {
         private final String action; // "weather_clear" | "weather_rain" | "weather_thunder"
         private Button button;
@@ -314,7 +315,7 @@ public class DebugMenuScreen extends AbstractContainerScreen<DebugMenuMenu> {
                 button.setMessage(Component.literal("done"));
             }).bounds(s.fieldX - (44 - FIELD_WIDTH), 0, 44, 18).build();
 
-            s.addRenderableWidget(button); // <-- добавить на экран
+            s.addRenderableWidget(button);
         }
 
         @Override void detach(DebugMenuScreen s) { s.removeWidget(button); }
@@ -339,8 +340,6 @@ public class DebugMenuScreen extends AbstractContainerScreen<DebugMenuMenu> {
             g.drawString(s.font, Component.literal(name), labelX, y, 0x000000, false);
         }
     }
-
-
 
     // ----------- Экран -----------
     public DebugMenuScreen(DebugMenuMenu container, Inventory inv, Component title) {
@@ -380,7 +379,7 @@ public class DebugMenuScreen extends AbstractContainerScreen<DebugMenuMenu> {
         buildTabContent();
         applyScroll(0);
 
-        // Запрашиваем у сервера текущие значения (на случай отсутствия клиентской синхронизации MapVariables)
+        // Запрашиваем у сервера текущие значения
         DebugMenuNetwork.sendToServer(new C2SRequestInit());
     }
 
@@ -391,40 +390,43 @@ public class DebugMenuScreen extends AbstractContainerScreen<DebugMenuMenu> {
         scroll = 0;
 
         if (currentTab == 0) {
-            // ----- ВКЛАДКА "modifiers": три player‑persistence числа -----
-            // [ADD] MODIFIERS LINES: новые числовые строки добавлять здесь по аналогии
-            lines.add(new NumberLine("DetectorSpeed", "DetectorSpeed", C2SSetVarMessage.Scope.PLAYER));
-            lines.add(new NumberLine("downloadSpeed", "downloadSpeed", C2SSetVarMessage.Scope.PLAYER));
-            lines.add(new NumberLine("PingerCooldown", "PingerCooldown", C2SSetVarMessage.Scope.PLAYER));
-            // ----- /MODIFIERS -----
+            // ----- ВКЛАДКА "modifiers" -----
+
+            // === Signal Scanner ===
+            lines.add(new LabelLine("Signal Scanner"));
+            lines.add(new NumberLine("Scanner_speed",     "SignalScanerSpeedMod", C2SSetVarMessage.Scope.PLAYER));
+            lines.add(new NumberLine("Pinger_cooldown",   "PingerCooldown",       C2SSetVarMessage.Scope.PLAYER));
+            lines.add(new NumberLine("Pinger_speed",      "PingerSpeed",          C2SSetVarMessage.Scope.PLAYER));
+            lines.add(new NumberLine("Pinger_s_chance",   "pingerSuccesChance",   C2SSetVarMessage.Scope.PLAYER));
+
+            lines.add(new SeparatorLine());
+
+            // === Signal Download ===
+            lines.add(new LabelLine("Signal Download"));
+            lines.add(new NumberLine("Detector_speed",    "DetectorSpeed",        C2SSetVarMessage.Scope.PLAYER));
+            lines.add(new NumberLine("Download_speed",    "downloadSpeed",        C2SSetVarMessage.Scope.PLAYER));
+            lines.add(new NumberLine("Polar_filtr_width", "polarityFilterWidth",  C2SSetVarMessage.Scope.PLAYER));
+            lines.add(new NumberLine("Freq_filtr_width",  "frequencyFilterWidth", C2SSetVarMessage.Scope.PLAYER));
         } else {
-            // ----- ВКЛАДКА "Debug": debug (player bool), worldDebug (map bool), TimeDisplay (player bool)
-            // [ADD] DEBUG LINES: новые булевые строки добавлять здесь по аналогии
+            // ----- ВКЛАДКА "Debug" -----
             lines.add(new LabelLine("Debug"));
             lines.add(new BoolLine("debug (player)", "debug", C2SSetVarMessage.Scope.PLAYER));
             lines.add(new BoolLine("worldDebug (global-map)", "worldDebug", C2SSetVarMessage.Scope.MAP));
             lines.add(new BoolLine("TimeDisplay (player)", "TimeDisplay", C2SSetVarMessage.Scope.PLAYER));
-            // Alarm (MAP)
             lines.add(new BoolLine("Alarm", "Alarm", C2SSetVarMessage.Scope.MAP));
             lines.add(new SeparatorLine());
 
-            // --- Subsection: Servers ---
             lines.add(new LabelLine("Servers"));
             lines.add(new ActionLine("break_all", "break_all"));
             lines.add(new ActionLine("repair_all", "repair_all"));
             lines.add(new ActionLine("clear_list", "clear_list"));
 
-            // разделитель перед подразделом Weather
             lines.add(new SeparatorLine());
 
-            // --- Subsection: Weather ---
             lines.add(new LabelLine("Weather"));
             lines.add(new ActionLineWeather("weather_clear", "weather_clear"));
             lines.add(new ActionLineWeather("weather_rain", "weather_rain"));
             lines.add(new ActionLineWeather("weather_thunder", "weather_thunder"));
-
-
-            // ----- /DEBUG -----
         }
 
         // Привязка виджетов и первичная раскладка
@@ -434,18 +436,26 @@ public class DebugMenuScreen extends AbstractContainerScreen<DebugMenuMenu> {
             l.y = y;
             y += l.height;
         }
+
         // применяем кэш, чтобы значения не терялись при смене вкладок
         if (hasCache) {
             for (Line l : lines) {
                 if (l instanceof NumberLine nl) {
-                    if ("DetectorSpeed".equals(nl.varKey)) nl.setValueClient(cachedDetectorSpeed);
-                    if ("downloadSpeed".equals(nl.varKey)) nl.setValueClient(cachedDownloadSpeed);
-                    if ("PingerCooldown".equals(nl.varKey)) nl.setValueClient(cachedPingerCooldown);
+                    // Signal Scanner
+                    if ("SignalScanerSpeedMod".equals(nl.varKey)) nl.setValueClient(cachedSignalScanerSpeedMod);
+                    if ("PingerCooldown".equals(nl.varKey))       nl.setValueClient(cachedPingerCooldown);
+                    if ("PingerSpeed".equals(nl.varKey))          nl.setValueClient(cachedPingerSpeed);
+                    if ("pingerSuccesChance".equals(nl.varKey))   nl.setValueClient(cachedPingerSuccesChance);
+                    // Signal Download
+                    if ("DetectorSpeed".equals(nl.varKey))        nl.setValueClient(cachedDetectorSpeed);
+                    if ("downloadSpeed".equals(nl.varKey))        nl.setValueClient(cachedDownloadSpeed);
+                    if ("polarityFilterWidth".equals(nl.varKey))  nl.setValueClient(cachedPolarityFilterWidth);
+                    if ("frequencyFilterWidth".equals(nl.varKey)) nl.setValueClient(cachedFrequencyFilterWidth);
                 } else if (l instanceof BoolLine bl) {
-                    if ("debug".equals(bl.varKey)) bl.setValueClient(cachedDebug);
-                    if ("worldDebug".equals(bl.varKey)) bl.setValueClient(cachedWorldDebug);
+                    if ("debug".equals(bl.varKey))       bl.setValueClient(cachedDebug);
+                    if ("worldDebug".equals(bl.varKey))  bl.setValueClient(cachedWorldDebug);
                     if ("TimeDisplay".equals(bl.varKey)) bl.setValueClient(cachedTimeDisplay);
-                    if ("Alarm".equals(bl.varKey)) bl.setValueClient(cachedAlarm);
+                    if ("Alarm".equals(bl.varKey))       bl.setValueClient(cachedAlarm);
                 }
             }
         }
@@ -460,7 +470,6 @@ public class DebugMenuScreen extends AbstractContainerScreen<DebugMenuMenu> {
             this.currentTab = idx;
             buildTabContent();
             DebugMenuNetwork.sendToServer(new C2SRequestInit());
-
         }
     }
 
@@ -490,6 +499,7 @@ public class DebugMenuScreen extends AbstractContainerScreen<DebugMenuMenu> {
         }
         return super.mouseScrolled(mouseX, mouseY, delta);
     }
+
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (keyCode == GLFW.GLFW_KEY_ENTER || keyCode == GLFW.GLFW_KEY_KP_ENTER) {
@@ -524,7 +534,6 @@ public class DebugMenuScreen extends AbstractContainerScreen<DebugMenuMenu> {
 
         // Подписи к строкам (чёрным текстом)
         for (Line l : lines) {
-            // видимость уже учтена в repositionLines (setVisible)
             l.renderLabel(g, this, labelX);
         }
 
@@ -551,32 +560,44 @@ public class DebugMenuScreen extends AbstractContainerScreen<DebugMenuMenu> {
     // Вызывается из S2CInitState handler — применить значения на клиенте
     public void applyInitState(S2CInitState s) {
         // --- обновляем кэш ---
-        this.cachedDetectorSpeed = s.detectorSpeed;
-        this.cachedDownloadSpeed = s.downloadSpeed;
-        this.cachedPingerCooldown = s.pingerCooldown;
-        this.cachedDebug = s.debug;
-        this.cachedWorldDebug = s.worldDebug;
-        this.cachedTimeDisplay = s.timeDisplay;
-        this.cachedAlarm = s.alarm;
+        this.cachedSignalScanerSpeedMod = s.signalScanerSpeedMod;
+        this.cachedPingerCooldown      = s.pingerCooldown;
+        this.cachedPingerSpeed         = s.pingerSpeed;
+        this.cachedPingerSuccesChance  = s.pingerSuccesChance;
+
+        this.cachedDetectorSpeed       = s.detectorSpeed;
+        this.cachedDownloadSpeed       = s.downloadSpeed;
+        this.cachedPolarityFilterWidth = s.polarityFilterWidth;
+        this.cachedFrequencyFilterWidth= s.frequencyFilterWidth;
+
+        this.cachedDebug        = s.debug;
+        this.cachedWorldDebug   = s.worldDebug;
+        this.cachedTimeDisplay  = s.timeDisplay;
+        this.cachedAlarm        = s.alarm;
         this.hasCache = true;
 
         // --- применяем к текущим виджетам ---
         for (Line line : lines) {
             if (line instanceof NumberLine nl) {
-                boolean focused = nl.field != null && nl.field.isFocused();
+                boolean focused = (nl.field != null && nl.field.isFocused());
                 if (!focused) {
-                    if ("DetectorSpeed".equals(nl.varKey)) nl.setValueClient(s.detectorSpeed);
-                    if ("downloadSpeed".equals(nl.varKey)) nl.setValueClient(s.downloadSpeed);
-                    if ("PingerCooldown".equals(nl.varKey)) nl.setValueClient(s.pingerCooldown);
+                    // Signal Scanner
+                    if ("SignalScanerSpeedMod".equals(nl.varKey)) nl.setValueClient(s.signalScanerSpeedMod);
+                    if ("PingerCooldown".equals(nl.varKey))       nl.setValueClient(s.pingerCooldown);
+                    if ("PingerSpeed".equals(nl.varKey))          nl.setValueClient(s.pingerSpeed);
+                    if ("pingerSuccesChance".equals(nl.varKey))   nl.setValueClient(s.pingerSuccesChance);
+                    // Signal Download
+                    if ("DetectorSpeed".equals(nl.varKey))        nl.setValueClient(s.detectorSpeed);
+                    if ("downloadSpeed".equals(nl.varKey))        nl.setValueClient(s.downloadSpeed);
+                    if ("polarityFilterWidth".equals(nl.varKey))  nl.setValueClient(s.polarityFilterWidth);
+                    if ("frequencyFilterWidth".equals(nl.varKey)) nl.setValueClient(s.frequencyFilterWidth);
                 }
             } else if (line instanceof BoolLine bl) {
-                if ("debug".equals(bl.varKey)) bl.setValueClient(s.debug);
-                if ("worldDebug".equals(bl.varKey)) bl.setValueClient(s.worldDebug);
+                if ("debug".equals(bl.varKey))       bl.setValueClient(s.debug);
+                if ("worldDebug".equals(bl.varKey))  bl.setValueClient(s.worldDebug);
                 if ("TimeDisplay".equals(bl.varKey)) bl.setValueClient(s.timeDisplay);
-                if ("Alarm".equals(bl.varKey)) bl.setValueClient(s.alarm);
+                if ("Alarm".equals(bl.varKey))       bl.setValueClient(s.alarm);
             }
-            // LabelLine / ActionLine — пропускаем
         }
     }
 }
-

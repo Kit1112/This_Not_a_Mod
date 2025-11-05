@@ -22,6 +22,9 @@ import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 
 import net.minecraft.client.resources.language.I18n; // локализация
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.sounds.SoundEvents;
+
 
 import net.code.thisnotamod.world.inventory.SignalTunerMenu;
 
@@ -244,10 +247,13 @@ private final IntRect btn3 = new IntRect(181, 289, 22, 22);
 private final IntRect btn4 = new IntRect(125, 317, 22, 22); 
 private final IntRect btn5 = new IntRect(153, 317, 22, 22); 
 private final IntRect btn6 = new IntRect(181, 317, 22, 22); 
-private final IntRect btnDelete = new IntRect(428, 308, 26, 26);
+private final IntRect btnDelete = new IntRect(428, 308, 26, 26); 
+private final IntRect btnPhone = new IntRect(550, 297, 15, 54); 
+private final IntRect btnSave = new IntRect(238, 310, 22, 22);
+
 
     // === DEBUG: подстройка позиций кнопок на лету ===
-private static final int BTN_COUNT = 8; // 0..6 и 7 = delete
+private static final int BTN_COUNT = 10; // 0..6, 7=delete, 8=phone, 9=save
 private int selectedBtn = 0; // какой сейчас двигаем
 private final int[] btnOffX = new int[BTN_COUNT];
 private final int[] btnOffY = new int[BTN_COUNT];
@@ -261,9 +267,13 @@ private IntRect baseRectByIndex(int idx) {
         case 4: return btn4;
         case 5: return btn5;
         case 6: return btn6;
-        default: return btnDelete; // 7
+        case 7: return btnDelete;
+        case 8: return btnPhone;
+        case 9: return btnSave;
+        default: return btnDelete;
     }
 }
+
 private IntRect rectByIndex(int idx) {
     IntRect b = baseRectByIndex(idx);
     return new IntRect(b.x + btnOffX[idx], b.y + btnOffY[idx], b.w, b.h);
@@ -435,7 +445,7 @@ private IntRect rectByIndex(int idx) {
         drawLabelValue(gg, r5, line++, I18n.get(K_DOWNLOADED),
                 String.format(Locale.ROOT, "%.1f%%", downloadedShown),
                 0xFF00FF00, 0xFF00FF00);
-/* 
+/*
         if (DEBUG_BUTTONS) {
     debugRect(gg, rectByIndex(0), 0x40FFFF00);
     debugRect(gg, rectByIndex(1), 0x40FFFFFF);
@@ -445,6 +455,8 @@ private IntRect rectByIndex(int idx) {
     debugRect(gg, rectByIndex(5), 0x4020FFFF);
     debugRect(gg, rectByIndex(6), 0x4020FFFF);
     debugRect(gg, rectByIndex(7), 0x40FF2020); // delete
+    debugRect(gg, rectByIndex(8), 0x4020FF20); // phone
+    debugRect(gg, rectByIndex(9), 0x4020FF80); // save
 
     // Выделение выбранной кнопки и мини-подсказка
     IntRect sel = rectByIndex(selectedBtn);
@@ -453,8 +465,6 @@ private IntRect rectByIndex(int idx) {
             SCREEN_X + 8, SCREEN_Y + SCREEN_H + 6, 0xFFFFFF00, false);
 }
 */
-
-
         gg.pose().popPose();
     }
 
@@ -481,6 +491,27 @@ if (tip != null) {
             clearSignal();
             return true;
         }
+        // Кнопка phone: проиграть ванильный звук клика
+if (button == 0 && isHovering(rectByIndex(8), mouseX, mouseY)) {
+    Minecraft.getInstance().getSoundManager()
+            .play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+    return true;
+}
+// Кнопка save: сгенерировать код координат и скопировать в буфер обмена
+if (button == 0 && isHovering(rectByIndex(9), mouseX, mouseY)) {
+    String dump = dumpCurrentButtonCode();
+    Minecraft.getInstance().keyboardHandler.setClipboard(dump);
+    System.out.println("[SignalTunerScreen] New button code:\n" + dump);
+    if (Minecraft.getInstance().player != null) {
+        Minecraft.getInstance().player.displayClientMessage(
+                Component.translatable("signalmanager.ui.tuner.butsave"), true);
+    }
+    // Звук подтверждения
+    Minecraft.getInstance().getSoundManager()
+            .play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+    return true;
+}
+
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
@@ -522,7 +553,7 @@ if (tip != null) {
 
         return super.mouseScrolled(mouseX, mouseY, delta);
     }
-/* 
+/*
     @Override
 public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
     // Переключение выбранной кнопки [ и ]
@@ -563,9 +594,10 @@ public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
 
     return super.keyPressed(keyCode, scanCode, modifiers);
 }
+*/
 
 private String dumpCurrentButtonCode() {
-    String[] names = {"btn0","btn1","btn2","btn3","btn4","btn5","btn6","btnDelete"};
+    String[] names = {"btn0","btn1","btn2","btn3","btn4","btn5","btn6","btnDelete","btnPhone","btnSave"};
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < BTN_COUNT; i++) {
         IntRect b = baseRectByIndex(i);
@@ -577,7 +609,7 @@ private String dumpCurrentButtonCode() {
     }
     return sb.toString();
 }
-*/
+
 
 
     private void drawScreenFrameAndGrid(GuiGraphics gg) {
@@ -906,6 +938,8 @@ private String dumpCurrentButtonCode() {
     if (isHovering(rectByIndex(5), mouseX, mouseY)) return Component.translatable("signalmanager.ui.tuner.but5");
     if (isHovering(rectByIndex(6), mouseX, mouseY)) return Component.translatable("signalmanager.ui.tuner.but6");
     if (isHovering(rectByIndex(7), mouseX, mouseY)) return Component.translatable("signalmanager.ui.tuner.butdel");
+    if (isHovering(rectByIndex(8), mouseX, mouseY)) return Component.translatable("signalmanager.ui.tuner.butphone");
+	if (isHovering(rectByIndex(9), mouseX, mouseY)) return Component.translatable("signalmanager.ui.tuner.butsave");
     return null;
 }
 

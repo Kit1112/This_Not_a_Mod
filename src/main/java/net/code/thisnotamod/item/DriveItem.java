@@ -95,10 +95,20 @@ int lvl = tag.getInt(TAG_LEVEL);
 int sid = tag.getInt(TAG_SIGNAL_ID);
 boolean isCopy = tag.getBoolean(TAG_IS_COPY);
 
-if (sid < 0 || lvl <= 0) expectedAnim = "lvl0";
-else if (lvl == 1) expectedAnim = isCopy ? "lvl1copy" : "lvl1";
-else if (lvl == 2) expectedAnim = isCopy ? "lvl2copy" : "lvl2";
-else expectedAnim = isCopy ? "lvl3copy" : "lvl3";
+if (sid < 0) {
+    // вообще нет сигнала на диске -> базовая "0"
+    expectedAnim = "0";
+} else if (lvl <= 0) {
+    // есть сигнал, но уровень 0 -> lvl0 / lvl0copy
+    expectedAnim = isCopy ? "lvl0copy" : "lvl0";
+} else if (lvl == 1) {
+    expectedAnim = isCopy ? "lvl1copy" : "lvl1";
+} else if (lvl == 2) {
+    expectedAnim = isCopy ? "lvl2copy" : "lvl2";
+} else {
+    expectedAnim = isCopy ? "lvl3copy" : "lvl3";
+}
+
 
 // Периодический безопасный автотриггер — раз в 20 тиков, чтобы переживать рестарты игры
 if (entity instanceof net.minecraft.server.level.ServerPlayer sp) {
@@ -190,7 +200,8 @@ tooltip.add(l4);
 public void registerControllers(AnimatableManager.ControllerRegistrar data) {
     AnimationController<DriveItem> ctrl = new AnimationController<>(this, "main", 0, s -> PlayState.CONTINUE)
         .triggerableAnim("0",    RawAnimation.begin().thenLoop("0"))
-        .triggerableAnim("lvl0", RawAnimation.begin().thenLoop("0"))
+        .triggerableAnim("lvl0",     RawAnimation.begin().thenLoop("lvl0"))
+ 		.triggerableAnim("lvl0copy", RawAnimation.begin().thenLoop("lvl0copy"))
         .triggerableAnim("lvl1", RawAnimation.begin().thenLoop("lvl1"))
         .triggerableAnim("lvl1copy", RawAnimation.begin().thenLoop("lvl1copy"))
 		.triggerableAnim("lvl2",     RawAnimation.begin().thenLoop("lvl2"))

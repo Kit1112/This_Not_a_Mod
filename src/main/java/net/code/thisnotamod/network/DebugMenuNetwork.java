@@ -3,14 +3,10 @@ package net.code.thisnotamod.network;
 import net.code.thisnotamod.client.gui.DebugMenuScreen;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.network.NetworkRegistry;
-import net.minecraftforge.network.simple.SimpleChannel;
 import net.minecraftforge.network.PacketDistributor;
 import net.code.thisnotamod.ThisnotamodMod;
-import net.minecraftforge.network.PacketDistributor;
 
 import java.util.function.Supplier;
 
@@ -65,7 +61,6 @@ public class DebugMenuNetwork {
         }
     }
 
-
     // ----- Сообщение: установка переменной с клиента -----
     public static class C2SSetVarMessage {
         public enum Type { NUMBER, BOOL }
@@ -110,21 +105,29 @@ public class DebugMenuNetwork {
                 ServerPlayer player = ctx.get().getSender();
                 if (player == null) return;
 
-                // ***** ПРИВЯЗКА К ПЕРЕМЕННЫМ MCREATOR *****
                 try {
                     if (m.scope == Scope.PLAYER) {
                         // Player-persistence:
-                        net.code.thisnotamod.network.ThisnotamodModVariables.PlayerVariables vars =
-                                player.getCapability(net.code.thisnotamod.network.ThisnotamodModVariables.PLAYER_VARIABLES_CAPABILITY, null)
-                                        .orElse(null);
+                        var vars = player
+                                .getCapability(net.code.thisnotamod.network.ThisnotamodModVariables.PLAYER_VARIABLES_CAPABILITY, null)
+                                .orElse(null);
                         if (vars != null) {
                             if (m.type == Type.NUMBER) {
-                                // привязка по имени поля
-                                if ("DetectorSpeed".equals(m.name)) vars.DetectorSpeed = m.number;
-                                if ("downloadSpeed".equals(m.name)) vars.downloadSpeed = m.number;
-                                if ("PingerCooldown".equals(m.name)) vars.PingerCooldown = m.number;
-                            } else {
-                                if ("debug".equals(m.name)) vars.debug = m.bool;
+                                // существующие
+                                if ("DetectorSpeed".equals(m.name))        vars.DetectorSpeed = m.number;
+                                if ("downloadSpeed".equals(m.name))        vars.downloadSpeed = m.number;
+                                if ("PingerCooldown".equals(m.name))       vars.PingerCooldown = m.number;
+
+                                // новые Signal Scanner
+                                if ("SignalScanerSpeedMod".equals(m.name)) vars.SignalScanerSpeedMod = m.number;
+                                if ("PingerSpeed".equals(m.name))          vars.PingerSpeed = m.number;
+                                if ("pingerSuccesChance".equals(m.name))   vars.pingerSuccesChance = m.number;
+
+                                // новые Signal Download
+                                if ("polarityFilterWidth".equals(m.name))  vars.polarityFilterWidth = m.number;
+                                if ("frequencyFilterWidth".equals(m.name)) vars.frequencyFilterWidth = m.number;
+                            } else { // BOOL
+                                if ("debug".equals(m.name))       vars.debug = m.bool;
                                 if ("TimeDisplay".equals(m.name)) vars.TimeDisplay = m.bool;
                             }
                             vars.syncPlayerVariables(player);
@@ -132,20 +135,17 @@ public class DebugMenuNetwork {
                     } else {
                         // Global map:
                         var level = player.level();
-                        net.code.thisnotamod.network.ThisnotamodModVariables.MapVariables map =
-                                net.code.thisnotamod.network.ThisnotamodModVariables.MapVariables.get(level);
+                        var map = net.code.thisnotamod.network.ThisnotamodModVariables.MapVariables.get(level);
                         if (map != null) {
                             if ("worldDebug".equals(m.name)) {
                                 map.worldDebug = (m.type == Type.BOOL) ? m.bool : (m.number != 0);
                                 map.syncData(level);
                             } else if ("Alarm".equals(m.name) && m.type == Type.BOOL) {
                                 if (m.bool) {
-                                    // START alarm: только запуск, без подсказок/эффектов
                                     try { net.code.thisnotamod.procedures.AlarmstartProcedure.execute(level); } catch (Exception ignored) {}
                                     map.AlarmSoundIsPlayed = true;
                                     map.syncData(level);
                                 } else {
-                                    // STOP alarm: сброс флага и остановка, без подсказок/эффектов
                                     map.AlarmSoundIsPlayed = false;
                                     map.syncData(level);
                                     try { net.code.thisnotamod.procedures.AlarmStopProcedure.execute(level); } catch (Exception ignored) {}
@@ -153,15 +153,13 @@ public class DebugMenuNetwork {
                             }
                         }
                     }
-
                 } catch (Exception ignored) {
-                    // Если по каким-то причинам структура переменных иная — просто игнорируем (но канал не ломаем)
+                    // Если структура переменных иная — просто игнорируем
                 }
 
                 // После изменения отправим актуальные значения обратно клиенту
                 S2CInitState state = S2CInitState.fromPlayer(player);
                 DebugMenuNetwork.sendToPlayer(player, state);
-
             });
             ctx.get().setPacketHandled(true);
         }
@@ -177,8 +175,6 @@ public class DebugMenuNetwork {
                 if (player == null) return;
                 S2CInitState state = S2CInitState.fromPlayer(player);
                 DebugMenuNetwork.sendToPlayer(player, state);
-
-
             });
             ctx.get().setPacketHandled(true);
         }
@@ -294,55 +290,86 @@ public class DebugMenuNetwork {
         }
     }
 
-
-
     // ----- Состояние для клиента -----
     public static class S2CInitState {
+        // --- doubles ---
+        public double signalScanerSpeedMod;
+        public double pingerCooldown;
+        public double pingerSpeed;
+        public double pingerSuccesChance;
+
         public double detectorSpeed;
         public double downloadSpeed;
-        public double pingerCooldown;
+        public double polarityFilterWidth;
+        public double frequencyFilterWidth;
+
+        // --- bools ---
         public boolean debug;
         public boolean worldDebug;
         public boolean timeDisplay;
         public boolean alarm;
 
-
         public static void encode(S2CInitState m, FriendlyByteBuf buf) {
+            buf.writeDouble(m.signalScanerSpeedMod);
+            buf.writeDouble(m.pingerCooldown);
+            buf.writeDouble(m.pingerSpeed);
+            buf.writeDouble(m.pingerSuccesChance);
+
             buf.writeDouble(m.detectorSpeed);
             buf.writeDouble(m.downloadSpeed);
-            buf.writeDouble(m.pingerCooldown);
+            buf.writeDouble(m.polarityFilterWidth);
+            buf.writeDouble(m.frequencyFilterWidth);
+
             buf.writeBoolean(m.debug);
             buf.writeBoolean(m.worldDebug);
             buf.writeBoolean(m.timeDisplay);
             buf.writeBoolean(m.alarm);
         }
+
         public static S2CInitState decode(FriendlyByteBuf buf) {
             S2CInitState m = new S2CInitState();
-            m.detectorSpeed = buf.readDouble();
-            m.downloadSpeed = buf.readDouble();
-            m.pingerCooldown = buf.readDouble();
-            m.debug = buf.readBoolean();
-            m.worldDebug = buf.readBoolean();
+            m.signalScanerSpeedMod = buf.readDouble();
+            m.pingerCooldown       = buf.readDouble();
+            m.pingerSpeed          = buf.readDouble();
+            m.pingerSuccesChance   = buf.readDouble();
+
+            m.detectorSpeed        = buf.readDouble();
+            m.downloadSpeed        = buf.readDouble();
+            m.polarityFilterWidth  = buf.readDouble();
+            m.frequencyFilterWidth = buf.readDouble();
+
+            m.debug       = buf.readBoolean();
+            m.worldDebug  = buf.readBoolean();
             m.timeDisplay = buf.readBoolean();
-            m.alarm = buf.readBoolean();
+            m.alarm       = buf.readBoolean();
             return m;
         }
 
         public static S2CInitState fromPlayer(ServerPlayer p) {
             S2CInitState s = new S2CInitState();
             try {
-                net.code.thisnotamod.network.ThisnotamodModVariables.PlayerVariables vars =
-                        p.getCapability(net.code.thisnotamod.network.ThisnotamodModVariables.PLAYER_VARIABLES_CAPABILITY, null)
-                                .orElse(null);
+                var vars = p.getCapability(
+                        net.code.thisnotamod.network.ThisnotamodModVariables.PLAYER_VARIABLES_CAPABILITY, null
+                ).orElse(null);
                 if (vars != null) {
-                    s.detectorSpeed = vars.DetectorSpeed;
-                    s.downloadSpeed = vars.downloadSpeed;
-                    s.pingerCooldown = vars.PingerCooldown;
-                    s.debug = vars.debug;
+                    // Signal Scanner
+                    s.signalScanerSpeedMod = vars.SignalScanerSpeedMod;
+                    s.pingerCooldown       = vars.PingerCooldown;
+                    s.pingerSpeed          = vars.PingerSpeed;
+                    s.pingerSuccesChance   = vars.pingerSuccesChance;
+
+                    // Signal Download
+                    s.detectorSpeed        = vars.DetectorSpeed;
+                    s.downloadSpeed        = vars.downloadSpeed;
+                    s.polarityFilterWidth  = vars.polarityFilterWidth;
+                    s.frequencyFilterWidth = vars.frequencyFilterWidth;
+
+                    // player bools
+                    s.debug       = vars.debug;
                     s.timeDisplay = vars.TimeDisplay;
                 }
-                net.code.thisnotamod.network.ThisnotamodModVariables.MapVariables map =
-                        net.code.thisnotamod.network.ThisnotamodModVariables.MapVariables.get(p.level());
+
+                var map = net.code.thisnotamod.network.ThisnotamodModVariables.MapVariables.get(p.level());
                 if (map != null) {
                     s.worldDebug = map.worldDebug;
                     try { s.alarm = map.AlarmSoundIsPlayed; } catch (Exception ignored) {}

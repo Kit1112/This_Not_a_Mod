@@ -178,7 +178,7 @@
           "src/main/resources/assets/thisnotamod/models/item/argemiablue.json"
         ]
       },
-      "path": "~/VotVresources/Props/argemPlush"
+      "path": "~/VotVresources/objects/Props/argemPlush"
     },
     {
       "name": "Argemiared",
@@ -195,7 +195,7 @@
           "src/main/resources/assets/thisnotamod/models/block/argemiared.json"
         ]
       },
-      "path": "~/VotVresources/Props/argemPlush"
+      "path": "~/VotVresources/objects/Props/argemPlush"
     },
     {
       "name": "Argemiacyan",
@@ -212,7 +212,7 @@
           "src/main/resources/assets/thisnotamod/blockstates/argemiacyan.json"
         ]
       },
-      "path": "~/VotVresources/Props/argemPlush"
+      "path": "~/VotVresources/objects/Props/argemPlush"
     },
     {
       "name": "Argemiagreen",
@@ -229,7 +229,7 @@
           "src/main/resources/data/thisnotamod/loot_tables/blocks/argemiagreen.json"
         ]
       },
-      "path": "~/VotVresources/Props/argemPlush"
+      "path": "~/VotVresources/objects/Props/argemPlush"
     },
     {
       "name": "Argemiapurple",
@@ -246,7 +246,7 @@
           "src/main/resources/assets/thisnotamod/models/item/argemiapurple.json"
         ]
       },
-      "path": "~/VotVresources/Props/argemPlush"
+      "path": "~/VotVresources/objects/Props/argemPlush"
     },
     {
       "name": "Argemiayellow",
@@ -263,7 +263,7 @@
           "src/main/resources/assets/thisnotamod/models/item/argemiayellow.json"
         ]
       },
-      "path": "~/VotVresources/Props/argemPlush"
+      "path": "~/VotVresources/objects/Props/argemPlush"
     },
     {
       "name": "Argemiawhite",
@@ -280,7 +280,7 @@
           "src/main/resources/data/thisnotamod/loot_tables/blocks/argemiawhite.json"
         ]
       },
-      "path": "~/VotVresources/Props/argemPlush"
+      "path": "~/VotVresources/objects/Props/argemPlush"
     },
     {
       "name": "MusicDiskVotv",
@@ -294,7 +294,7 @@
           "src/main/resources/assets/thisnotamod/models/item/music_disk_votv.json"
         ]
       },
-      "path": "~/VotVresources/musicDiscs"
+      "path": "~/VotVresources/objects/Props/musicDiscs"
     },
     {
       "name": "MusicDiskVotvWinter",
@@ -308,7 +308,7 @@
           "src/main/java/net/code/thisnotamod/item/MusicDiskVotvWinterItem.java"
         ]
       },
-      "path": "~/VotVresources/musicDiscs"
+      "path": "~/VotVresources/objects/Props/musicDiscs"
     },
     {
       "name": "VotvQuesting",
@@ -323,7 +323,7 @@
           "src/main/java/net/code/thisnotamod/world/dimension/VotvQuestingDimension.java"
         ]
       },
-      "path": "~/VotVresources"
+      "path": "~/VotVresources/utilities"
     },
     {
       "name": "VotvDoor",
@@ -349,7 +349,7 @@
           "src/main/java/net/code/thisnotamod/block/VotvDoorBlock.java"
         ]
       },
-      "path": "~/VotVresources/Props/Door"
+      "path": "~/VotVresources/objects/Props/Door"
     },
     {
       "name": "VotvDoorBlockAdded",
@@ -384,7 +384,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Door"
+      "path": "~/VotVresources/objects/Props/Door"
     },
     {
       "name": "VotvDoorTop",
@@ -410,7 +410,7 @@
           "src/main/resources/assets/thisnotamod/models/block/votv_door_top_blockstate_2.json"
         ]
       },
-      "path": "~/VotVresources/Props/Door"
+      "path": "~/VotVresources/objects/Props/Door"
     },
     {
       "name": "VDrDestroyed",
@@ -441,7 +441,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Door"
+      "path": "~/VotVresources/objects/Props/Door"
     },
     {
       "name": "VDrTDestroyed",
@@ -472,7 +472,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Door"
+      "path": "~/VotVresources/objects/Props/Door"
     },
     {
       "name": "VotvLocker",
@@ -497,7 +497,7 @@
           "src/main/java/net/code/thisnotamod/block/display/VotvLockerDisplayItem.java"
         ]
       },
-      "path": "~/VotVresources/Props/Locker"
+      "path": "~/VotVresources/objects/Props/Locker"
     },
     {
       "name": "VotvLockerMiddle",
@@ -522,7 +522,7 @@
           "src/main/resources/assets/thisnotamod/models/item/votv_locker_middle.json"
         ]
       },
-      "path": "~/VotVresources/Props/Locker"
+      "path": "~/VotVresources/objects/Props/Locker"
     },
     {
       "name": "LockerPlacing",
@@ -557,7 +557,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Locker"
+      "path": "~/VotVresources/objects/Props/Locker"
     },
     {
       "name": "VotvLockerTop",
@@ -582,7 +582,7 @@
           "src/main/java/net/code/thisnotamod/block/VotvLockerTopBlock.java"
         ]
       },
-      "path": "~/VotVresources/Props/Locker"
+      "path": "~/VotVresources/objects/Props/Locker"
     },
     {
       "name": "LockerDOWNRightClicked",
@@ -617,7 +617,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Locker"
+      "path": "~/VotVresources/objects/Props/Locker"
     },
     {
       "name": "DownDestr",
@@ -648,7 +648,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Locker"
+      "path": "~/VotVresources/objects/Props/Locker"
     },
     {
       "name": "MiddleDestr",
@@ -679,7 +679,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Locker"
+      "path": "~/VotVresources/objects/Props/Locker"
     },
     {
       "name": "TopDestr",
@@ -710,7 +710,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Locker"
+      "path": "~/VotVresources/objects/Props/Locker"
     },
     {
       "name": "MiddleRightClicked",
@@ -745,7 +745,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Locker"
+      "path": "~/VotVresources/objects/Props/Locker"
     },
     {
       "name": "TopRightClicked",
@@ -780,7 +780,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Locker"
+      "path": "~/VotVresources/objects/Props/Locker"
     },
     {
       "name": "WindowPlaced",
@@ -815,7 +815,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Window"
+      "path": "~/VotVresources/objects/Props/Window"
     },
     {
       "name": "Right_d_destr",
@@ -850,7 +850,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Window"
+      "path": "~/VotVresources/objects/Props/Window"
     },
     {
       "name": "VotV",
@@ -861,7 +861,7 @@
       "metadata": {
         "files": []
       },
-      "path": "~/VotVresources"
+      "path": "~/VotVresources/utilities"
     },
     {
       "name": "Leftddestr",
@@ -896,7 +896,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Window"
+      "path": "~/VotVresources/objects/Props/Window"
     },
     {
       "name": "Righttdestr",
@@ -931,7 +931,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Window"
+      "path": "~/VotVresources/objects/Props/Window"
     },
     {
       "name": "Lefttdestr",
@@ -966,7 +966,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Window"
+      "path": "~/VotVresources/objects/Props/Window"
     },
     {
       "name": "TablePlaced",
@@ -1001,7 +1001,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/table"
+      "path": "~/VotVresources/objects/Props/table"
     },
     {
       "name": "TableL",
@@ -1018,7 +1018,7 @@
           "src/main/resources/assets/thisnotamod/models/block/table_l.json"
         ]
       },
-      "path": "~/VotVresources/Props/table"
+      "path": "~/VotVresources/objects/Props/table"
     },
     {
       "name": "TableR",
@@ -1035,7 +1035,7 @@
           "src/main/resources/assets/thisnotamod/models/item/table_r.json"
         ]
       },
-      "path": "~/VotVresources/Props/table"
+      "path": "~/VotVresources/objects/Props/table"
     },
     {
       "name": "TableLDestr",
@@ -1070,7 +1070,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/table"
+      "path": "~/VotVresources/objects/Props/table"
     },
     {
       "name": "TableRDestr",
@@ -1105,7 +1105,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/table"
+      "path": "~/VotVresources/objects/Props/table"
     },
     {
       "name": "Lamp",
@@ -1129,7 +1129,7 @@
           "src/main/java/net/code/thisnotamod/block/entity/LampTileEntity.java"
         ]
       },
-      "path": "~/VotVresources/Props/Lamp"
+      "path": "~/VotVresources/objects/Props/Lamp"
     },
     {
       "name": "LampRightClicked",
@@ -1168,7 +1168,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Lamp"
+      "path": "~/VotVresources/objects/Props/Lamp"
     },
     {
       "name": "Telescope",
@@ -1192,7 +1192,7 @@
           "src/main/java/net/code/thisnotamod/block/renderer/TelescopeTileRenderer.java"
         ]
       },
-      "path": "~/VotVresources/Props/scope"
+      "path": "~/VotVresources/objects/Props/scope"
     },
     {
       "name": "TelescopePlaced",
@@ -1223,7 +1223,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/scope"
+      "path": "~/VotVresources/objects/Props/scope"
     },
     {
       "name": "TelescopeRightClicked",
@@ -1262,7 +1262,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/scope"
+      "path": "~/VotVresources/objects/Props/scope"
     },
     {
       "name": "Radiotielieskop",
@@ -1284,7 +1284,7 @@
           "src/main/java/net/code/thisnotamod/block/entity/RadiotielieskopTileEntity.java"
         ]
       },
-      "path": "~/VotVresources/Props/radioScope"
+      "path": "~/VotVresources/objects/Props/radioScope"
     },
     {
       "name": "RadiotielieskopRightClicked",
@@ -1315,7 +1315,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/radioScope"
+      "path": "~/VotVresources/objects/Props/radioScope"
     },
     {
       "name": "ConcreteWall",
@@ -1332,7 +1332,7 @@
           "src/main/resources/assets/thisnotamod/models/block/concrete_wall.json"
         ]
       },
-      "path": "~/VotVresources/Props/blocks"
+      "path": "~/VotVresources/objects/Props/blocks"
     },
     {
       "name": "ConcreteWallRight",
@@ -1349,7 +1349,7 @@
           "src/main/java/net/code/thisnotamod/block/ConcreteWallRightBlock.java"
         ]
       },
-      "path": "~/VotVresources/Props/blocks"
+      "path": "~/VotVresources/objects/Props/blocks"
     },
     {
       "name": "ConcreteWallSide",
@@ -1366,7 +1366,7 @@
           "src/main/resources/data/thisnotamod/loot_tables/blocks/concrete_wall_side.json"
         ]
       },
-      "path": "~/VotVresources/Props/blocks"
+      "path": "~/VotVresources/objects/Props/blocks"
     },
     {
       "name": "ConcreteWallN",
@@ -1383,7 +1383,7 @@
           "src/main/java/net/code/thisnotamod/block/ConcreteWallNBlock.java"
         ]
       },
-      "path": "~/VotVresources/Props/blocks"
+      "path": "~/VotVresources/objects/Props/blocks"
     },
     {
       "name": "ConcreteWallR",
@@ -1400,7 +1400,7 @@
           "src/main/resources/data/thisnotamod/loot_tables/blocks/concrete_wall_r.json"
         ]
       },
-      "path": "~/VotVresources/Props/blocks"
+      "path": "~/VotVresources/objects/Props/blocks"
     },
     {
       "name": "WorkStat",
@@ -1422,7 +1422,7 @@
           "src/main/resources/assets/thisnotamod/models/item/work_stat.json"
         ]
       },
-      "path": "~/VotVresources"
+      "path": "~/VotVresources/utilities"
     },
     {
       "name": "VotvDoorDRiCl",
@@ -1461,7 +1461,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Door"
+      "path": "~/VotVresources/objects/Props/Door"
     },
     {
       "name": "PlayAnimDoor",
@@ -1492,7 +1492,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Door"
+      "path": "~/VotVresources/objects/Props/Door"
     },
     {
       "name": "PlayAnimDoorClose",
@@ -1527,7 +1527,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Door"
+      "path": "~/VotVresources/objects/Props/Door"
     },
     {
       "name": "VotvDoorDownRightClicked",
@@ -1566,7 +1566,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Door"
+      "path": "~/VotVresources/objects/Props/Door"
     },
     {
       "name": "PlayAnimDoorDown",
@@ -1597,7 +1597,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Door"
+      "path": "~/VotVresources/objects/Props/Door"
     },
     {
       "name": "PlayAnimDoorCloseDown",
@@ -1632,7 +1632,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Door"
+      "path": "~/VotVresources/objects/Props/Door"
     },
     {
       "name": "Terminal",
@@ -1658,7 +1658,7 @@
           "src/main/java/net/code/thisnotamod/block/model/TerminalDisplayModel.java"
         ]
       },
-      "path": "~/VotVresources/Props/Terminal"
+      "path": "~/VotVresources/objects/Props/Terminal"
     },
     {
       "name": "TermRightClick",
@@ -1697,7 +1697,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Terminal"
+      "path": "~/VotVresources/objects/Props/Terminal"
     },
     {
       "name": "TermWorkSoundPlay",
@@ -1732,7 +1732,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Terminal"
+      "path": "~/VotVresources/objects/Props/Terminal"
     },
     {
       "name": "RadarTick",
@@ -1763,7 +1763,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/radar"
+      "path": "~/VotVresources/objects/Props/radar"
     },
     {
       "name": "Radar",
@@ -1785,7 +1785,7 @@
           "src/main/resources/assets/thisnotamod/models/custom/radar_particle.json"
         ]
       },
-      "path": "~/VotVresources/Props/radar"
+      "path": "~/VotVresources/objects/Props/radar"
     },
     {
       "name": "TableKitchen",
@@ -1807,7 +1807,7 @@
           "src/main/resources/assets/thisnotamod/models/custom/table_kitchen_particle.json"
         ]
       },
-      "path": "~/VotVresources/Props/tableKitchen"
+      "path": "~/VotVresources/objects/Props/tableKitchen"
     },
     {
       "name": "TerminalPlaced",
@@ -1842,7 +1842,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Terminal"
+      "path": "~/VotVresources/objects/Props/Terminal"
     },
     {
       "name": "TermRDdestr",
@@ -1877,7 +1877,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Terminal"
+      "path": "~/VotVresources/objects/Props/Terminal"
     },
     {
       "name": "TermLDdestr",
@@ -1912,7 +1912,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Terminal"
+      "path": "~/VotVresources/objects/Props/Terminal"
     },
     {
       "name": "TermRTdestr",
@@ -1947,7 +1947,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Terminal"
+      "path": "~/VotVresources/objects/Props/Terminal"
     },
     {
       "name": "TermLTdestr",
@@ -1982,7 +1982,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Terminal"
+      "path": "~/VotVresources/objects/Props/Terminal"
     },
     {
       "name": "TermRT",
@@ -2008,7 +2008,7 @@
           "src/main/resources/assets/thisnotamod/blockstates/term_rt.json"
         ]
       },
-      "path": "~/VotVresources/Props/Terminal"
+      "path": "~/VotVresources/objects/Props/Terminal"
     },
     {
       "name": "TermLD",
@@ -2034,7 +2034,7 @@
           "src/main/java/net/code/thisnotamod/block/entity/TermLDTileEntity.java"
         ]
       },
-      "path": "~/VotVresources/Props/Terminal"
+      "path": "~/VotVresources/objects/Props/Terminal"
     },
     {
       "name": "TermLT",
@@ -2060,7 +2060,7 @@
           "src/main/resources/assets/thisnotamod/models/block/term_lt_blockstate_1.json"
         ]
       },
-      "path": "~/VotVresources/Props/Terminal"
+      "path": "~/VotVresources/objects/Props/Terminal"
     },
     {
       "name": "TermLDRCl",
@@ -2099,7 +2099,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Terminal"
+      "path": "~/VotVresources/objects/Props/Terminal"
     },
     {
       "name": "TermRTRCl",
@@ -2138,7 +2138,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Terminal"
+      "path": "~/VotVresources/objects/Props/Terminal"
     },
     {
       "name": "TermLTRCl",
@@ -2177,7 +2177,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Terminal"
+      "path": "~/VotVresources/objects/Props/Terminal"
     },
     {
       "name": "ChessAndesit",
@@ -2194,7 +2194,7 @@
           "src/main/resources/assets/thisnotamod/models/item/chess_andesit.json"
         ]
       },
-      "path": "~/VotVresources/Props/blocks"
+      "path": "~/VotVresources/objects/Props/blocks"
     },
     {
       "name": "DoorTopen",
@@ -2229,7 +2229,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Door"
+      "path": "~/VotVresources/objects/Props/Door"
     },
     {
       "name": "DoorTclose",
@@ -2264,7 +2264,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Door"
+      "path": "~/VotVresources/objects/Props/Door"
     },
     {
       "name": "DoorDopen",
@@ -2299,7 +2299,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Door"
+      "path": "~/VotVresources/objects/Props/Door"
     },
     {
       "name": "DoorDclose",
@@ -2334,7 +2334,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Door"
+      "path": "~/VotVresources/objects/Props/Door"
     },
     {
       "name": "Kartina",
@@ -2345,7 +2345,7 @@
       "metadata": {
         "files": []
       },
-      "path": "~/VotVresources"
+      "path": "~/VotVresources/objects"
     },
     {
       "name": "OnClickB1",
@@ -2384,7 +2384,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Passlock/PasslockInput"
+      "path": "~/VotVresources/objects/Props/Passlock/PasslockInput"
     },
     {
       "name": "PasslockGUI",
@@ -2399,7 +2399,7 @@
           "src/main/java/net/code/thisnotamod/network/PasslockGUIButtonMessage.java"
         ]
       },
-      "path": "~/VotVresources/Props/Passlock"
+      "path": "~/VotVresources/objects/Props/Passlock"
     },
     {
       "name": "OnClickB2",
@@ -2438,7 +2438,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Passlock/PasslockInput"
+      "path": "~/VotVresources/objects/Props/Passlock/PasslockInput"
     },
     {
       "name": "OnClickOk",
@@ -2473,7 +2473,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Passlock/PasslockInput"
+      "path": "~/VotVresources/objects/Props/Passlock/PasslockInput"
     },
     {
       "name": "OnClickX",
@@ -2508,7 +2508,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Passlock/PasslockInput"
+      "path": "~/VotVresources/objects/Props/Passlock/PasslockInput"
     },
     {
       "name": "PasslockRBM",
@@ -2543,7 +2543,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Passlock"
+      "path": "~/VotVresources/objects/Props/Passlock"
     },
     {
       "name": "PassChange",
@@ -2559,7 +2559,7 @@
           "src/main/resources/assets/thisnotamod/models/item/pass_change.json"
         ]
       },
-      "path": "~/VotVresources/Props/passChange"
+      "path": "~/VotVresources/objects/Props/passChange"
     },
     {
       "name": "PassChangeGui",
@@ -2574,7 +2574,7 @@
           "src/main/java/net/code/thisnotamod/client/gui/PassChangeGuiScreen.java"
         ]
       },
-      "path": "~/VotVresources/Props/passChange"
+      "path": "~/VotVresources/objects/Props/passChange"
     },
     {
       "name": "PassChangeOkB",
@@ -2613,7 +2613,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/passChange/passChangeInput"
+      "path": "~/VotVresources/objects/Props/passChange/passChangeInput"
     },
     {
       "name": "OnClickB3",
@@ -2652,7 +2652,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Passlock/PasslockInput"
+      "path": "~/VotVresources/objects/Props/Passlock/PasslockInput"
     },
     {
       "name": "OnClickB4",
@@ -2687,7 +2687,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Passlock/PasslockInput"
+      "path": "~/VotVresources/objects/Props/Passlock/PasslockInput"
     },
     {
       "name": "OnClickB5",
@@ -2722,7 +2722,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Passlock/PasslockInput"
+      "path": "~/VotVresources/objects/Props/Passlock/PasslockInput"
     },
     {
       "name": "OnClickB6",
@@ -2757,7 +2757,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Passlock/PasslockInput"
+      "path": "~/VotVresources/objects/Props/Passlock/PasslockInput"
     },
     {
       "name": "OnClickB7",
@@ -2792,7 +2792,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Passlock/PasslockInput"
+      "path": "~/VotVresources/objects/Props/Passlock/PasslockInput"
     },
     {
       "name": "OnClickB8",
@@ -2827,7 +2827,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Passlock/PasslockInput"
+      "path": "~/VotVresources/objects/Props/Passlock/PasslockInput"
     },
     {
       "name": "OnClickB9",
@@ -2862,7 +2862,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Passlock/PasslockInput"
+      "path": "~/VotVresources/objects/Props/Passlock/PasslockInput"
     },
     {
       "name": "OnClickBOnClickB0",
@@ -2897,7 +2897,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Passlock/PasslockInput"
+      "path": "~/VotVresources/objects/Props/Passlock/PasslockInput"
     },
     {
       "name": "PassIncorrectt",
@@ -2932,7 +2932,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Passlock/PasslockInput"
+      "path": "~/VotVresources/objects/Props/Passlock/PasslockInput"
     },
     {
       "name": "PassCorrect",
@@ -2967,7 +2967,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Passlock/PasslockInput"
+      "path": "~/VotVresources/objects/Props/Passlock/PasslockInput"
     },
     {
       "name": "Lampplus1",
@@ -2991,7 +2991,7 @@
           "src/main/resources/assets/thisnotamod/models/item/lampplus_1.json"
         ]
       },
-      "path": "~/VotVresources/Props/Lamp"
+      "path": "~/VotVresources/objects/Props/Lamp"
     },
     {
       "name": "Lampplus1Upped",
@@ -3015,7 +3015,7 @@
           "src/main/resources/assets/thisnotamod/models/block/lampplus_1_upped_blockstate_0.json"
         ]
       },
-      "path": "~/VotVresources/Props/Lamp"
+      "path": "~/VotVresources/objects/Props/Lamp"
     },
     {
       "name": "LampUpped",
@@ -3039,7 +3039,7 @@
           "src/main/resources/assets/thisnotamod/models/item/lamp_upped.json"
         ]
       },
-      "path": "~/VotVresources/Props/Lamp"
+      "path": "~/VotVresources/objects/Props/Lamp"
     },
     {
       "name": "LampMiddle",
@@ -3063,7 +3063,7 @@
           "src/main/resources/assets/thisnotamod/blockstates/lamp_middle.json"
         ]
       },
-      "path": "~/VotVresources/Props/Lamp"
+      "path": "~/VotVresources/objects/Props/Lamp"
     },
     {
       "name": "LampMiddlePlus1",
@@ -3087,7 +3087,7 @@
           "src/main/resources/assets/thisnotamod/models/block/lamp_middle_plus_1_blockstate_0.json"
         ]
       },
-      "path": "~/VotVresources/Props/Lamp"
+      "path": "~/VotVresources/objects/Props/Lamp"
     },
     {
       "name": "LampMiddleUpped",
@@ -3111,7 +3111,7 @@
           "src/main/resources/assets/thisnotamod/models/custom/lamp_middle_upped_particle.json"
         ]
       },
-      "path": "~/VotVresources/Props/Lamp"
+      "path": "~/VotVresources/objects/Props/Lamp"
     },
     {
       "name": "LampMiddlePlus1Upped",
@@ -3135,7 +3135,7 @@
           "src/main/java/net/code/thisnotamod/block/renderer/LampMiddlePlus1UppedDisplayItemRenderer.java"
         ]
       },
-      "path": "~/VotVresources/Props/Lamp"
+      "path": "~/VotVresources/objects/Props/Lamp"
     },
     {
       "name": "LampMiddleRBM",
@@ -3174,7 +3174,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Lamp"
+      "path": "~/VotVresources/objects/Props/Lamp"
     },
     {
       "name": "LampMiddlePlus1RBM",
@@ -3213,7 +3213,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Lamp"
+      "path": "~/VotVresources/objects/Props/Lamp"
     },
     {
       "name": "LampPlus1RBM",
@@ -3252,7 +3252,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Lamp"
+      "path": "~/VotVresources/objects/Props/Lamp"
     },
     {
       "name": "LampPlus1UpRMB",
@@ -3291,7 +3291,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Lamp"
+      "path": "~/VotVresources/objects/Props/Lamp"
     },
     {
       "name": "LampMiddlePlus1UpRBM",
@@ -3330,7 +3330,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Lamp"
+      "path": "~/VotVresources/objects/Props/Lamp"
     },
     {
       "name": "LampMiddleUpRBM",
@@ -3369,7 +3369,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Lamp"
+      "path": "~/VotVresources/objects/Props/Lamp"
     },
     {
       "name": "LampUpRBM",
@@ -3408,7 +3408,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Lamp"
+      "path": "~/VotVresources/objects/Props/Lamp"
     },
     {
       "name": "VentCorner",
@@ -3430,7 +3430,7 @@
           "src/main/java/net/code/thisnotamod/block/entity/VentCornerTileEntity.java"
         ]
       },
-      "path": "~/VotVresources/Props/Vent"
+      "path": "~/VotVresources/objects/Props/Vent"
     },
     {
       "name": "VentCornerHorizontal",
@@ -3452,7 +3452,7 @@
           "src/main/java/net/code/thisnotamod/block/VentCornerHorizontalBlock.java"
         ]
       },
-      "path": "~/VotVresources/Props/Vent"
+      "path": "~/VotVresources/objects/Props/Vent"
     },
     {
       "name": "PassChangeGuiN",
@@ -3467,7 +3467,7 @@
           "src/main/java/net/code/thisnotamod/world/inventory/PassChangeGuiNMenu.java"
         ]
       },
-      "path": "~/VotVresources/Props/passChange"
+      "path": "~/VotVresources/objects/Props/passChange"
     },
     {
       "name": "PassChange1b",
@@ -3494,7 +3494,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/passChange/passChangeInput"
+      "path": "~/VotVresources/objects/Props/passChange/passChangeInput"
     },
     {
       "name": "PassChange2b",
@@ -3521,7 +3521,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/passChange/passChangeInput"
+      "path": "~/VotVresources/objects/Props/passChange/passChangeInput"
     },
     {
       "name": "PassChange3b",
@@ -3548,7 +3548,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/passChange/passChangeInput"
+      "path": "~/VotVresources/objects/Props/passChange/passChangeInput"
     },
     {
       "name": "PassChange4b",
@@ -3575,7 +3575,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/passChange/passChangeInput"
+      "path": "~/VotVresources/objects/Props/passChange/passChangeInput"
     },
     {
       "name": "PassChange5b",
@@ -3602,7 +3602,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/passChange/passChangeInput"
+      "path": "~/VotVresources/objects/Props/passChange/passChangeInput"
     },
     {
       "name": "PassChange6b",
@@ -3629,7 +3629,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/passChange/passChangeInput"
+      "path": "~/VotVresources/objects/Props/passChange/passChangeInput"
     },
     {
       "name": "PassChange7b",
@@ -3656,7 +3656,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/passChange/passChangeInput"
+      "path": "~/VotVresources/objects/Props/passChange/passChangeInput"
     },
     {
       "name": "PassChange8b",
@@ -3683,7 +3683,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/passChange/passChangeInput"
+      "path": "~/VotVresources/objects/Props/passChange/passChangeInput"
     },
     {
       "name": "PassChange9b",
@@ -3710,7 +3710,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/passChange/passChangeInput"
+      "path": "~/VotVresources/objects/Props/passChange/passChangeInput"
     },
     {
       "name": "PassChangeXb",
@@ -3733,7 +3733,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/passChange/passChangeInput"
+      "path": "~/VotVresources/objects/Props/passChange/passChangeInput"
     },
     {
       "name": "PassChange0b",
@@ -3760,7 +3760,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/passChange/passChangeInput"
+      "path": "~/VotVresources/objects/Props/passChange/passChangeInput"
     },
     {
       "name": "Kerfu",
@@ -3777,7 +3777,7 @@
           "src/main/java/net/code/thisnotamod/entity/layer/KerfuLayer.java"
         ]
       },
-      "path": "~/VotVresources/Entity"
+      "path": "~/VotVresources/objects/Entity"
     },
     {
       "name": "KerfuInt",
@@ -3792,7 +3792,7 @@
           "src/main/java/net/code/thisnotamod/client/gui/KerfuIntScreen.java"
         ]
       },
-      "path": "~/VotVresources/Entity/KerfuOmega"
+      "path": "~/VotVresources/objects/Entity/KerfuOmega"
     },
     {
       "name": "KerfuRBM",
@@ -3831,7 +3831,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Entity/KerfuOmega"
+      "path": "~/VotVresources/objects/Entity/KerfuOmega"
     },
     {
       "name": "EntityHitDoorD",
@@ -3870,7 +3870,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Door"
+      "path": "~/VotVresources/objects/Props/Door"
     },
     {
       "name": "ServDdestr",
@@ -3901,7 +3901,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server"
+      "path": "~/VotVresources/objects/Props/server"
     },
     {
       "name": "ServerTdestr",
@@ -3932,7 +3932,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server"
+      "path": "~/VotVresources/objects/Props/server"
     },
     {
       "name": "ServerTrbm",
@@ -3967,7 +3967,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server"
+      "path": "~/VotVresources/objects/Props/server"
     },
     {
       "name": "WCanim",
@@ -3991,7 +3991,7 @@
           "src/main/java/net/code/thisnotamod/block/model/WCanimBlockModel.java"
         ]
       },
-      "path": "~/VotVresources/Props/WC"
+      "path": "~/VotVresources/objects/Props/WC"
     },
     {
       "name": "WC_RBM",
@@ -4026,7 +4026,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/WC"
+      "path": "~/VotVresources/objects/Props/WC"
     },
     {
       "name": "WC_placed",
@@ -4057,7 +4057,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/WC"
+      "path": "~/VotVresources/objects/Props/WC"
     },
     {
       "name": "LightSwitch",
@@ -4082,7 +4082,7 @@
           "src/main/java/net/code/thisnotamod/block/renderer/LightSwitchDisplayItemRenderer.java"
         ]
       },
-      "path": "~/VotVresources/Props/switch"
+      "path": "~/VotVresources/objects/Props/switch"
     },
     {
       "name": "SwitchRBM",
@@ -4121,7 +4121,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/switch"
+      "path": "~/VotVresources/objects/Props/switch"
     },
     {
       "name": "SwitchPlaced",
@@ -4156,7 +4156,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/switch"
+      "path": "~/VotVresources/objects/Props/switch"
     },
     {
       "name": "SwitchLink",
@@ -4187,7 +4187,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/switch"
+      "path": "~/VotVresources/objects/Props/switch"
     },
     {
       "name": "LampSwitcher",
@@ -4222,7 +4222,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/switch"
+      "path": "~/VotVresources/objects/Props/switch"
     },
     {
       "name": "LampRound",
@@ -4246,7 +4246,7 @@
           "src/main/java/net/code/thisnotamod/block/entity/LampRoundTileEntity.java"
         ]
       },
-      "path": "~/VotVresources/Props/LampRound"
+      "path": "~/VotVresources/objects/Props/LampRound"
     },
     {
       "name": "LampRoundRBM",
@@ -4281,7 +4281,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/LampRound"
+      "path": "~/VotVresources/objects/Props/LampRound"
     },
     {
       "name": "LampRoundUp",
@@ -4305,7 +4305,7 @@
           "src/main/resources/assets/thisnotamod/blockstates/lamp_round_up.json"
         ]
       },
-      "path": "~/VotVresources/Props/LampRound"
+      "path": "~/VotVresources/objects/Props/LampRound"
     },
     {
       "name": "LampRoundUpMiddle",
@@ -4329,7 +4329,7 @@
           "src/main/resources/assets/thisnotamod/models/item/lamp_round_up_middle.json"
         ]
       },
-      "path": "~/VotVresources/Props/LampRound"
+      "path": "~/VotVresources/objects/Props/LampRound"
     },
     {
       "name": "LampRoundMiddle",
@@ -4353,7 +4353,7 @@
           "src/main/resources/assets/thisnotamod/models/block/lamp_round_middle_blockstate_0.json"
         ]
       },
-      "path": "~/VotVresources/Props/LampRound"
+      "path": "~/VotVresources/objects/Props/LampRound"
     },
     {
       "name": "LampRoundUpRBM",
@@ -4388,7 +4388,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/LampRound"
+      "path": "~/VotVresources/objects/Props/LampRound"
     },
     {
       "name": "LampRoundMiddleUpRBM",
@@ -4423,7 +4423,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/LampRound"
+      "path": "~/VotVresources/objects/Props/LampRound"
     },
     {
       "name": "LampRoundMiddleRBM",
@@ -4458,7 +4458,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/LampRound"
+      "path": "~/VotVresources/objects/Props/LampRound"
     },
     {
       "name": "QuestingAmbientController",
@@ -4471,7 +4471,7 @@
           "src/main/java/net/code/thisnotamod/QuestingAmbientController.java"
         ]
       },
-      "path": "~/VotVresources"
+      "path": "~/VotVresources/utilities"
     },
     {
       "name": "ModSounds",
@@ -4484,7 +4484,7 @@
           "src/main/java/net/code/thisnotamod/ModSounds.java"
         ]
       },
-      "path": "~/VotVresources"
+      "path": "~/VotVresources/utilities"
     },
     {
       "name": "VoicesVoid",
@@ -4497,7 +4497,7 @@
           "src/main/resources/data/thisnotamod/worldgen/biome/voices_void.json"
         ]
       },
-      "path": "~/VotVresources"
+      "path": "~/VotVresources/utilities"
     },
     {
       "name": "VotvComand",
@@ -4510,7 +4510,7 @@
           "src/main/java/net/code/thisnotamod/command/VotvComandCommand.java"
         ]
       },
-      "path": "~/VotVresources/Commands"
+      "path": "~/VotVresources/utilities/Commands"
     },
     {
       "name": "CleanProcedure",
@@ -4545,7 +4545,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Commands/weather"
+      "path": "~/VotVresources/utilities/Commands/weather"
     },
     {
       "name": "RainProcedure",
@@ -4580,7 +4580,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Commands/weather"
+      "path": "~/VotVresources/utilities/Commands/weather"
     },
     {
       "name": "ThunderProcedure",
@@ -4615,7 +4615,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Commands/weather"
+      "path": "~/VotVresources/utilities/Commands/weather"
     },
     {
       "name": "KerfuOmega",
@@ -4632,7 +4632,7 @@
           "src/main/java/net/code/thisnotamod/entity/layer/KerfuOmegaLayer.java"
         ]
       },
-      "path": "~/VotVresources/Entity/KerfuOmega"
+      "path": "~/VotVresources/objects/Entity/KerfuOmega"
     },
     {
       "name": "EntityHiyDoorT",
@@ -4671,7 +4671,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Door"
+      "path": "~/VotVresources/objects/Props/Door"
     },
     {
       "name": "WindowRightD",
@@ -4697,7 +4697,7 @@
           "src/main/java/net/code/thisnotamod/block/entity/WindowRightDTileEntity.java"
         ]
       },
-      "path": "~/VotVresources/Props/Window"
+      "path": "~/VotVresources/objects/Props/Window"
     },
     {
       "name": "WindowAleftD",
@@ -4723,7 +4723,7 @@
           "src/main/resources/assets/thisnotamod/models/block/window_aleft_d_blockstate_1.json"
         ]
       },
-      "path": "~/VotVresources/Props/Window"
+      "path": "~/VotVresources/objects/Props/Window"
     },
     {
       "name": "WindowARightT",
@@ -4749,7 +4749,7 @@
           "src/main/resources/assets/thisnotamod/models/block/window_a_right_t_blockstate_1.json"
         ]
       },
-      "path": "~/VotVresources/Props/Window"
+      "path": "~/VotVresources/objects/Props/Window"
     },
     {
       "name": "WindowAleftT",
@@ -4775,7 +4775,7 @@
           "src/main/java/net/code/thisnotamod/block/model/WindowAleftTBlockModel.java"
         ]
       },
-      "path": "~/VotVresources/Props/Window"
+      "path": "~/VotVresources/objects/Props/Window"
     },
     {
       "name": "WindowRBM",
@@ -4814,7 +4814,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Window"
+      "path": "~/VotVresources/objects/Props/Window"
     },
     {
       "name": "PassLink",
@@ -4845,7 +4845,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Passlock"
+      "path": "~/VotVresources/objects/Props/Passlock"
     },
     {
       "name": "PassLinkP",
@@ -4876,7 +4876,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Passlock"
+      "path": "~/VotVresources/objects/Props/Passlock"
     },
     {
       "name": "PasslockPlace",
@@ -4911,7 +4911,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Passlock"
+      "path": "~/VotVresources/objects/Props/Passlock"
     },
     {
       "name": "PassCorrected",
@@ -4946,7 +4946,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Passlock/PasslockInput"
+      "path": "~/VotVresources/objects/Props/Passlock/PasslockInput"
     },
     {
       "name": "PassIncorrected",
@@ -4981,7 +4981,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Passlock/PasslockInput"
+      "path": "~/VotVresources/objects/Props/Passlock/PasslockInput"
     },
     {
       "name": "ServerInterface",
@@ -4996,7 +4996,7 @@
           "src/main/java/net/code/thisnotamod/network/ServerInterfaceButtonMessage.java"
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface"
     },
     {
       "name": "ExampleOne",
@@ -5016,7 +5016,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Examples"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Examples"
     },
     {
       "name": "ExampleTwo",
@@ -5036,7 +5036,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Examples"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Examples"
     },
     {
       "name": "ExampleThree",
@@ -5056,7 +5056,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Examples"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Examples"
     },
     {
       "name": "ExampleFour",
@@ -5076,7 +5076,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Examples"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Examples"
     },
     {
       "name": "ExampleFive",
@@ -5096,7 +5096,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Examples"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Examples"
     },
     {
       "name": "ExampleSix",
@@ -5116,7 +5116,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Examples"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Examples"
     },
     {
       "name": "ExampleSeven",
@@ -5136,7 +5136,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Examples"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Examples"
     },
     {
       "name": "ExampleEight",
@@ -5156,7 +5156,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Examples"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Examples"
     },
     {
       "name": "ExitButton",
@@ -5175,7 +5175,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface"
     },
     {
       "name": "FB0",
@@ -5194,7 +5194,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/FirstString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/FirstString"
     },
     {
       "name": "ClearCheckBox",
@@ -5213,7 +5213,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server"
+      "path": "~/VotVresources/objects/Props/server"
     },
     {
       "name": "DebugTrueProc",
@@ -5232,7 +5232,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Commands/debug"
+      "path": "~/VotVresources/utilities/Commands/debug"
     },
     {
       "name": "DebugFalseProc",
@@ -5251,7 +5251,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Commands/debug"
+      "path": "~/VotVresources/utilities/Commands/debug"
     },
     {
       "name": "FB1",
@@ -5270,7 +5270,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/FirstString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/FirstString"
     },
     {
       "name": "FB2",
@@ -5289,7 +5289,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/FirstString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/FirstString"
     },
     {
       "name": "FB3",
@@ -5308,7 +5308,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/FirstString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/FirstString"
     },
     {
       "name": "FB4",
@@ -5327,7 +5327,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/FirstString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/FirstString"
     },
     {
       "name": "FB5",
@@ -5346,7 +5346,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/FirstString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/FirstString"
     },
     {
       "name": "FB6",
@@ -5365,7 +5365,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/FirstString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/FirstString"
     },
     {
       "name": "FB7",
@@ -5384,7 +5384,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/FirstString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/FirstString"
     },
     {
       "name": "FB8",
@@ -5403,7 +5403,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/FirstString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/FirstString"
     },
     {
       "name": "FB9",
@@ -5422,7 +5422,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/FirstString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/FirstString"
     },
     {
       "name": "SB0",
@@ -5441,7 +5441,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/SecondString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/SecondString"
     },
     {
       "name": "SB1",
@@ -5460,7 +5460,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/SecondString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/SecondString"
     },
     {
       "name": "SB2",
@@ -5479,7 +5479,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/SecondString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/SecondString"
     },
     {
       "name": "SB3",
@@ -5498,7 +5498,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/SecondString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/SecondString"
     },
     {
       "name": "SB4",
@@ -5517,7 +5517,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/SecondString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/SecondString"
     },
     {
       "name": "SB5",
@@ -5536,7 +5536,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/SecondString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/SecondString"
     },
     {
       "name": "SB6",
@@ -5555,7 +5555,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/SecondString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/SecondString"
     },
     {
       "name": "SB7",
@@ -5574,7 +5574,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/SecondString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/SecondString"
     },
     {
       "name": "SB8",
@@ -5593,7 +5593,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/SecondString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/SecondString"
     },
     {
       "name": "SB9",
@@ -5612,7 +5612,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/SecondString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/SecondString"
     },
     {
       "name": "TB0",
@@ -5631,7 +5631,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/ThirdString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/ThirdString"
     },
     {
       "name": "TB1",
@@ -5650,7 +5650,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/ThirdString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/ThirdString"
     },
     {
       "name": "TB2",
@@ -5669,7 +5669,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/ThirdString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/ThirdString"
     },
     {
       "name": "TB3",
@@ -5688,7 +5688,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/ThirdString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/ThirdString"
     },
     {
       "name": "TB4",
@@ -5707,7 +5707,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/ThirdString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/ThirdString"
     },
     {
       "name": "TB5",
@@ -5726,7 +5726,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/ThirdString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/ThirdString"
     },
     {
       "name": "TB6",
@@ -5745,7 +5745,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/ThirdString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/ThirdString"
     },
     {
       "name": "TB7",
@@ -5764,7 +5764,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/ThirdString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/ThirdString"
     },
     {
       "name": "TB8",
@@ -5783,7 +5783,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/ThirdString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/ThirdString"
     },
     {
       "name": "TB9",
@@ -5802,7 +5802,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/ThirdString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/ThirdString"
     },
     {
       "name": "FoB0",
@@ -5821,7 +5821,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/FourthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/FourthString"
     },
     {
       "name": "FoB1",
@@ -5840,7 +5840,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/FourthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/FourthString"
     },
     {
       "name": "FoB2",
@@ -5859,7 +5859,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/FourthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/FourthString"
     },
     {
       "name": "FoB3",
@@ -5878,7 +5878,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/FourthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/FourthString"
     },
     {
       "name": "FoB4",
@@ -5897,7 +5897,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/FourthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/FourthString"
     },
     {
       "name": "FoB5",
@@ -5916,7 +5916,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/FourthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/FourthString"
     },
     {
       "name": "FoB6",
@@ -5935,7 +5935,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/FourthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/FourthString"
     },
     {
       "name": "FoB7",
@@ -5954,7 +5954,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/FourthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/FourthString"
     },
     {
       "name": "FoB8",
@@ -5973,7 +5973,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/FourthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/FourthString"
     },
     {
       "name": "FoB9",
@@ -5992,7 +5992,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/FourthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/FourthString"
     },
     {
       "name": "FiB0",
@@ -6011,7 +6011,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/FifthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/FifthString"
     },
     {
       "name": "FiB1",
@@ -6030,7 +6030,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/FifthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/FifthString"
     },
     {
       "name": "FiB2",
@@ -6049,7 +6049,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/FifthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/FifthString"
     },
     {
       "name": "FiB3",
@@ -6068,7 +6068,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/FifthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/FifthString"
     },
     {
       "name": "FiB4",
@@ -6087,7 +6087,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/FifthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/FifthString"
     },
     {
       "name": "FiB5",
@@ -6106,7 +6106,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/FifthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/FifthString"
     },
     {
       "name": "FiB6",
@@ -6125,7 +6125,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/FifthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/FifthString"
     },
     {
       "name": "FiB7",
@@ -6144,7 +6144,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/FifthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/FifthString"
     },
     {
       "name": "FiB8",
@@ -6163,7 +6163,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/FifthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/FifthString"
     },
     {
       "name": "FiB9",
@@ -6182,7 +6182,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/FifthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/FifthString"
     },
     {
       "name": "SiB0",
@@ -6201,7 +6201,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/SixthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/SixthString"
     },
     {
       "name": "SiB1",
@@ -6220,7 +6220,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/SixthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/SixthString"
     },
     {
       "name": "SiB2",
@@ -6239,7 +6239,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/SixthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/SixthString"
     },
     {
       "name": "SiB3",
@@ -6258,7 +6258,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/SixthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/SixthString"
     },
     {
       "name": "SiB4",
@@ -6277,7 +6277,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/SixthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/SixthString"
     },
     {
       "name": "SiB5",
@@ -6296,7 +6296,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/SixthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/SixthString"
     },
     {
       "name": "SiB6",
@@ -6315,7 +6315,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/SixthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/SixthString"
     },
     {
       "name": "SiB7",
@@ -6334,7 +6334,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/SixthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/SixthString"
     },
     {
       "name": "SiB8",
@@ -6353,7 +6353,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/SixthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/SixthString"
     },
     {
       "name": "SiB9",
@@ -6372,7 +6372,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/SixthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/SixthString"
     },
     {
       "name": "SeB0",
@@ -6391,7 +6391,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/SeventhString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/SeventhString"
     },
     {
       "name": "SeB1",
@@ -6410,7 +6410,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/SeventhString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/SeventhString"
     },
     {
       "name": "SeB2",
@@ -6429,7 +6429,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/SeventhString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/SeventhString"
     },
     {
       "name": "SeB3",
@@ -6448,7 +6448,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/SeventhString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/SeventhString"
     },
     {
       "name": "SeB4",
@@ -6467,7 +6467,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/SeventhString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/SeventhString"
     },
     {
       "name": "SeB5",
@@ -6486,7 +6486,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/SeventhString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/SeventhString"
     },
     {
       "name": "SeB6",
@@ -6505,7 +6505,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/SeventhString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/SeventhString"
     },
     {
       "name": "SeB7",
@@ -6524,7 +6524,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/SeventhString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/SeventhString"
     },
     {
       "name": "SeB8",
@@ -6543,7 +6543,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/SeventhString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/SeventhString"
     },
     {
       "name": "SeB9",
@@ -6562,7 +6562,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/SeventhString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/SeventhString"
     },
     {
       "name": "EB0",
@@ -6597,7 +6597,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/EighthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/EighthString"
     },
     {
       "name": "BreakAllServers",
@@ -6620,7 +6620,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Commands/Servers"
+      "path": "~/VotVresources/utilities/Commands/Servers"
     },
     {
       "name": "ServPlaced",
@@ -6655,7 +6655,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server"
+      "path": "~/VotVresources/objects/Props/server"
     },
     {
       "name": "ServerRBM",
@@ -6694,7 +6694,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server"
+      "path": "~/VotVresources/objects/Props/server"
     },
     {
       "name": "AutoBreak",
@@ -6713,7 +6713,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server"
+      "path": "~/VotVresources/objects/Props/server"
     },
     {
       "name": "DebugAllTrue",
@@ -6736,7 +6736,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Commands/debug"
+      "path": "~/VotVresources/utilities/Commands/debug"
     },
     {
       "name": "DebugAllFalse",
@@ -6759,7 +6759,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Commands/debug"
+      "path": "~/VotVresources/utilities/Commands/debug"
     },
     {
       "name": "TimeProc",
@@ -6779,7 +6779,7 @@
           }
         ]
       },
-      "path": "~/VotVresources"
+      "path": "~/VotVresources/utilities"
     },
     {
       "name": "Time",
@@ -6792,7 +6792,7 @@
           "src/main/java/net/code/thisnotamod/client/screens/TimeOverlay.java"
         ]
       },
-      "path": "~/VotVresources"
+      "path": "~/VotVresources/utilities"
     },
     {
       "name": "TimeDisplayTrue",
@@ -6811,7 +6811,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Commands/debug"
+      "path": "~/VotVresources/utilities/Commands/debug"
     },
     {
       "name": "TimeDisplayFalse",
@@ -6830,7 +6830,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Commands/debug"
+      "path": "~/VotVresources/utilities/Commands/debug"
     },
     {
       "name": "TimeDisp",
@@ -6850,7 +6850,7 @@
           }
         ]
       },
-      "path": "~/VotVresources"
+      "path": "~/VotVresources/utilities"
     },
     {
       "name": "Mannequin",
@@ -6866,7 +6866,7 @@
           "src/main/resources/assets/thisnotamod/models/item/mannequin_spawn_egg.json"
         ]
       },
-      "path": "~/VotVresources/Entity"
+      "path": "~/VotVresources/objects/Entity"
     },
     {
       "name": "WarningLamp",
@@ -6890,7 +6890,7 @@
           "src/main/java/net/code/thisnotamod/block/WarningLampBlock.java"
         ]
       },
-      "path": "~/VotVresources/Props/warning_lamp"
+      "path": "~/VotVresources/objects/Props/warning_lamp"
     },
     {
       "name": "Alarmstart",
@@ -6909,7 +6909,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/warning_lamp"
+      "path": "~/VotVresources/objects/Props/warning_lamp"
     },
     {
       "name": "WarnLampPlaced",
@@ -6940,7 +6940,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/warning_lamp"
+      "path": "~/VotVresources/objects/Props/warning_lamp"
     },
     {
       "name": "WarnLampDestr",
@@ -6971,7 +6971,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/warning_lamp"
+      "path": "~/VotVresources/objects/Props/warning_lamp"
     },
     {
       "name": "AlarmBlink",
@@ -6990,7 +6990,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/warning_lamp"
+      "path": "~/VotVresources/objects/Props/warning_lamp"
     },
     {
       "name": "AlarmStop",
@@ -7009,7 +7009,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/warning_lamp"
+      "path": "~/VotVresources/objects/Props/warning_lamp"
     },
     {
       "name": "AlarmTrue",
@@ -7032,7 +7032,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Commands/debug"
+      "path": "~/VotVresources/utilities/Commands/debug"
     },
     {
       "name": "AlarmFalse",
@@ -7055,7 +7055,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Commands/debug"
+      "path": "~/VotVresources/utilities/Commands/debug"
     },
     {
       "name": "WarningLampPriShchielchkiePKMPoBloku",
@@ -7090,7 +7090,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/warning_lamp"
+      "path": "~/VotVresources/objects/Props/warning_lamp"
     },
     {
       "name": "PasslockB",
@@ -7108,7 +7108,7 @@
           "src/main/java/net/code/thisnotamod/block/PasslockBBlock.java"
         ]
       },
-      "path": "~/VotVresources/Props/Passlock"
+      "path": "~/VotVresources/objects/Props/Passlock"
     },
     {
       "name": "Passlockblockstates",
@@ -7122,7 +7122,7 @@
           "src/main/resources/assets/thisnotamod/models/block/passlockblockstates_blockstate_0.json"
         ]
       },
-      "path": "~/VotVresources/Props/Passlock"
+      "path": "~/VotVresources/objects/Props/Passlock"
     },
     {
       "name": "ServerB",
@@ -7139,7 +7139,7 @@
           "src/main/resources/assets/thisnotamod/models/block/server_b.json"
         ]
       },
-      "path": "~/VotVresources/Props/server"
+      "path": "~/VotVresources/objects/Props/server"
     },
     {
       "name": "ServerBTop",
@@ -7156,7 +7156,7 @@
           "src/main/java/net/code/thisnotamod/block/ServerBTopBlock.java"
         ]
       },
-      "path": "~/VotVresources/Props/server"
+      "path": "~/VotVresources/objects/Props/server"
     },
     {
       "name": "ServerTblockstates",
@@ -7170,7 +7170,7 @@
           "src/main/resources/assets/thisnotamod/models/block/server_tblockstates_blockstate_0.json"
         ]
       },
-      "path": "~/VotVresources/Props/server"
+      "path": "~/VotVresources/objects/Props/server"
     },
     {
       "name": "FindBrokenServers",
@@ -7205,7 +7205,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Entity/KerfuOmega"
+      "path": "~/VotVresources/objects/Entity/KerfuOmega"
     },
     {
       "name": "FridgeDownInt",
@@ -7219,7 +7219,7 @@
           "src/main/java/net/code/thisnotamod/client/gui/FridgeDownIntScreen.java"
         ]
       },
-      "path": "~/VotVresources/Props/Fridge"
+      "path": "~/VotVresources/objects/Props/Fridge"
     },
     {
       "name": "FridgeDown",
@@ -7243,7 +7243,7 @@
           "src/main/resources/assets/thisnotamod/models/block/fridge_down_blockstate_0.json"
         ]
       },
-      "path": "~/VotVresources/Props/Fridge"
+      "path": "~/VotVresources/objects/Props/Fridge"
     },
     {
       "name": "FridgeDownRBM",
@@ -7274,7 +7274,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/Fridge"
+      "path": "~/VotVresources/objects/Props/Fridge"
     },
     {
       "name": "Patroul",
@@ -7309,7 +7309,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Entity/KerfuOmega"
+      "path": "~/VotVresources/objects/Entity/KerfuOmega"
     },
     {
       "name": "Meow",
@@ -7344,7 +7344,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Entity/KerfuOmega"
+      "path": "~/VotVresources/objects/Entity/KerfuOmega"
     },
     {
       "name": "Follow",
@@ -7379,7 +7379,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Entity/KerfuOmega"
+      "path": "~/VotVresources/objects/Entity/KerfuOmega"
     },
     {
       "name": "StartPoint",
@@ -7401,7 +7401,7 @@
           "src/main/resources/assets/thisnotamod/blockstates/start_point.json"
         ]
       },
-      "path": "~/VotVresources/deliveryDrone"
+      "path": "~/VotVresources/utilities/deliveryDrone"
     },
     {
       "name": "Drone1",
@@ -7417,7 +7417,7 @@
           "src/main/java/net/code/thisnotamod/entity/model/Drone1Model.java"
         ]
       },
-      "path": "~/VotVresources/deliveryDrone"
+      "path": "~/VotVresources/utilities/deliveryDrone"
     },
     {
       "name": "EB1",
@@ -7452,7 +7452,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/EighthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/EighthString"
     },
     {
       "name": "EB2",
@@ -7487,7 +7487,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/EighthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/EighthString"
     },
     {
       "name": "EB3",
@@ -7522,7 +7522,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/EighthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/EighthString"
     },
     {
       "name": "EB4",
@@ -7557,7 +7557,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/EighthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/EighthString"
     },
     {
       "name": "EB5",
@@ -7592,7 +7592,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/EighthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/EighthString"
     },
     {
       "name": "EB6",
@@ -7627,7 +7627,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/EighthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/EighthString"
     },
     {
       "name": "EB7",
@@ -7662,7 +7662,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/EighthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/EighthString"
     },
     {
       "name": "EB8",
@@ -7697,7 +7697,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/EighthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/EighthString"
     },
     {
       "name": "EB9",
@@ -7732,7 +7732,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/server/ServerInterface/Buttons/EighthString"
+      "path": "~/VotVresources/objects/Props/server/ServerInterface/Buttons/EighthString"
     },
     {
       "name": "EndPoint",
@@ -7754,7 +7754,7 @@
           "src/main/resources/assets/thisnotamod/models/custom/end_point_particle.json"
         ]
       },
-      "path": "~/VotVresources/deliveryDrone"
+      "path": "~/VotVresources/utilities/deliveryDrone"
     },
     {
       "name": "EndPoiRBM",
@@ -7785,7 +7785,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/deliveryDrone"
+      "path": "~/VotVresources/utilities/deliveryDrone"
     },
     {
       "name": "PlacedStartPoi",
@@ -7820,7 +7820,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/deliveryDrone"
+      "path": "~/VotVresources/utilities/deliveryDrone"
     },
     {
       "name": "DeliveryGui",
@@ -7835,7 +7835,7 @@
           "src/main/java/net/code/thisnotamod/world/inventory/DeliveryGuiMenu.java"
         ]
       },
-      "path": "~/VotVresources/deliveryDrone"
+      "path": "~/VotVresources/utilities/deliveryDrone"
     },
     {
       "name": "CreateOrder",
@@ -7858,7 +7858,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/deliveryDrone"
+      "path": "~/VotVresources/utilities/deliveryDrone"
     },
     {
       "name": "ShopIntTest",
@@ -7880,7 +7880,7 @@
           "src/main/resources/assets/thisnotamod/models/item/shop_int_test.json"
         ]
       },
-      "path": "~/VotVresources/deliveryDrone"
+      "path": "~/VotVresources/utilities/deliveryDrone"
     },
     {
       "name": "TipOverlayRegistrar",
@@ -7930,7 +7930,7 @@
           "src/main/resources/assets/thisnotamod/models/item/infoicon.json"
         ]
       },
-      "path": "~/VotVresources/Tips"
+      "path": "~/VotVresources/utilities/Tips"
     },
     {
       "name": "HintCall",
@@ -7944,7 +7944,7 @@
         ],
         "dependencies": []
       },
-      "path": "~/VotVresources/Tips"
+      "path": "~/VotVresources/utilities/Tips"
     },
     {
       "name": "Erroricon",
@@ -7958,7 +7958,7 @@
           "src/main/resources/assets/thisnotamod/models/item/erroricon.json"
         ]
       },
-      "path": "~/VotVresources/Tips"
+      "path": "~/VotVresources/utilities/Tips"
     },
     {
       "name": "SignalScanner",
@@ -7972,7 +7972,7 @@
           "src/main/java/net/code/thisnotamod/world/inventory/SignalScannerMenu.java"
         ]
       },
-      "path": "~/VotVresources/Test"
+      "path": "~/VotVresources/utilities/Test"
     },
     {
       "name": "TestSignal",
@@ -7990,7 +7990,7 @@
           "src/main/resources/data/thisnotamod/loot_tables/blocks/test_signal.json"
         ]
       },
-      "path": "~/VotVresources/Test"
+      "path": "~/VotVresources/utilities/Test"
     },
     {
       "name": "Warningicon",
@@ -8004,7 +8004,7 @@
           "src/main/resources/assets/thisnotamod/models/item/warningicon.json"
         ]
       },
-      "path": "~/VotVresources/Tips"
+      "path": "~/VotVresources/utilities/Tips"
     },
     {
       "name": "ScannerSpeed",
@@ -8027,7 +8027,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Commands/modifiers"
+      "path": "~/VotVresources/utilities/Commands/modifiers"
     },
     {
       "name": "ScannerCooldown",
@@ -8050,7 +8050,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Commands/modifiers"
+      "path": "~/VotVresources/utilities/Commands/modifiers"
     },
     {
       "name": "PingerSpeed",
@@ -8073,7 +8073,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Commands/modifiers"
+      "path": "~/VotVresources/utilities/Commands/modifiers"
     },
     {
       "name": "RepairAllServers",
@@ -8096,7 +8096,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Commands/Servers"
+      "path": "~/VotVresources/utilities/Commands/Servers"
     },
     {
       "name": "PingerSuccesChance",
@@ -8119,7 +8119,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Commands/modifiers"
+      "path": "~/VotVresources/utilities/Commands/modifiers"
     },
     {
       "name": "SendInfo",
@@ -8142,7 +8142,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Commands/hints"
+      "path": "~/VotVresources/utilities/Commands/hints"
     },
     {
       "name": "SendWarn",
@@ -8165,7 +8165,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Commands/hints"
+      "path": "~/VotVresources/utilities/Commands/hints"
     },
     {
       "name": "SendError",
@@ -8188,7 +8188,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Commands/hints"
+      "path": "~/VotVresources/utilities/Commands/hints"
     },
     {
       "name": "ClearListS",
@@ -8211,7 +8211,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Commands/Servers"
+      "path": "~/VotVresources/utilities/Commands/Servers"
     },
     {
       "name": "CraftingTableVotv",
@@ -8233,7 +8233,7 @@
           "src/main/java/net/code/thisnotamod/block/CraftingTableVotvBlock.java"
         ]
       },
-      "path": "~/VotVresources/Props/CraftingTable"
+      "path": "~/VotVresources/objects/Props/CraftingTable"
     },
     {
       "name": "CraftingTableR",
@@ -8255,7 +8255,7 @@
           "src/main/java/net/code/thisnotamod/block/renderer/CraftingTableRTileRenderer.java"
         ]
       },
-      "path": "~/VotVresources/Props/CraftingTable"
+      "path": "~/VotVresources/objects/Props/CraftingTable"
     },
     {
       "name": "CrTabPlaced",
@@ -8290,7 +8290,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/CraftingTable"
+      "path": "~/VotVresources/objects/Props/CraftingTable"
     },
     {
       "name": "CrTabLdestr",
@@ -8325,7 +8325,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/CraftingTable"
+      "path": "~/VotVresources/objects/Props/CraftingTable"
     },
     {
       "name": "CrTabRdestr",
@@ -8360,7 +8360,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/CraftingTable"
+      "path": "~/VotVresources/objects/Props/CraftingTable"
     },
     {
       "name": "KerfuWomb",
@@ -8376,7 +8376,7 @@
           "src/main/resources/assets/thisnotamod/models/item/kerfu_womb.json"
         ]
       },
-      "path": "~/VotVresources/Props/KerfuReceip"
+      "path": "~/VotVresources/objects/Props/KerfuReceip"
     },
     {
       "name": "KerfuHand",
@@ -8392,7 +8392,7 @@
           "src/main/java/net/code/thisnotamod/item/KerfuHandItem.java"
         ]
       },
-      "path": "~/VotVresources/Props/KerfuReceip"
+      "path": "~/VotVresources/objects/Props/KerfuReceip"
     },
     {
       "name": "KerfuLeg",
@@ -8408,7 +8408,7 @@
           "src/main/java/net/code/thisnotamod/item/renderer/KerfuLegItemRenderer.java"
         ]
       },
-      "path": "~/VotVresources/Props/KerfuReceip"
+      "path": "~/VotVresources/objects/Props/KerfuReceip"
     },
     {
       "name": "KerfuBody",
@@ -8424,7 +8424,7 @@
           "src/main/java/net/code/thisnotamod/item/model/KerfuBodyItemModel.java"
         ]
       },
-      "path": "~/VotVresources/Props/KerfuReceip"
+      "path": "~/VotVresources/objects/Props/KerfuReceip"
     },
     {
       "name": "KerfuHead",
@@ -8446,7 +8446,7 @@
           "src/main/java/net/code/thisnotamod/block/entity/KerfuHeadTileEntity.java"
         ]
       },
-      "path": "~/VotVresources/Props/KerfuReceip"
+      "path": "~/VotVresources/objects/Props/KerfuReceip"
     },
     {
       "name": "KerfuBlock",
@@ -8468,7 +8468,7 @@
           "src/main/java/net/code/thisnotamod/block/display/KerfuBlockDisplayItem.java"
         ]
       },
-      "path": "~/VotVresources/Props/KerfuReceip"
+      "path": "~/VotVresources/objects/Props/KerfuReceip"
     },
     {
       "name": "KerfuBlockDestr",
@@ -8499,7 +8499,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/KerfuReceip"
+      "path": "~/VotVresources/objects/Props/KerfuReceip"
     },
     {
       "name": "KerfuBlockTopDestr",
@@ -8530,7 +8530,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/KerfuReceip"
+      "path": "~/VotVresources/objects/Props/KerfuReceip"
     },
     {
       "name": "KerfuBlueprint",
@@ -8544,7 +8544,7 @@
           "src/main/resources/assets/thisnotamod/models/item/kerfu_blueprint.json"
         ]
       },
-      "path": "~/VotVresources/Entity/KerfuOmega"
+      "path": "~/VotVresources/objects/Entity/KerfuOmega"
     },
     {
       "name": "PatternDef",
@@ -8583,7 +8583,7 @@
           "src/main/java/net/code/thisnotamod/world/inventory/CraftingTableBaseInterfaceMenu.java"
         ]
       },
-      "path": "~/VotVresources/Props/CraftingTable"
+      "path": "~/VotVresources/objects/Props/CraftingTable"
     },
     {
       "name": "CraftingTableKerfuInterface",
@@ -8598,7 +8598,7 @@
           "src/main/java/net/code/thisnotamod/client/gui/CraftingTableKerfuInterfaceScreen.java"
         ]
       },
-      "path": "~/VotVresources/Props/CraftingTable/Kerf"
+      "path": "~/VotVresources/objects/Props/CraftingTable/Kerf"
     },
     {
       "name": "KerfIntOpen",
@@ -8617,7 +8617,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/CraftingTable"
+      "path": "~/VotVresources/objects/Props/CraftingTable"
     },
     {
       "name": "CraftTabSlot0Changed",
@@ -8652,7 +8652,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/CraftingTable"
+      "path": "~/VotVresources/objects/Props/CraftingTable"
     },
     {
       "name": "OpenKerfInt",
@@ -8666,7 +8666,7 @@
         ],
         "dependencies": []
       },
-      "path": "~/VotVresources/Props/CraftingTable/Kerf"
+      "path": "~/VotVresources/objects/Props/CraftingTable/Kerf"
     },
     {
       "name": "KerfInvSlot2Proc",
@@ -8685,7 +8685,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/CraftingTable/Kerf"
+      "path": "~/VotVresources/objects/Props/CraftingTable/Kerf"
     },
     {
       "name": "KerfInvSlot3Proc",
@@ -8704,7 +8704,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/CraftingTable/Kerf"
+      "path": "~/VotVresources/objects/Props/CraftingTable/Kerf"
     },
     {
       "name": "KerfInvSlot4Proc",
@@ -8723,7 +8723,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/CraftingTable/Kerf"
+      "path": "~/VotVresources/objects/Props/CraftingTable/Kerf"
     },
     {
       "name": "KerfInvSlot5Proc",
@@ -8742,7 +8742,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/CraftingTable/Kerf"
+      "path": "~/VotVresources/objects/Props/CraftingTable/Kerf"
     },
     {
       "name": "KerfInvSlot6Proc",
@@ -8761,7 +8761,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/CraftingTable/Kerf"
+      "path": "~/VotVresources/objects/Props/CraftingTable/Kerf"
     },
     {
       "name": "KerfInvSlot7Proc",
@@ -8780,7 +8780,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/CraftingTable/Kerf"
+      "path": "~/VotVresources/objects/Props/CraftingTable/Kerf"
     },
     {
       "name": "KerfInvSlot8Proc",
@@ -8799,7 +8799,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/CraftingTable/Kerf"
+      "path": "~/VotVresources/objects/Props/CraftingTable/Kerf"
     },
     {
       "name": "CreateDataMap",
@@ -8818,7 +8818,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/CraftingTable"
+      "path": "~/VotVresources/objects/Props/CraftingTable"
     },
     {
       "name": "KerfuCraftRecalcOutput",
@@ -8832,7 +8832,7 @@
         ],
         "dependencies": []
       },
-      "path": "~/VotVresources/Props/CraftingTable/Kerf"
+      "path": "~/VotVresources/objects/Props/CraftingTable/Kerf"
     },
     {
       "name": "WorktableOpenBaseOnMaster",
@@ -8867,7 +8867,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/CraftingTable"
+      "path": "~/VotVresources/objects/Props/CraftingTable"
     },
     {
       "name": "WorktableDropAndBreak",
@@ -8881,7 +8881,7 @@
         ],
         "dependencies": []
       },
-      "path": "~/VotVresources/Props/CraftingTable"
+      "path": "~/VotVresources/objects/Props/CraftingTable"
     },
     {
       "name": "IdleMode",
@@ -8912,7 +8912,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Entity/KerfuOmega"
+      "path": "~/VotVresources/objects/Entity/KerfuOmega"
     },
     {
       "name": "OKerfoff",
@@ -8947,7 +8947,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Entity/KerfuOmega"
+      "path": "~/VotVresources/objects/Entity/KerfuOmega"
     },
     {
       "name": "KerfuBlockRBM",
@@ -8978,7 +8978,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Props/KerfuReceip"
+      "path": "~/VotVresources/objects/Props/KerfuReceip"
     },
     {
       "name": "SignalTuner",
@@ -8992,7 +8992,7 @@
           "src/main/java/net/code/thisnotamod/client/gui/SignalTunerScreen.java"
         ]
       },
-      "path": "~/VotVresources/Test"
+      "path": "~/VotVresources/utilities/Test"
     },
     {
       "name": "DetectorSpeed",
@@ -9015,7 +9015,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Commands/modifiers"
+      "path": "~/VotVresources/utilities/Commands/modifiers"
     },
     {
       "name": "DownloadSpeed",
@@ -9038,7 +9038,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Commands/modifiers"
+      "path": "~/VotVresources/utilities/Commands/modifiers"
     },
     {
       "name": "PolarityFilterWidth",
@@ -9061,7 +9061,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Commands/modifiers"
+      "path": "~/VotVresources/utilities/Commands/modifiers"
     },
     {
       "name": "FrequencyFilterWidth",
@@ -9084,7 +9084,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Commands/modifiers"
+      "path": "~/VotVresources/utilities/Commands/modifiers"
     },
     {
       "name": "SignalLinked",
@@ -9098,7 +9098,7 @@
         ],
         "dependencies": []
       },
-      "path": "~/VotVresources/Test"
+      "path": "~/VotVresources/utilities/Test"
     },
     {
       "name": "PanelPlayback",
@@ -9112,7 +9112,7 @@
           "src/main/java/net/code/thisnotamod/client/gui/PanelPlaybackScreen.java"
         ]
       },
-      "path": "~/VotVresources/Test"
+      "path": "~/VotVresources/utilities/Test"
     },
     {
       "name": "TestPlayback",
@@ -9130,7 +9130,7 @@
           "src/main/resources/data/thisnotamod/loot_tables/blocks/test_playback.json"
         ]
       },
-      "path": "~/VotVresources/Test"
+      "path": "~/VotVresources/utilities/Test"
     },
     {
       "name": "MusicDiscVotvHalloween",
@@ -9144,7 +9144,7 @@
           "src/main/resources/assets/thisnotamod/models/item/music_disc_votv_halloween.json"
         ]
       },
-      "path": "~/VotVresources/musicDiscs"
+      "path": "~/VotVresources/objects/Props/musicDiscs"
     },
     {
       "name": "DebugMenu",
@@ -9158,7 +9158,7 @@
           "src/main/java/net/code/thisnotamod/client/gui/DebugMenuScreen.java"
         ]
       },
-      "path": "~/VotVresources/DebugMenu"
+      "path": "~/VotVresources/utilities/DebugMenu"
     },
     {
       "name": "OpenDebugMenuKeybind",
@@ -9193,7 +9193,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/DebugMenu"
+      "path": "~/VotVresources/utilities/DebugMenu"
     },
     {
       "name": "OpenDebugMenu",
@@ -9206,7 +9206,7 @@
           "src/main/java/net/code/thisnotamod/network/OpenDebugMenuMessage.java"
         ]
       },
-      "path": "~/VotVresources/DebugMenu"
+      "path": "~/VotVresources/utilities/DebugMenu"
     },
     {
       "name": "AllowDebugTrue",
@@ -9229,7 +9229,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Commands/debug"
+      "path": "~/VotVresources/utilities/Commands/debug"
     },
     {
       "name": "AllowDebugFalse",
@@ -9248,7 +9248,7 @@
           }
         ]
       },
-      "path": "~/VotVresources/Commands/debug"
+      "path": "~/VotVresources/utilities/Commands/debug"
     },
     {
       "name": "Drive",
@@ -9264,153 +9264,7 @@
           "src/main/resources/assets/thisnotamod/models/item/drive.json"
         ]
       },
-      "path": "~/VotVresources/Props/drive"
-    },
-    {
-      "name": "Lvl0",
-      "type": "procedure",
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "lvl_0",
-      "metadata": {
-        "files": [
-          "src/main/java/net/code/thisnotamod/procedures/Lvl0Procedure.java"
-        ],
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
-          }
-        ]
-      },
-      "path": "~/VotVresources/Props/drive"
-    },
-    {
-      "name": "Lvl1",
-      "type": "procedure",
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "lvl_1",
-      "metadata": {
-        "files": [
-          "src/main/java/net/code/thisnotamod/procedures/Lvl1Procedure.java"
-        ],
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
-          }
-        ]
-      },
-      "path": "~/VotVresources/Props/drive"
-    },
-    {
-      "name": "Lvl1copy",
-      "type": "procedure",
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "lvl_1copy",
-      "metadata": {
-        "files": [
-          "src/main/java/net/code/thisnotamod/procedures/Lvl1copyProcedure.java"
-        ],
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
-          }
-        ]
-      },
-      "path": "~/VotVresources/Props/drive"
-    },
-    {
-      "name": "VDrive",
-      "type": "command",
-      "compiles": true,
-      "locked_code": false,
-      "registry_name": "v_drive",
-      "metadata": {
-        "files": [
-          "src/main/java/net/code/thisnotamod/command/VDriveCommand.java"
-        ]
-      },
-      "path": "~/VotVresources/Props/drive"
-    },
-    {
-      "name": "Lvl2",
-      "type": "procedure",
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "lvl_2",
-      "metadata": {
-        "files": [
-          "src/main/java/net/code/thisnotamod/procedures/Lvl2Procedure.java"
-        ],
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
-          }
-        ]
-      },
-      "path": "~/VotVresources/Props/drive"
-    },
-    {
-      "name": "Lvl3",
-      "type": "procedure",
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "lvl_3",
-      "metadata": {
-        "files": [
-          "src/main/java/net/code/thisnotamod/procedures/Lvl3Procedure.java"
-        ],
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
-          }
-        ]
-      },
-      "path": "~/VotVresources/Props/drive"
-    },
-    {
-      "name": "Lvl2copy",
-      "type": "procedure",
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "lvl_2copy",
-      "metadata": {
-        "files": [
-          "src/main/java/net/code/thisnotamod/procedures/Lvl2copyProcedure.java"
-        ],
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
-          }
-        ]
-      },
-      "path": "~/VotVresources/Props/drive"
-    },
-    {
-      "name": "Lvl3copy",
-      "type": "procedure",
-      "compiles": true,
-      "locked_code": true,
-      "registry_name": "lvl_3copy",
-      "metadata": {
-        "files": [
-          "src/main/java/net/code/thisnotamod/procedures/Lvl3copyProcedure.java"
-        ],
-        "dependencies": [
-          {
-            "name": "entity",
-            "type": "entity"
-          }
-        ]
-      },
-      "path": "~/VotVresources/Props/drive"
+      "path": "~/VotVresources/objects/Props/drive"
     }
   ],
   "variable_elements": [
@@ -10516,12 +10370,14 @@
       "item.modname.apotheosis_guidebook": "Иконка гайдбука Apotheosis ",
       "signalmanager.ui.tuner.value.low": "низкое",
       "gui.thisnotamod.server_interface.first": "",
+      "signalmanager.ui.tuner.butphone": "Не работает",
       "block.thisnotamod.term_rt": "Терминал",
       "block.thisnotamod.kerfu_block": "Керфур-О",
       "signalmanager.ui.tuner.value.middle": "среднее",
       "block.thisnotamod.votv_locker": "Шкафчик",
       "biome.thisnotamod.voices_void": "Voices of the Void",
       "gui.thisnotamod.passlock_gui.button_000": "0",
+      "signalmanager.ui.tuner.butsave": "Сохранить сигнал",
       "subtitles.wc_off": "",
       "block.thisnotamod.concrete_wall_right": "Стена вариант 2",
       "subtitles.startup": "",
@@ -10805,12 +10661,14 @@
       "item.modname.apotheosis_guidebook": "Apotheosis Guidebook",
       "signalmanager.ui.tuner.value.low": "low",
       "gui.thisnotamod.server_interface.first": "",
+      "signalmanager.ui.tuner.butphone": "Not working",
       "block.thisnotamod.term_rt": "Terminal",
       "block.thisnotamod.kerfu_block": "Kerfur-O",
       "signalmanager.ui.tuner.value.middle": "middle",
       "block.thisnotamod.votv_locker": "Шкафчик v",
       "biome.thisnotamod.voices_void": "Voices of the Void",
       "gui.thisnotamod.passlock_gui.button_000": "0",
+      "signalmanager.ui.tuner.butsave": "Save signal",
       "subtitles.wc_off": "",
       "block.thisnotamod.concrete_wall_right": "Стена вариант 2",
       "subtitles.startup": "",
@@ -11003,221 +10861,231 @@
         "name": "VotVresources",
         "children": [
           {
-            "name": "Props",
+            "name": "objects",
             "children": [
               {
-                "name": "Door",
-                "children": []
-              },
-              {
-                "name": "Locker",
-                "children": []
-              },
-              {
-                "name": "Window",
-                "children": []
-              },
-              {
-                "name": "table",
-                "children": []
-              },
-              {
-                "name": "Lamp",
-                "children": []
-              },
-              {
-                "name": "scope",
-                "children": []
-              },
-              {
-                "name": "blocks",
-                "children": []
-              },
-              {
-                "name": "radioScope",
-                "children": []
-              },
-              {
-                "name": "Terminal",
-                "children": []
-              },
-              {
-                "name": "server",
+                "name": "Props",
                 "children": [
                   {
-                    "name": "ServerInterface",
+                    "name": "Door",
+                    "children": []
+                  },
+                  {
+                    "name": "Locker",
+                    "children": []
+                  },
+                  {
+                    "name": "Window",
+                    "children": []
+                  },
+                  {
+                    "name": "table",
+                    "children": []
+                  },
+                  {
+                    "name": "Lamp",
+                    "children": []
+                  },
+                  {
+                    "name": "scope",
+                    "children": []
+                  },
+                  {
+                    "name": "blocks",
+                    "children": []
+                  },
+                  {
+                    "name": "radioScope",
+                    "children": []
+                  },
+                  {
+                    "name": "Terminal",
+                    "children": []
+                  },
+                  {
+                    "name": "server",
                     "children": [
                       {
-                        "name": "Examples",
-                        "children": []
-                      },
-                      {
-                        "name": "Buttons",
+                        "name": "ServerInterface",
                         "children": [
                           {
-                            "name": "FirstString",
+                            "name": "Examples",
                             "children": []
                           },
                           {
-                            "name": "SecondString",
-                            "children": []
-                          },
-                          {
-                            "name": "ThirdString",
-                            "children": []
-                          },
-                          {
-                            "name": "FourthString",
-                            "children": []
-                          },
-                          {
-                            "name": "FifthString",
-                            "children": []
-                          },
-                          {
-                            "name": "SixthString",
-                            "children": []
-                          },
-                          {
-                            "name": "SeventhString",
-                            "children": []
-                          },
-                          {
-                            "name": "EighthString",
-                            "children": []
+                            "name": "Buttons",
+                            "children": [
+                              {
+                                "name": "FirstString",
+                                "children": []
+                              },
+                              {
+                                "name": "SecondString",
+                                "children": []
+                              },
+                              {
+                                "name": "ThirdString",
+                                "children": []
+                              },
+                              {
+                                "name": "FourthString",
+                                "children": []
+                              },
+                              {
+                                "name": "FifthString",
+                                "children": []
+                              },
+                              {
+                                "name": "SixthString",
+                                "children": []
+                              },
+                              {
+                                "name": "SeventhString",
+                                "children": []
+                              },
+                              {
+                                "name": "EighthString",
+                                "children": []
+                              }
+                            ]
                           }
                         ]
                       }
                     ]
-                  }
-                ]
-              },
-              {
-                "name": "radar",
-                "children": []
-              },
-              {
-                "name": "tableKitchen",
-                "children": []
-              },
-              {
-                "name": "Passlock",
-                "children": [
+                  },
                   {
-                    "name": "PasslockInput",
+                    "name": "radar",
+                    "children": []
+                  },
+                  {
+                    "name": "tableKitchen",
+                    "children": []
+                  },
+                  {
+                    "name": "Passlock",
+                    "children": [
+                      {
+                        "name": "PasslockInput",
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "passChange",
+                    "children": [
+                      {
+                        "name": "passChangeInput",
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Vent",
+                    "children": []
+                  },
+                  {
+                    "name": "WC",
+                    "children": []
+                  },
+                  {
+                    "name": "switch",
+                    "children": []
+                  },
+                  {
+                    "name": "LampRound",
+                    "children": []
+                  },
+                  {
+                    "name": "warning_lamp",
+                    "children": []
+                  },
+                  {
+                    "name": "argemPlush",
+                    "children": []
+                  },
+                  {
+                    "name": "Fridge",
+                    "children": []
+                  },
+                  {
+                    "name": "CraftingTable",
+                    "children": [
+                      {
+                        "name": "Kerf",
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "name": "KerfuReceip",
+                    "children": []
+                  },
+                  {
+                    "name": "drive",
+                    "children": []
+                  },
+                  {
+                    "name": "musicDiscs",
                     "children": []
                   }
                 ]
               },
               {
-                "name": "passChange",
+                "name": "Entity",
                 "children": [
                   {
-                    "name": "passChangeInput",
+                    "name": "KerfuOmega",
                     "children": []
                   }
                 ]
-              },
-              {
-                "name": "Vent",
-                "children": []
-              },
-              {
-                "name": "WC",
-                "children": []
-              },
-              {
-                "name": "switch",
-                "children": []
-              },
-              {
-                "name": "LampRound",
-                "children": []
-              },
-              {
-                "name": "warning_lamp",
-                "children": []
-              },
-              {
-                "name": "argemPlush",
-                "children": []
-              },
-              {
-                "name": "Fridge",
-                "children": []
-              },
-              {
-                "name": "CraftingTable",
-                "children": [
-                  {
-                    "name": "Kerf",
-                    "children": []
-                  }
-                ]
-              },
-              {
-                "name": "KerfuReceip",
-                "children": []
-              },
-              {
-                "name": "drive",
-                "children": []
               }
             ]
           },
           {
-            "name": "Entity",
+            "name": "utilities",
             "children": [
               {
-                "name": "KerfuOmega",
+                "name": "DebugMenu",
+                "children": []
+              },
+              {
+                "name": "Test",
+                "children": []
+              },
+              {
+                "name": "Tips",
+                "children": []
+              },
+              {
+                "name": "Commands",
+                "children": [
+                  {
+                    "name": "modifiers",
+                    "children": []
+                  },
+                  {
+                    "name": "hints",
+                    "children": []
+                  },
+                  {
+                    "name": "debug",
+                    "children": []
+                  },
+                  {
+                    "name": "weather",
+                    "children": []
+                  },
+                  {
+                    "name": "Servers",
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "name": "deliveryDrone",
                 "children": []
               }
             ]
-          },
-          {
-            "name": "Commands",
-            "children": [
-              {
-                "name": "modifiers",
-                "children": []
-              },
-              {
-                "name": "hints",
-                "children": []
-              },
-              {
-                "name": "debug",
-                "children": []
-              },
-              {
-                "name": "weather",
-                "children": []
-              },
-              {
-                "name": "Servers",
-                "children": []
-              }
-            ]
-          },
-          {
-            "name": "musicDiscs",
-            "children": []
-          },
-          {
-            "name": "deliveryDrone",
-            "children": []
-          },
-          {
-            "name": "Tips",
-            "children": []
-          },
-          {
-            "name": "Test",
-            "children": []
-          },
-          {
-            "name": "DebugMenu",
-            "children": []
           }
         ]
       }
