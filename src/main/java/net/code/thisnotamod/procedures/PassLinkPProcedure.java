@@ -1,8 +1,6 @@
 package net.code.thisnotamod.procedures;
 
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.network.chat.Component;
 
 import net.code.thisnotamod.network.ThisnotamodModVariables;
 
@@ -18,11 +16,17 @@ public class PassLinkPProcedure {
 					capability.syncPlayerVariables(entity);
 				});
 			}
-			if (entity instanceof Player _player && !_player.level().isClientSide())
-				_player.displayClientMessage(Component.literal("\u00A7a\u0417\u0430\u043C\u043E\u043A \u043F\u0440\u0438\u0432\u044F\u0437\u0430\u043D!"), true);
+			final String _txt = "Замок привязан!";
+			net.minecraft.world.level.Level _lvl = entity.level();
+			if (_lvl != null && !_lvl.isClientSide()) {
+				net.code.thisnotamod.TipApi.show(_lvl, entity, _txt, new net.minecraft.world.item.ItemStack(net.code.thisnotamod.init.ThisnotamodModItems.INFOICON.get()), new net.minecraft.resources.ResourceLocation("thisnotamod", "hint"));
+			}
 		} else {
-			if (entity instanceof Player _player && !_player.level().isClientSide())
-				_player.displayClientMessage(Component.literal("\u00A74\u041C\u043E\u0436\u043D\u043E \u043F\u0440\u0438\u0432\u044F\u0437\u0430\u0442\u044C \u0442\u043E\u043B\u044C\u043A\u043E 1 \u0437\u0430\u043C\u043E\u043A!"), true);
+			final String _txt = "Можно привязать только 1 замок!";
+			net.minecraft.world.level.Level _lvl = entity.level();
+			if (_lvl != null && !_lvl.isClientSide()) {
+				net.code.thisnotamod.TipApi.show(_lvl, entity, _txt, new net.minecraft.world.item.ItemStack(net.code.thisnotamod.init.ThisnotamodModItems.ERRORICON.get()), new net.minecraft.resources.ResourceLocation("thisnotamod", "notif_error"));
+			}
 		}
 	}
 }

@@ -34,9 +34,11 @@ public class FollowProcedure {
 			_datEntSetL.getEntityData().set(KerfuOmegaEntity.DATA_DATA_idle, false);
 		if (entity instanceof Player _player)
 			_player.closeContainer();
-		Minecraft mc = Minecraft.getInstance();
-		if (mc != null && mc.level != null && mc.player != null) {
-			CustomTipOverlay.queueTip(Component.literal("Следую за вами!"), new ItemStack(ThisnotamodModItems.INFOICON.get()), new ResourceLocation("thisnotamod", "hint"));
-		}
+		CustomTipOverlay.queueTip(
+    Component.literal("Следую за вами!"),
+    new ItemStack(ThisnotamodModItems.INFOICON.get()),
+    new ResourceLocation("thisnotamod", "hint")
+);
+
 	}
 }

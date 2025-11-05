@@ -1,8 +1,6 @@
 package net.code.thisnotamod.procedures;
 
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.network.chat.Component;
 
 import net.code.thisnotamod.network.ThisnotamodModVariables;
 
@@ -17,7 +15,10 @@ public class PassLinkProcedure {
 				capability.syncPlayerVariables(entity);
 			});
 		}
-		if (entity instanceof Player _player && !_player.level().isClientSide())
-			_player.displayClientMessage(Component.literal("\u00A7a\u0414\u0432\u0435\u0440\u044C \u043F\u0440\u0438\u0432\u044F\u0437\u0430\u043D\u0430!"), true);
+		final String _txt = "Дверь привязана!";
+		net.minecraft.world.level.Level _lvl = entity.level();
+		if (_lvl != null && !_lvl.isClientSide()) {
+			net.code.thisnotamod.TipApi.show(_lvl, entity, _txt, new net.minecraft.world.item.ItemStack(net.code.thisnotamod.init.ThisnotamodModItems.INFOICON.get()), new net.minecraft.resources.ResourceLocation("thisnotamod", "hint"));
+		}
 	}
 }

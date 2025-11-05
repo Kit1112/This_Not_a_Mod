@@ -1,16 +1,10 @@
 package net.code.thisnotamod.procedures;
 
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.network.chat.Component;
 import net.minecraft.commands.arguments.MessageArgument;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.client.Minecraft;
 
 import net.code.thisnotamod.network.ThisnotamodModVariables;
-import net.code.thisnotamod.init.ThisnotamodModItems;
-import net.code.thisnotamod.CustomTipOverlay;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.context.CommandContext;
@@ -27,16 +21,18 @@ public class SendErrorProcedure {
 			}
 		}).getMessage();
 		ThisnotamodModVariables.MapVariables.get(world).syncData(world);
-		Minecraft mc = Minecraft.getInstance();
-		if (mc != null && mc.level != null && mc.player != null) {
-			Component text;
-			try {
-				// теперь аргумент — MessageArgument, а не StringArgumentType
-				text = MessageArgument.getMessage(arguments, "error_text");
-			} catch (Exception e) {
-				text = Component.literal("Ошибка чтения ввода.");
-			}
-			CustomTipOverlay.queueTip(text, new ItemStack(ThisnotamodModItems.ERRORICON.get()), new ResourceLocation("thisnotamod", "notif_error"));
+		String _txt;
+		try {
+			_txt = net.minecraft.commands.arguments.MessageArgument.getMessage(arguments, "error_text").getString();
+		} catch (com.mojang.brigadier.exceptions.CommandSyntaxException e) {
+			_txt = "Ошибка чтения ввода.";
 		}
+		// игрок-получатель (если команда из консоли, будет null и подсказка не отправится)
+		net.minecraft.world.entity.Entity _ctx = null;
+		try {
+			_ctx = arguments.getSource().getEntity();
+		} catch (Exception ignored) {
+		}
+		net.code.thisnotamod.TipApi.show(world, _ctx, _txt, new net.minecraft.world.item.ItemStack(net.code.thisnotamod.init.ThisnotamodModItems.ERRORICON.get()), new net.minecraft.resources.ResourceLocation("thisnotamod", "notif_error"));
 	}
 }

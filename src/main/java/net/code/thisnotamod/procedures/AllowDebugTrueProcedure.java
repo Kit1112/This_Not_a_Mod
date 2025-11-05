@@ -6,18 +6,20 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.network.chat.Component;
-import net.minecraft.client.Minecraft;
 
 import net.code.thisnotamod.network.ThisnotamodModVariables;
 import net.code.thisnotamod.init.ThisnotamodModItems;
 import net.code.thisnotamod.ThisnotamodMod;
-import net.code.thisnotamod.CustomTipOverlay;
 
+/**
+ * ВАЖНО: без клиентских классов. Показ подсказки через TipApi (работает и на сервере, и на клиенте).
+ */
 public class AllowDebugTrueProcedure {
 	public static void execute(LevelAccessor world, Entity entity) {
 		if (entity == null)
 			return;
+
+		// записываем флаг
 		{
 			boolean _setval = true;
 			entity.getCapability(ThisnotamodModVariables.PLAYER_VARIABLES_CAPABILITY, null).ifPresent(capability -> {
@@ -25,16 +27,29 @@ public class AllowDebugTrueProcedure {
 				capability.syncPlayerVariables(entity);
 			});
 		}
+
+		// снимаем эффект
 		if (entity instanceof LivingEntity _entity)
 			_entity.removeEffect(MobEffects.DOLPHINS_GRACE);
-		Minecraft mc = Minecraft.getInstance();
-		if (mc != null && mc.level != null && mc.player != null) {
-			CustomTipOverlay.queueTip(Component.literal("Отладка включена."), new ItemStack(ThisnotamodModItems.INFOICON.get()), new ResourceLocation("thisnotamod", "hint"));
-		}
+
+		// подсказка сразу
+		net.code.thisnotamod.TipApi.show(
+				world,
+				entity,
+				"Отладка включена.",
+				new ItemStack(ThisnotamodModItems.INFOICON.get()),
+				new ResourceLocation("thisnotamod", "hint")
+		);
+
+		// подсказка через 20 тиков (на сервере сработает отправка S2C)
 		ThisnotamodMod.queueServerWork(20, () -> {
-			if (mc != null && mc.level != null && mc.player != null) {
-				CustomTipOverlay.queueTip(Component.literal("Клавиша отладки по умолчанию - DELETE"), new ItemStack(ThisnotamodModItems.INFOICON.get()), new ResourceLocation("thisnotamod", "hint"));
-			}
+			net.code.thisnotamod.TipApi.show(
+					world,
+					entity,
+					"Клавиша отладки по умолчанию - DELETE",
+					new ItemStack(ThisnotamodModItems.INFOICON.get()),
+					new ResourceLocation("thisnotamod", "hint")
+			);
 		});
 	}
 }

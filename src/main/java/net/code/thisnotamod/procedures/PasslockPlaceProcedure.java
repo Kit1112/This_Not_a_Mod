@@ -8,9 +8,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.network.chat.Component;
 import net.minecraft.core.BlockPos;
 
 import net.code.thisnotamod.network.ThisnotamodModVariables;
@@ -32,8 +30,12 @@ public class PasslockPlaceProcedure {
 				Block.dropResources(world.getBlockState(_pos), world, BlockPos.containing(x, y, z), null);
 				world.destroyBlock(_pos, false);
 			}
-			if (entity instanceof Player _player && !_player.level().isClientSide())
-				_player.displayClientMessage(Component.literal("\u00A74\u0421\u043D\u0430\u0447\u0430\u043B\u0430 \u043F\u0440\u0438\u0432\u044F\u0436\u0438 \u0445\u043E\u0442\u044F \u0431\u044B 1 \u0434\u0432\u0435\u0440\u044C!"), true);
+			final String _txt = "Сначала привяжи хотя бы 1 дверь!";
+			// зови только на сервере (TipApi сам разошлёт на клиент)
+			if (world instanceof net.minecraft.world.level.Level _lvl && !_lvl.isClientSide()) {
+				net.minecraft.world.entity.Entity _ctx = entity; // в этой процедуре entity уже есть и не null (ты проверяешь в начале)
+				net.code.thisnotamod.TipApi.show(world, _ctx, _txt, new net.minecraft.world.item.ItemStack(net.code.thisnotamod.init.ThisnotamodModItems.ERRORICON.get()), new net.minecraft.resources.ResourceLocation("thisnotamod", "notif_error"));
+			}
 		} else {
 			if (!world.isClientSide()) {
 				BlockPos _bp = BlockPos.containing(x, y, z);

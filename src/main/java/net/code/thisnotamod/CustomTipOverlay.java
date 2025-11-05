@@ -12,6 +12,8 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
 
 import java.util.*;
 
@@ -55,40 +57,50 @@ public class CustomTipOverlay implements IGuiOverlay {
         queueTip(text, icon, new ResourceLocation("thisnotamod", "hint"));
     }
 
-    /** Показать подсказку с кастомным звуком (например "thisnotamod:rare_hint") */
-    public static void queueTip(Component text, ItemStack icon, ResourceLocation soundId) {
-        Minecraft mc = Minecraft.getInstance();
-        if (mc == null || mc.level == null) return;
+    // ПУБЛИЧНЫЕ API (КЛИЕНТ ТОЛЬКО!)
+public static void queueTip(Component text, ItemStack icon, ResourceLocation soundId) {
+    Minecraft mc = Minecraft.getInstance();
+    if (mc == null || mc.level == null) return;
 
-        // --- антиспам ---
+    final Component t = (text == null ? Component.literal("") : text);
+    final ItemStack ic = (icon == null ? ItemStack.EMPTY : icon.copy());
+    final ResourceLocation snd = (soundId == null ? new ResourceLocation("thisnotamod", "hint") : soundId);
+
+    // все действия — на рендер-треде
+    mc.execute(() -> {
+        if (mc.level == null) return;
+
+        // антиспам только для звука
         long now = System.currentTimeMillis();
-        String key = makeKey(text, icon, soundId);
+        String key = makeKey(t, ic, snd);
+        boolean allowSound = true;
         Long lastTime = INSTANCE.lastShown.get(key);
         if (lastTime != null && now - lastTime < MIN_INTERVAL_MS) {
-            return; // слишком рано
+            allowSound = false;
+        } else {
+            INSTANCE.lastShown.put(key, now);
         }
-        INSTANCE.lastShown.put(key, now);
 
         Font font = mc.font;
-        int textW = font.width(text);
+        int textW = font.width(t);
         int textH = 9;
-
-        // базовая высота и симметричное "сжатие" до 75%
         int baseHeight = Math.max(ICON_SIZE, textH) + PADDING * 2;
         int cut = (int) ((baseHeight - baseHeight * 0.75f) / 2f);
         int height = baseHeight - cut * 2;
-
         int width = PADDING + ICON_SIZE + PADDING + textW + PADDING;
 
-        Tip tip = new Tip(text, icon == null ? ItemStack.EMPTY : icon.copy(), now, width, height, soundId);
+        Tip tip = new Tip(t, ic, now, width, height, snd);
 
         if (INSTANCE.active.size() < MAX_ACTIVE) {
-            INSTANCE.active.addFirst(tip); // новая становится нижней
-            INSTANCE.playHintSound(tip.soundId(), 0, 1.0f);
+            INSTANCE.active.addFirst(tip);
+            if (allowSound) INSTANCE.playHintSound(tip.soundId(), 0, 1.0f);
         } else {
             INSTANCE.waiting.addLast(tip);
         }
-    }
+    });
+}
+
+
 
     private static String makeKey(Component text, ItemStack icon, ResourceLocation soundId) {
         String iconStr = icon == null ? "empty" : icon.getItem().toString();

@@ -13,7 +13,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.network.chat.Component;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.core.BlockPos;
 
@@ -85,23 +84,6 @@ public class EB3Procedure {
 				} else {
 					_level.playLocalSound(x, y, z, ForgeRegistries.SOUND_EVENTS.getValue(new ResourceLocation("thisnotamod:passlock_deny")), SoundSource.BLOCKS, 1, 1, false);
 				}
-			}
-			if ((entity.getCapability(ThisnotamodModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new ThisnotamodModVariables.PlayerVariables())).debug) {
-				if (entity instanceof Player _player && !_player.level().isClientSide())
-					_player.displayClientMessage(Component.literal(("Check1: " + (entity.getCapability(ThisnotamodModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new ThisnotamodModVariables.PlayerVariables())).CheckBox1 + ", " + "Check2: "
-							+ (entity.getCapability(ThisnotamodModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new ThisnotamodModVariables.PlayerVariables())).CheckBox2 + ", " + "Check3: "
-							+ (entity.getCapability(ThisnotamodModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new ThisnotamodModVariables.PlayerVariables())).CheckBox3 + ", " + "Check4: "
-							+ (entity.getCapability(ThisnotamodModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new ThisnotamodModVariables.PlayerVariables())).CheckBox4 + ", " + "Check5: "
-							+ (entity.getCapability(ThisnotamodModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new ThisnotamodModVariables.PlayerVariables())).CheckBox5 + ", " + "Check6: "
-							+ (entity.getCapability(ThisnotamodModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new ThisnotamodModVariables.PlayerVariables())).CheckBox6 + ", " + "Check7: "
-							+ (entity.getCapability(ThisnotamodModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new ThisnotamodModVariables.PlayerVariables())).CheckBox7 + ", " + "Check8: "
-							+ (entity.getCapability(ThisnotamodModVariables.PLAYER_VARIABLES_CAPABILITY, null).orElse(new ThisnotamodModVariables.PlayerVariables())).CheckBox8)), false);
-				if (entity instanceof Player _player && !_player.level().isClientSide())
-					_player.displayClientMessage(Component.literal(("\u041F\u0440\u0438\u043C\u0435\u0440 1: " + ThisnotamodModVariables.exampleArray.get(0) + " \u041F\u0440\u0438\u043C\u0435\u0440 2: " + ThisnotamodModVariables.exampleArray.get(1)
-							+ " \u041F\u0440\u0438\u043C\u0435\u0440 3: " + ThisnotamodModVariables.exampleArray.get(2) + " \u041F\u0440\u0438\u043C\u0435\u0440 4: " + ThisnotamodModVariables.exampleArray.get(3))), false);
-				if (entity instanceof Player _player && !_player.level().isClientSide())
-					_player.displayClientMessage(Component.literal(("\u041E\u0442\u0432\u0435\u0442 1: " + ThisnotamodModVariables.resultArray.get(0) + " \u041E\u0442\u0432\u0435\u0442 2: " + ThisnotamodModVariables.resultArray.get(1)
-							+ " \u041E\u0442\u0432\u0435\u0442 3: " + ThisnotamodModVariables.resultArray.get(2) + " \u041E\u0442\u0432\u0435\u0442 4: " + ThisnotamodModVariables.resultArray.get(3))), false);
 			}
 		}
 	}
