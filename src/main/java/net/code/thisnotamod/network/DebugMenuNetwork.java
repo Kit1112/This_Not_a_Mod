@@ -1,12 +1,13 @@
 package net.code.thisnotamod.network;
 
-import net.code.thisnotamod.client.gui.DebugMenuScreen;
-import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.network.PacketDistributor;
 import net.code.thisnotamod.ThisnotamodMod;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.fml.DistExecutor;
 
 import java.util.function.Supplier;
 
@@ -15,6 +16,16 @@ import java.util.function.Supplier;
  * Автоинициализация статическим блоком — без правок основного класса.
  */
 public class DebugMenuNetwork {
+	@OnlyIn(Dist.CLIENT)
+private static final class ClientHandlers {
+    static void applyInitStateClient(S2CInitState m) {
+        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+        if (mc.screen instanceof net.code.thisnotamod.client.gui.DebugMenuScreen screen) {
+            screen.applyInitState(m);
+        }
+    }
+}
+
     // Используем канал MCreator
     public static void sendToServer(Object msg) {
         ThisnotamodMod.PACKET_HANDLER.sendToServer(msg);
@@ -378,13 +389,15 @@ public class DebugMenuNetwork {
             return s;
         }
 
-        public static void handle(S2CInitState m, Supplier<NetworkEvent.Context> ctx) {
-            ctx.get().enqueueWork(() -> {
-                if (Minecraft.getInstance().screen instanceof DebugMenuScreen screen) {
-                    screen.applyInitState(m);
-                }
-            });
-            ctx.get().setPacketHandled(true);
-        }
+public static void handle(S2CInitState m, Supplier<NetworkEvent.Context> ctx) {
+    ctx.get().enqueueWork(() -> {
+        final S2CInitState msg = m; // фиксируем ссылку, чтобы ничего лишнего не захватывать
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> (Runnable) () -> ClientHandlers.applyInitStateClient(msg));
+    });
+    ctx.get().setPacketHandled(true);
+}
+
+
+
     }
 }

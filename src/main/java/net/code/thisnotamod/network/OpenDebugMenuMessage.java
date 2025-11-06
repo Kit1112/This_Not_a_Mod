@@ -41,7 +41,7 @@ public class OpenDebugMenuMessage {
     }
 
 	// ВСТАВИТЬ ПЕРЕД static { ... }
-public static void pressAction(LocalPlayer player, int type, int pressedms) {
+ public static void pressAction(net.minecraft.world.entity.player.Player player, int type, int pressedms) {
     // Клиентская часть MCreator дергает этот метод.
     // Нам тут ничего делать не нужно — сервер откроет GUI в handler'е сообщения.
     // Оставляем no-op, чтобы не было двойного открытия.
