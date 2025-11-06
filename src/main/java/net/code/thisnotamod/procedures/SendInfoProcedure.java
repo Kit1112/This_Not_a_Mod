@@ -3,38 +3,42 @@ package net.code.thisnotamod.procedures;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.network.chat.Component;
-import net.minecraft.commands.arguments.MessageArgument;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.MessageArgument;
+import net.minecraft.commands.arguments.EntityArgument;
 
-
-import net.code.thisnotamod.network.ThisnotamodModVariables;
-import net.code.thisnotamod.init.ThisnotamodModItems;
-
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
 import net.minecraft.world.entity.Entity;
+
+import net.code.thisnotamod.init.ThisnotamodModItems;
 
 public class SendInfoProcedure {
     public static void execute(LevelAccessor world, CommandContext<CommandSourceStack> arguments) {
-        // читаем текст
-String txt;
-try {
-    txt = MessageArgument.getMessage(arguments, "info_text").getString();
-} catch (CommandSyntaxException e) {
-    txt = "Ошибка чтения ввода.";
-}
+        // текст
+        String txt;
+        try {
+            txt = MessageArgument.getMessage(arguments, "info_text").getString();
+        } catch (CommandSyntaxException e) {
+            txt = "Ошибка чтения ввода.";
+        }
 
-// контекстный игрок (может быть null, тогда ничего не шлём)
-net.minecraft.world.entity.Entity ctxEntity = null;
-try { ctxEntity = arguments.getSource().getEntity(); } catch (Exception ignored) {}
+        // целевой игрок из аргумента player_info (fallback — источник команды)
+        Entity target = null;
+        try {
+            target = EntityArgument.getPlayer(arguments, "player_info");
+        } catch (Exception ignored) {
+            try { target = arguments.getSource().getEntity(); } catch (Exception ignored2) {}
+        }
 
-net.code.thisnotamod.TipApi.show(
-        world,
-        ctxEntity,
-        txt,
-        new ItemStack(ThisnotamodModItems.INFOICON.get()),
-        new ResourceLocation("thisnotamod", "hint")
-);
+        // показать подсказку (универсально: сервер -> S2C, клиент -> сразу HUD)
+        net.code.thisnotamod.TipApi.show(
+                world,
+                target,
+                txt,
+                new ItemStack(ThisnotamodModItems.INFOICON.get()),
+                new ResourceLocation("thisnotamod", "hint")
+        );
     }
 }

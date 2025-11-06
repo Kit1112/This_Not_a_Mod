@@ -8148,7 +8148,7 @@
       "name": "SendWarn",
       "type": "procedure",
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "send_warn",
       "metadata": {
         "files": [
@@ -8171,7 +8171,7 @@
       "name": "SendError",
       "type": "procedure",
       "compiles": true,
-      "locked_code": false,
+      "locked_code": true,
       "registry_name": "send_error",
       "metadata": {
         "files": [
