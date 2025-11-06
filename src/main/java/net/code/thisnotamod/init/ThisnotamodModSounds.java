@@ -63,4 +63,5 @@ public class ThisnotamodModSounds {
 	public static final RegistryObject<SoundEvent> SUCCESFUL_PING = REGISTRY.register("succesful_ping", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "succesful_ping")));
 	public static final RegistryObject<SoundEvent> HALLOWEEN_THEME = REGISTRY.register("halloween_theme", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "halloween_theme")));
 	public static final RegistryObject<SoundEvent> TEST = REGISTRY.register("test", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "test")));
+	public static final RegistryObject<SoundEvent> KNOB_SOUND = REGISTRY.register("knob_sound", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "knob_sound")));
 }

@@ -20,6 +20,7 @@ import com.mojang.blaze3d.vertex.VertexFormat;
 import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
+import net.minecraft.core.registries.BuiltInRegistries;
 
 import net.minecraft.client.resources.language.I18n; // локализация
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -405,8 +406,8 @@ private IntRect rectByIndex(int idx) {
                 0xFFFFFFFF, hasSignal() ? 0xFF00FF00 : 0xFFFF4040);
 
         // Имя объекта
-        String objectNameShown = hasSignal() ? "unknown" : "0";
-        if (hasSignal()) {
+        String objectNameShown = ready ? "unknown" : "none";
+		if (ready) {
             String langKey = sDetectedObjectKey.trim();
             int colon = langKey.indexOf(':');
             if (colon >= 0) langKey = langKey.substring(colon + 1);
@@ -419,8 +420,8 @@ private IntRect rectByIndex(int idx) {
                 0xFFBBBBBB, 0xFFBBBBBB);
 
         // Качество
-        String qualityShown = hasSignal() ? I18n.get(K_VAL_LOW) : "0";
-        if (hasSignal() && sQuality != null && !sQuality.isBlank()) {
+        String qualityShown = ready ? I18n.get(K_VAL_LOW) : "none";
+if (ready && sQuality != null && !sQuality.isBlank()) {
             String qKey = "signalmanager.ui.tuner.value." + sQuality.toLowerCase(Locale.ROOT);
             String tr = I18n.get(qKey);
             qualityShown = (tr != null && !tr.equals(qKey)) ? tr : sQuality;
@@ -430,8 +431,8 @@ private IntRect rectByIndex(int idx) {
                 0xFFBBBBBB, 0xFFBBBBBB);
 
         // Частота (категория)
-        String frequencyShown = hasSignal() ? I18n.get(K_VAL_MIDDLE) : "0";
-        if (hasSignal() && sFrequency != null && !sFrequency.isBlank()) {
+        String frequencyShown = ready ? I18n.get(K_VAL_MIDDLE) : "none";
+if (ready && sFrequency != null && !sFrequency.isBlank()) {
             String fKey = "signalmanager.ui.tuner.value." + sFrequency.toLowerCase(Locale.ROOT);
             String tr = I18n.get(fKey);
             frequencyShown = (tr != null && !tr.equals(fKey)) ? tr : sFrequency;
@@ -439,6 +440,19 @@ private IntRect rectByIndex(int idx) {
         drawLabelValue(gg, r5, line++, I18n.get(K_SIGNAL_FREQUENCY),
                 frequencyShown,
                 0xFFBBBBBB, 0xFFBBBBBB);
+int dirClamped = Math.max(0, Math.min(2, Background.currentPolarityDir));
+String dirKey;
+switch (dirClamped) {
+    case 0:  dirKey = "signalmanager.ui.scanner.polaritydir.left";   break;
+    case 1:  dirKey = "signalmanager.ui.scanner.polaritydir.right";  break;
+    default: dirKey = "signalmanager.ui.scanner.polaritydir.linear"; break;
+}
+String dirValue = I18n.get(dirKey);
+
+drawLabelValue(gg, r5, line++, I18n.get("signalmanager.ui.scanner.polaritydir"),
+        dirValue,
+        0xFFBBBBBB, 0xFFBBBBBB);
+
 
         // Загрузка
         double downloadedShown = hasSignal() ? Background.downloadedPercent : 0.0;
@@ -483,8 +497,10 @@ if (tip != null) {
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (button == 0 && isHovering(rectByIndex(0), mouseX, mouseY)) {
             Background.currentPolarityDir = (Background.currentPolarityDir + 1) % 3;
+            playKnobSound();
             return true;
         }
+      
         // Новая кнопка удаления сигнала
         if (button == 0 && isHovering(rectByIndex(7), mouseX, mouseY)) {
 
@@ -522,32 +538,38 @@ if (button == 0 && isHovering(rectByIndex(9), mouseX, mouseY)) {
         if (isHovering(rectByIndex(1), mouseX, mouseY)) {
             Background.polaritySpeedPerSec += sign * 1;
             Background.polaritySpeedPerSec = clamp(Background.polaritySpeedPerSec, POLARITY_SPEED_MIN, POLARITY_SPEED_MAX);
+			playKnobSound();
             return true;
         }
         if (isHovering(rectByIndex(2), mouseX, mouseY)) {
             Background.polaritySpeedPerSec += sign * 5;
             Background.polaritySpeedPerSec = clamp(Background.polaritySpeedPerSec, POLARITY_SPEED_MIN, POLARITY_SPEED_MAX);
+			playKnobSound();
             return true;
         }
         if (isHovering(rectByIndex(3), mouseX, mouseY)) {
             Background.polaritySpeedPerSec += sign * 15;
             Background.polaritySpeedPerSec = clamp(Background.polaritySpeedPerSec, POLARITY_SPEED_MIN, POLARITY_SPEED_MAX);
+			playKnobSound();
             return true;
         }
 
         if (isHovering(rectByIndex(4), mouseX, mouseY)) {
             Background.frequencySpeedPerSec += sign * 1;
             Background.frequencySpeedPerSec = clamp(Background.frequencySpeedPerSec, FREQUENCY_SPEED_MIN, FREQUENCY_SPEED_MAX);
+			playKnobSound();
             return true;
         }
         if (isHovering(rectByIndex(5), mouseX, mouseY)) {
             Background.frequencySpeedPerSec += sign * 10;
             Background.frequencySpeedPerSec = clamp(Background.frequencySpeedPerSec, FREQUENCY_SPEED_MIN, FREQUENCY_SPEED_MAX);
+			playKnobSound();
             return true;
         }
         if (isHovering(rectByIndex(6), mouseX, mouseY)) {
             Background.frequencySpeedPerSec += sign * 100;
             Background.frequencySpeedPerSec = clamp(Background.frequencySpeedPerSec, FREQUENCY_SPEED_MIN, FREQUENCY_SPEED_MAX);
+			playKnobSound();
             return true;
         }
 
@@ -630,6 +652,12 @@ private String dumpCurrentButtonCode() {
             gg.hLine(x, x + w, gy, 0xFF7F7F7F);
         }
     }
+
+    private void playKnobSound() {
+    var opt = BuiltInRegistries.SOUND_EVENT.getOptional(new ResourceLocation("thisnotamod", "knob_sound"));
+    opt.ifPresent(ev -> Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(ev, 1.0F)));
+}
+
 
     private void drawLabelValue(GuiGraphics gg, IntRect r, int lineIdx,
                                 String label, String value,
@@ -737,9 +765,10 @@ private String dumpCurrentButtonCode() {
         }
 
         if (!hasSignal()) {
-            // При отсутствии сигнала объект не рисуем вовсе (никакого diamond)
-            return;
-        }
+    // Объект не показываем, пока нет сигнала
+    return;
+}
+
 
         int itemX = r2.centerX();
         int itemY = r2.centerY();

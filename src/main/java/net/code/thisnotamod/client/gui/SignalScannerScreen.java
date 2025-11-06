@@ -342,9 +342,17 @@ public class SignalScannerScreen extends AbstractContainerScreen<SignalScannerMe
                     captureTarget.caught = true;
                     signals.remove(captureTarget);
                     uiLogAdd(I18n.get(K_SUCCESS_PING), LOG_COLOR_OK);
-                    playUi(evt("succesful_ping"), 2.0f);
-                    captureInProgress = false;
-                    captureTarget = null;
+                    // пробуем оба варианта id на случай опечатки в sounds.json
+SoundEvent ok = evt("succesful_ping");
+if (ok == null) ok = evt("successful_ping");
+
+// если нашли — играем погромче через PLAYERS; иначе подсветим в лог
+if (ok != null) {
+    playPlayers(ok, 1.2f);
+} else {
+    uiLogAdd("[missing sound: succesful_ping]", LOG_COLOR_WARN);
+}
+
 
                     // просим сервер выбрать следующий сигнал и прислать нам результат
 					net.code.thisnotamod.network.NetBootstrap.ensureRegistered();
@@ -730,6 +738,24 @@ public class SignalScannerScreen extends AbstractContainerScreen<SignalScannerMe
             Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(e, vol));
         }
     }
+
+    // проигрываем звук в категории PLAYERS, позиционно на игроке (громче, чем UI)
+private static void playPlayers(SoundEvent e, float vol) {
+    if (e == null) return;
+    var mc = Minecraft.getInstance();
+    var p = mc.player;
+    if (p == null) return;
+    mc.getSoundManager().play(new SimpleSoundInstance(
+        e, // <-- передаём сам SoundEvent
+        SoundSource.PLAYERS,
+        Math.min(vol, 1.5f),
+        1.0f,
+        (mc.level != null ? mc.level.random : net.minecraft.util.RandomSource.create()), // <-- RandomSource
+        p.getX(), p.getY(), p.getZ()
+));
+
+}
+
 
     private static void playError() { playUi(evt("signal_error"), 1.0f); }
     private static void playTurn()  { playUi(evt("scan_started"), 1.0f); }

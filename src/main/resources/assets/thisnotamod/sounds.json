@@ -389,5 +389,13 @@
         "stream": false
       }
     ]
+  },
+  "knob_sound": {
+    "sounds": [
+      {
+        "name": "thisnotamod:knob_sound",
+        "stream": false
+      }
+    ]
   }
 }
