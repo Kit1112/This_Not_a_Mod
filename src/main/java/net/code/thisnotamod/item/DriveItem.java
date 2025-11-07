@@ -79,9 +79,6 @@ public void inventoryTick(ItemStack stack, Level level, Entity entity, int slot,
 
 		var tag = stack.getOrCreateTag();
 
-		if (!tag.contains(TAG_SERIAL)) {
-			tag.putString(TAG_SERIAL, randomSerial(level.getRandom(), 8, 16));
-		}
 		if (!tag.contains(TAG_LEVEL)) {
 			tag.putInt(TAG_LEVEL, 0);
 		}
@@ -94,6 +91,16 @@ String expectedAnim;
 int lvl = tag.getInt(TAG_LEVEL);
 int sid = tag.getInt(TAG_SIGNAL_ID);
 boolean isCopy = tag.getBoolean(TAG_IS_COPY);
+
+// === Политика serial: только при наличии сигнала; иначе удалить ===
+if (sid < 0) {
+    if (tag.contains(TAG_SERIAL)) tag.remove(TAG_SERIAL);
+} else {
+    if (!tag.contains(TAG_SERIAL) || tag.getString(TAG_SERIAL).isEmpty()) {
+        tag.putString(TAG_SERIAL, randomSerial(level.getRandom(), 8, 16));
+    }
+}
+
 
 if (sid < 0) {
     // вообще нет сигнала на диске -> базовая "0"
