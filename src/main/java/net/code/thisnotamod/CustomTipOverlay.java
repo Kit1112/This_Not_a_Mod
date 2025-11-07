@@ -188,6 +188,8 @@ public static void queueTip(Component text, ItemStack icon, ResourceLocation sou
                 // центрируем внутри логического окна ICON_SIZE, не меняя фон/разметку
                 float dx = iconX + (ICON_SIZE - renderedPx) / 2f;
                 float dy = iconY + (ICON_SIZE - renderedPx) / 2f;
+                // Сдвиг иконки на 1 экранный пиксель вверх (независимо от scale)
+				dy -= (1f / scale);
 
                 graphics.pose().translate(dx, dy, 0);
                 graphics.pose().scale(scale, scale, 1.0f);
