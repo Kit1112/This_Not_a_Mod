@@ -6,6 +6,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.network.chat.Component;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.core.BlockPos;
@@ -30,6 +31,8 @@ public class ServerTrbmProcedure {
 					if (_bs.getBlock().getStateDefinition().getProperty("blockstate") instanceof IntegerProperty _integerProp && _integerProp.getPossibleValues().contains(_value))
 						world.setBlock(_pos, _bs.setValue(_integerProp, _value), 3);
 				}
+				if (world instanceof net.minecraft.server.level.ServerLevel sl)
+					sl.scheduleTick(new net.minecraft.core.BlockPos((int) x, (int) y, (int) z), world.getBlockState(new net.minecraft.core.BlockPos((int) x, (int) y, (int) z)).getBlock(), 1);
 				ThisnotamodModVariables.MapVariables.get(world).datamap1.remove(((("" + new Vec3(x, (y + 1), z)).replace(")", "")).replace("(", "")));
 				ThisnotamodModVariables.MapVariables.get(world).datamap1.put(((("" + new Vec3(x, (y + 1), z)).replace(")", "")).replace("(", "")), StringTag.valueOf("disabled"));
 			} else if (((world.getBlockState(BlockPos.containing(x, y + 1, z))).getBlock().getStateDefinition().getProperty("blockstate") instanceof IntegerProperty _getip11
@@ -48,5 +51,7 @@ public class ServerTrbmProcedure {
 			if (entity instanceof Player _player && !_player.level().isClientSide())
 				_player.displayClientMessage(Component.literal(("\u0412\u0435\u043A\u0442\u043E\u0440 " + (("" + new Vec3(x, y, z)).replace(")", "")).replace("(", ""))), false);
 		}
+		if (world instanceof ServerLevel sl)
+			sl.scheduleTick(new BlockPos((int) x, (int) y, (int) z), world.getBlockState(new BlockPos((int) x, (int) y, (int) z)).getBlock(), 1);
 	}
 }

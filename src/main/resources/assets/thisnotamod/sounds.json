@@ -397,5 +397,37 @@
         "stream": false
       }
     ]
+  },
+  "server_1": {
+    "sounds": [
+      {
+        "name": "thisnotamod:server_1",
+        "stream": false
+      }
+    ]
+  },
+  "server_2": {
+    "sounds": [
+      {
+        "name": "thisnotamod:server_2",
+        "stream": false
+      }
+    ]
+  },
+  "server_3": {
+    "sounds": [
+      {
+        "name": "thisnotamod:server_3",
+        "stream": false
+      }
+    ]
+  },
+  "server_loop": {
+    "sounds": [
+      {
+        "name": "thisnotamod:server_loop",
+        "stream": false
+      }
+    ]
   }
 }

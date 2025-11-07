@@ -64,4 +64,8 @@ public class ThisnotamodModSounds {
 	public static final RegistryObject<SoundEvent> HALLOWEEN_THEME = REGISTRY.register("halloween_theme", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "halloween_theme")));
 	public static final RegistryObject<SoundEvent> TEST = REGISTRY.register("test", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "test")));
 	public static final RegistryObject<SoundEvent> KNOB_SOUND = REGISTRY.register("knob_sound", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "knob_sound")));
+	public static final RegistryObject<SoundEvent> SERVER_1 = REGISTRY.register("server_1", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "server_1")));
+	public static final RegistryObject<SoundEvent> SERVER_2 = REGISTRY.register("server_2", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "server_2")));
+	public static final RegistryObject<SoundEvent> SERVER_3 = REGISTRY.register("server_3", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "server_3")));
+	public static final RegistryObject<SoundEvent> SERVER_LOOP = REGISTRY.register("server_loop", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "server_loop")));
 }

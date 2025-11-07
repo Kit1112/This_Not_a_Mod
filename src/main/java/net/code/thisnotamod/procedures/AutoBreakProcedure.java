@@ -145,6 +145,8 @@ public class AutoBreakProcedure {
                     if (bs.getBlock().getStateDefinition().getProperty("blockstate") instanceof IntegerProperty prop &&
                         prop.getPossibleValues().contains(brokenState)) {
                         votvWorld.setBlock(pos, bs.setValue(prop, brokenState), 3);
+                        // запланировать тик блока, чтобы мгновенно отработал stop звуков
+						votvWorld.scheduleTick(pos, votvWorld.getBlockState(pos).getBlock(), 1);
 
                         // === НОВОЕ: обновить datamap1: enabled -> disabled ===
                         var mv = ThisnotamodModVariables.MapVariables.get(world); // используем тот же мир, откуда читали datamap1

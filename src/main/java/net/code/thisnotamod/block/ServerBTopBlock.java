@@ -31,12 +31,87 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.RandomSource;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.WeakHashMap;
+import net.code.thisnotamod.init.ThisnotamodModSounds;
+
+import java.util.Map;
+import java.util.HashMap;
+import java.util.WeakHashMap;
+
+import net.code.thisnotamod.init.ThisnotamodModSounds;
 
 import net.code.thisnotamod.procedures.ServerTdestrProcedure;
 import net.code.thisnotamod.procedures.ServerRBMProcedure;
 import net.code.thisnotamod.init.ThisnotamodModBlocks;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.core.Holder;
 
 public class ServerBTopBlock extends Block {
+
+	    // === Управление звуками ===
+    private static final WeakHashMap<Level, Map<BlockPos, Timers>> SOUND_TIMERS = new WeakHashMap<>();
+    private static final int LOOP_PERIOD_TICKS = 180; // 9 сек
+    private static final int RANDOM_MIN_TICKS = 5 * 20;
+    private static final int RANDOM_MAX_TICKS = 30 * 20;
+    private static final double HEAR_RADIUS = 5.0; // слышно в ~5 блоках
+
+    private static Map<BlockPos, Timers> timers(Level level) {
+        return SOUND_TIMERS.computeIfAbsent(level, l -> new HashMap<>());
+    }
+
+    private static class Timers {
+        long nextLoop = 0L;
+        long nextRandom = 0L;
+        boolean wasActive = false;
+        boolean hadPlayersNear = false;
+    }
+
+        private static void playSoundInRadius(ServerLevel level, BlockPos pos,
+                                          SoundEvent sound, SoundSource source,
+                                          float volume, float pitch, double radiusBlocks) {
+        double r2 = radiusBlocks * radiusBlocks;
+        ClientboundSoundPacket pkt = new ClientboundSoundPacket(
+                Holder.direct(sound),
+                source,
+                pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+                volume, pitch,
+                level.random.nextLong()
+        );
+        for (var p : level.getPlayers(pl -> pl.distanceToSqr(pos.getCenter()) <= r2)) {
+            p.connection.send(pkt);
+        }
+    }
+
+
+        private static void stopAllSounds(ServerLevel level, BlockPos pos) {
+        double r2 = HEAR_RADIUS * HEAR_RADIUS;
+        for (var player : level.getPlayers(p -> p.distanceToSqr(pos.getCenter()) <= r2)) {
+            player.connection.send(
+                new net.minecraft.network.protocol.game.ClientboundStopSoundPacket(
+                    null, // все звуки
+                    SoundSource.BLOCKS
+                )
+            );
+        }
+    }
+
+
+    
+
+
+
+
+	
 	public static final IntegerProperty BLOCKSTATE = IntegerProperty.create("blockstate", 0, 2);
 	public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
 
@@ -88,6 +163,21 @@ public class ServerBTopBlock extends Block {
 		return this.defaultBlockState().setValue(FACING, context.getHorizontalDirection().getOpposite());
 	}
 
+	    @Override
+    public void onPlace(BlockState state, Level level, BlockPos pos, BlockState oldState, boolean isMoving) {
+        super.onPlace(state, level, pos, oldState, isMoving);
+        if (level instanceof ServerLevel sl) {
+            // Инициализируем таймеры и запускаем тики
+            Timers t = timers(sl).computeIfAbsent(pos, p -> new Timers());
+            long now = sl.getGameTime();
+            t.nextLoop = now + 1;   // запустим почти сразу
+            // первый "рандом" тоже почти сразу, чтобы не ждать полминуты при установке
+            t.nextRandom = now + (5 + sl.random.nextInt(6)) * 20; // 5..10 сек на первый раз
+            sl.scheduleTick(pos, this, 1);
+        }
+    }
+
+
 	public BlockState rotate(BlockState state, Rotation rot) {
 		return state.setValue(FACING, rot.rotate(state.getValue(FACING)));
 	}
@@ -113,6 +203,79 @@ public class ServerBTopBlock extends Block {
 		return retval;
 	}
 
+	    @Override
+    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean isMoving) {
+        super.onRemove(state, level, pos, newState, isMoving);
+                if (level instanceof ServerLevel sl) {
+            stopAllSounds(sl, pos);
+        }
+        Map<BlockPos, Timers> m = SOUND_TIMERS.get(level);
+        if (m != null) m.remove(pos);
+    }
+
+            @Override
+    public void tick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+        boolean active = (state.getValue(BLOCKSTATE) == 0 || state.getValue(BLOCKSTATE) == 1);
+
+        Timers t = timers(level).computeIfAbsent(pos, p -> new Timers());
+        long now = level.getGameTime();
+        boolean playersNear = level.hasNearbyAlivePlayer(
+   		pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5,
+    	(float)(HEAR_RADIUS + 0.5)
+		);
+
+
+        // === отслеживаем смену активности ===
+        if (t.wasActive && !active) {
+            // только что выключился
+            stopAllSounds(level, pos);
+        } else if (!t.wasActive && active) {
+            // только что включился — сразу запускаем loop
+            SoundEvent loop = ThisnotamodModSounds.SERVER_LOOP.get();
+            playSoundInRadius(level, pos, loop, SoundSource.BLOCKS, 0.20f, 1.0f, HEAR_RADIUS);
+            t.nextLoop = now + LOOP_PERIOD_TICKS;
+            t.nextRandom = now + (5 + random.nextInt(6)) * 20;
+        }
+        t.wasActive = active;
+
+        // мгновенный старт, если игроки только что появились рядом
+if (active && playersNear && !t.hadPlayersNear) {
+    SoundEvent loop = ThisnotamodModSounds.SERVER_LOOP.get();
+    playSoundInRadius(level, pos, loop, SoundSource.BLOCKS, 0.20f, 1.0f, HEAR_RADIUS);
+    t.nextLoop = now + LOOP_PERIOD_TICKS; // следующий луп по расписанию
+}
+// обновляем флаг близости игроков
+t.hadPlayersNear = playersNear;
+
+
+        if (active) {
+            // регулярный цикл звуков
+            if (now >= t.nextLoop) {
+                SoundEvent loop = ThisnotamodModSounds.SERVER_LOOP.get();
+                playSoundInRadius(level, pos, loop, SoundSource.BLOCKS, 0.20f, 1.0f, HEAR_RADIUS);
+                t.nextLoop = now + LOOP_PERIOD_TICKS;
+            }
+
+            if (now >= t.nextRandom) {
+                int pick = 1 + random.nextInt(3);
+                SoundEvent s = switch (pick) {
+                    case 1 -> ThisnotamodModSounds.SERVER_1.get();
+                    case 2 -> ThisnotamodModSounds.SERVER_2.get();
+                    default -> ThisnotamodModSounds.SERVER_3.get();
+                };
+                float pitch = 0.95f + random.nextFloat() * 0.1f;
+                playSoundInRadius(level, pos, s, SoundSource.BLOCKS, 0.30f, pitch, HEAR_RADIUS);
+                t.nextRandom = now + RANDOM_MIN_TICKS + random.nextInt(RANDOM_MAX_TICKS - RANDOM_MIN_TICKS + 1);
+            }
+        }
+
+        // планируем следующий тик (1 сек)
+        level.scheduleTick(pos, this, (active || playersNear) ? 10 : 20);
+    }
+
+
+
+
 	@Override
 	public InteractionResult use(BlockState blockstate, Level world, BlockPos pos, Player entity, InteractionHand hand, BlockHitResult hit) {
 		super.use(blockstate, world, pos, entity, hand, hit);
@@ -124,6 +287,9 @@ public class ServerBTopBlock extends Block {
 		double hitZ = hit.getLocation().z;
 		Direction direction = hit.getDirection();
 		ServerRBMProcedure.execute(world, x, y, z, blockstate, entity);
+		        if (world instanceof ServerLevel sl) {
+            sl.scheduleTick(pos, this, 1);
+        }
 		return InteractionResult.SUCCESS;
 	}
 }
