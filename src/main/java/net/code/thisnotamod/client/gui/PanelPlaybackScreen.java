@@ -5,8 +5,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.mojang.blaze3d.systems.RenderSystem;
-import java.nio.IntBuffer;
-import java.nio.ShortBuffer;
 
 import net.code.thisnotamod.world.inventory.PanelPlaybackMenu;
 
@@ -23,21 +21,23 @@ import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Inventory;
 
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
 import org.lwjgl.stb.STBVorbis;
 import org.lwjgl.stb.STBVorbisInfo;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
+
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.*;
+import java.util.function.Supplier;
 
 /** Экран PanelPlayback: 640x360, 4 секции, список сигналов, прогрессивный рендер изображения/текста, play/pause. */
 public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMenu> {
@@ -78,26 +78,23 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
     // --- Лог в чат ---
     private static void CHAT(String msg) {
         var mc = Minecraft.getInstance();
-        if (mc == null) return;
-        var line = Component.literal("[PanelPlayback] " + msg);
-        if (mc.player != null) mc.player.sendSystemMessage(line);
-        else if (mc.gui != null) mc.gui.getChat().addMessage(line);
+        if (mc == null || mc.player == null) return;
+        mc.player.sendSystemMessage(Component.literal("[PanelPlayback] " + msg));
     }
     private static String FMT(double v) {
         return String.format(java.util.Locale.US, "%.3f", v);
     }
-    
-    @Override	
-	protected void renderLabels(GuiGraphics gg, int mouseX, int mouseY) {
-    // Не рисуем ни заголовок, ни метку "Инвентарь"
-	}
 
+    @Override
+    protected void renderLabels(GuiGraphics gg, int mouseX, int mouseY) {
+        // Не рисуем ни заголовок, ни метку "Инвентарь"
+    }
 
     // ---- Кнопки ----
     // Кнопки рисуем как зоны (хитбоксы). По макету — слева направо.
     private final IntRect btnVolKnob = new IntRect(SCREEN_X + 10, BTN_BAR_Y, 24, 24);          // 0 — крутилка громкости
     private final IntRect btnList    = new IntRect(SCREEN_X + 46, BTN_BAR_Y, 24, 24);          // 1 — прокрутка списка (колесо)
-    private final IntRect btnStub2   = new IntRect(SCREEN_X + 82, BTN_BAR_Y, 24, 24);          // 2 — заглушка
+    private final IntRect btnStub2   = new IntRect(SCREEN_X + 82, BTN_BAR_Y, 24, 24);          // 2 — заглушка / смена спектра
     private final IntRect btnPlay    = new IntRect(SCREEN_X + 118, BTN_BAR_Y, 24, 24);         // 3 — Play/Pause
     private final IntRect btnStub4   = new IntRect(SCREEN_X + 154, BTN_BAR_Y, 24, 24);         // 4 — заглушка
 
@@ -120,10 +117,11 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
     private static final int FFT_SIZE   = 1024; // степень двойки (512/1024/2048)
 
     private final Map<Integer, SpecData> specCacheById = new HashMap<>();
+    // Асинхронная сборка спектра (не блокируем UI)
+    private final Map<ResourceLocation, CompletableFuture<SpecData>> specBuildTasks = new ConcurrentHashMap<>();
+
     private final float[] specNow    = new float[SPEC_BANDS]; // текущее отображение (сглажено)
     private final float[] specTarget = new float[SPEC_BANDS]; // «истинные» значения для текущего времени
-
-
 
     // Прогресс воспроизведения
     private final Map<Integer, Double> measuredDurSecById = new HashMap<>(); // id -> seconds
@@ -133,7 +131,6 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
     // debug: чтобы не спамить чат — логируем картинку один раз на смену
     private ResourceLocation dbgLastImage = null;
 
-
     public PanelPlaybackScreen(PanelPlaybackMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
         this.imageWidth = VIRTUAL_W;
@@ -142,6 +139,8 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
         loadPersistent();
         clampIndices();
         ensureFirstSeenDates();
+        this.listScroll = this.selectedIndex; // скроллбар указывает на выбранный элемент
+
     }
 
     @Override public boolean isPauseScreen() { return false; }
@@ -207,7 +206,6 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
         gg.pose().popPose();
     }
 
-
     @Override
     public void render(GuiGraphics gg, int mouseX, int mouseY, float partialTick) {
         super.render(gg, mouseX, mouseY, partialTick);
@@ -231,7 +229,6 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
                 toggleSpecMode();
                 return true;
             }
-
         }
         return super.mouseClicked(mouseX, mouseY, button);
     }
@@ -245,7 +242,7 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
             setVolume01(volume01 + sign * 0.05f);
             return true;
         }
-        if (isHovering(btnList, mouseX, mouseY)) {
+                if (isHovering(btnList, mouseX, mouseY)) {
             int n = (SIGNALS != null) ? SIGNALS.size() : 0;
             if (n > 0) {
                 // колесо вверх -> предыдущий; вниз -> следующий
@@ -253,16 +250,13 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
                 if (selectedIndex < 0) selectedIndex += n;
                 ensureFirstSeenFor(selectedIndex);
 
-                // держим выбранный в видимой зоне, но без «прокрутки всего списка»
-                int vis = visibleListRows();
-                int top = listScroll;
-                int bottom = listScroll + vis - 1;
-                if (selectedIndex < top) listScroll = selectedIndex;
-                if (selectedIndex > bottom) listScroll = selectedIndex - (vis - 1);
+                // центрируем выбор логически: скроллбар = текущему индексу
+                listScroll = selectedIndex;
                 clampIndices();
             }
             return true;
         }
+
         return super.mouseScrolled(mouseX, mouseY, delta);
     }
 
@@ -286,12 +280,12 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
         gg.vLine(midX, y, y + h, 0xFF7F7F7F);
         gg.hLine(x, x + w, midY, 0xFF7F7F7F);
     }
+
     private static class SpecData {
         int sampleRate;
         float secondsPerFrame;
         float[][] bands; // [frameIndex][band] значения 0..1
     }
-
 
     private void drawSignalList(GuiGraphics gg, IntRect r) {
         // Заголовок
@@ -301,25 +295,34 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
         int top = r.y + 8 + 12;
         int visible = Math.max(1, (r.h - 24) / rowH);
 
+                // Центр по вертикали
+        int centerRow = visible / 2;
+        int virtualTop = selectedIndex - centerRow;
+
         for (int i = 0; i < visible; i++) {
-            int idx = listScroll + i;
-            if (idx >= SIGNALS.size()) break;
-            SignalEntry s = SIGNALS.get(idx);
+            int idx = virtualTop + i;
 
             int y0 = top + i * rowH;
             int y1 = y0 + rowH - 2;
 
+            // Пустая строка-подложка для «вне диапазона» (чтобы нулевой мог быть по центру)
+            if (idx < 0 || idx >= SIGNALS.size()) {
+                gg.fill(r.x + 4, y0, r.x + r.w - 4, y1, 0x20101010);
+                continue;
+            }
+
+            SignalEntry s = SIGNALS.get(idx);
+
             int bg = (idx == selectedIndex) ? 0x4020A0FF : 0x20101010;
             gg.fill(r.x + 4, y0, r.x + r.w - 4, y1, bg);
 
-            // № внутри UI
-            String num = String.valueOf(idx + 1);
+            // № внутри UI — С НУЛЯ
+            String num = String.valueOf(idx);
             gg.drawString(this.font, num, r.x + 8, y0 + 4, 0xFFBBBBBB, false);
 
             // Имя объекта (локализация по object_name)
             String objName = s.objectNameKey != null ? I18n.get(s.objectNameKey) : s.name;
             if (objName == null || objName.isBlank()) objName = s.name != null ? s.name : "—";
-
             gg.drawString(this.font, objName, r.x + 28, y0 + 4, 0xFFFFFFFF, false);
 
             // Дата первого попадания на панель (сохранённая)
@@ -327,10 +330,13 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
             gg.drawString(this.font, date, r.x + 28, y0 + 4 + this.font.lineHeight + 2, 0xFF888888, false);
         }
 
+
         // Скролл-индикатор
-        int total = Math.max(1, SIGNALS.size());
+                int total = Math.max(1, SIGNALS.size());
+        int logicalScroll = Math.max(0, Math.min(total - 1, selectedIndex)); // скроллбар = фокусу
         int barH = 36;
-        int barY = r.y + (int) Math.round((r.h - barH) * (listScroll / (double) Math.max(1, total - 1)));
+        int barY = r.y + (int) Math.round((r.h - barH) * (logicalScroll / (double) Math.max(1, total - 1)));
+
         gg.fill(r.x + r.w - 6, r.y + 4, r.x + r.w - 4, r.y + r.h - 4, 0x30202020);
         gg.fill(r.x + r.w - 6, barY, r.x + r.w - 4, barY + barH, 0x80FFFFFF);
     }
@@ -342,13 +348,17 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
             return;
         }
 
+        // Кэшируем наличие ресурса лениво
+        if (s.imageExists == null) {
+            s.imageExists = resourceExists(s.imageRaw);
+        }
+
         // Лог один раз при смене картинки
         if (dbgLastImage != s.imageRaw) {
-            boolean exists = resourceExists(s.imageRaw);
             CHAT("IMG: rl=" + s.imageRaw +
-                    " exists=" + exists +
-                    " sizeHint=" + s.imageRawWidth + "x" + s.imageRawHeight +
-                    " (expected file: assets/" + s.imageRaw.getNamespace() + "/" + s.imageRaw.getPath() + ")");
+                " exists=" + s.imageExists +
+                " sizeHint=" + s.imageRawWidth + "x" + s.imageRawHeight +
+                " (expected file: assets/" + s.imageRaw.getNamespace() + "/" + s.imageRaw.getPath() + ")");
             dbgLastImage = s.imageRaw;
         }
 
@@ -379,16 +389,24 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
         // Фон
         gg.fill(r.x + 1, r.y + 1, r.x + r.w - 1, r.y + r.h - 1, 0xFF000000);
 
-        if (resourceExists(s.imageRaw)) {
-            // Рисуем верхнюю часть текстуры
-            RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-            // GuiGraphics.blit(ResourceLocation, x, y, u, v, width, height, texW, texH)
-            gg.blit(s.imageRaw, dx, dy, 0, 0, drawW, cutH, srcW, srcH);
+        if (Boolean.TRUE.equals(s.imageExists)) {
+            // Масштабируем через матрицу, чтобы корректно растянуть texCutH -> cutH и srcW -> drawW
+            gg.pose().pushPose();
+            gg.pose().translate(dx, dy, 0);
+            float sx = drawW / (float) Math.max(1, srcW);
+            float sy = cutH / (float) Math.max(1, texCutH);
+            gg.pose().scale(sx, sy, 1f);
 
-            // Лёгкий лог на ключевых этапах (0% и 100%), чтобы не спамить
+            RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+            // Рисуем верхнюю часть исходной текстуры (0..texCutH)
+            gg.blit(s.imageRaw, 0, 0, 0, 0, srcW, texCutH, srcW, srcH);
+
+            gg.pose().popPose();
+
+            // Лёгкий лог на ключевых этапах (0% и 100%)
             if (t <= 0.0001 || Math.abs(t - 1.0) <= 0.0001) {
                 CHAT("IMG draw: " + s.imageRaw + " dst=" + drawW + "x" + cutH +
-                        " of " + srcW + "x" + srcH + " at " + dx + "," + dy + " (t=" + FMT(t) + ")");
+                    " of src " + srcW + "x" + texCutH + " at " + dx + "," + dy + " (t=" + FMT(t) + ")");
             }
         } else {
             centerLabel(gg, r, "IMAGE NOT FOUND");
@@ -396,7 +414,6 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
 
         gg.renderOutline(dx, dy, drawW, drawH, 0xFF404040);
     }
-
 
     private void drawSpectrogram(GuiGraphics gg, IntRect r) {
         // фон
@@ -406,11 +423,6 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
         SignalEntry s = getSelected();
         SpecData sd = (s != null) ? specCacheById.get(s.id) : null;
 
-        // если надо – подскажем в лог, что нет кэша
-        if ((specMode == SpecMode.HEAT) && sd == null && s != null && s.soundRawId != null) {
-            CHAT("Heatmap: no spectrum cached for id=" + s.id + " (will build on play).");
-        }
-
         // геометрия области
         int pad   = 6;
         int w     = Math.max(1, r.w - pad * 2);
@@ -419,27 +431,27 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
         int yTop  = r.y + pad;
         int yBot  = yTop + h;
 
-        if (specMode == SpecMode.BARS) {
-            // ===== РЕЖИМ BARS (как был, но компактно) =====
+                if (specMode == SpecMode.BARS) {
+            // ===== РЕЖИМ BARS =====
             float[] tgt = null;
             if (sd != null && (isPlaying || isAudioActive())) {
                 int fi = (int) Math.floor(playProgressSec / Math.max(1e-4f, sd.secondsPerFrame));
-                if (fi < 0) fi = 0;
-                if (fi >= sd.bands.length) fi = sd.bands.length - 1;
-                if (fi >= 0) tgt = sd.bands[fi];
-            } else if (isPlaying && sd == null) {
-                CHAT("Spectrum cache missing for id=" + (s != null ? s.id : -1) + " (will build on play).");
+                fi = Math.max(0, Math.min(sd.bands.length - 1, fi));
+                tgt = sd.bands[fi];
             }
 
-            for (int b = 0; b < SPEC_BANDS; b++) {
-                float t = (tgt != null && b < tgt.length) ? tgt[b] : 0f;
-                if (t > specNow[b]) {
-                    specNow[b] += (t - specNow[b]) * 0.35f; // рост быстрее
-                } else {
-                    specNow[b] = specNow[b] * SPEC_DECAY + t * (1f - SPEC_DECAY); // плавный спад
+            // Обновляем только когда идёт воспроизведение; иначе — «замерзаем» на последнем значении
+            if (tgt != null) {
+                for (int b = 0; b < SPEC_BANDS; b++) {
+                    float tVal = (b < tgt.length) ? tgt[b] : 0f;
+                    if (tVal > specNow[b]) {
+                        specNow[b] += (tVal - specNow[b]) * 0.35f; // рост быстрее
+                    } else {
+                        specNow[b] = specNow[b] * SPEC_DECAY + tVal * (1f - SPEC_DECAY); // плавный спад к tgt
+                    }
                 }
-                if (tgt == null) specNow[b] *= SPEC_DECAY;
             }
+
 
             int bandW = Math.max(2, w / SPEC_BANDS);
             int gap   = Math.max(1, Math.min(2, bandW / 6));
@@ -456,29 +468,33 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
             return;
         }
 
-        // ===== РЕЖИМ HEAT (2D spectrogram, слева-направо) =====
+        // ===== РЕЖИМ HEAT =====
         if (sd == null || sd.bands == null || sd.bands.length == 0) {
-            centerLabel(gg, r, "NO SPECTRUM");
+            // Показать статус сборки, если уже строим
+            boolean building = false;
+            if (s != null && s.soundRawId != null) {
+                SoundEvent se = resolveSound(s.soundRawId);
+                if (se != null) {
+                    ResourceLocation eventId = BuiltInRegistries.SOUND_EVENT.getKey(se);
+                    building = eventId != null && specBuildTasks.containsKey(eventId);
+                }
+            }
+            centerLabel(gg, r, building ? "BUILDING…" : "NO SPECTRUM");
             gg.renderOutline(r.x, r.y, r.w, r.h, 0xFF404040);
             return;
         }
 
-        final int frames = sd.bands.length;
-        final int cols   = w;                 // по одному столбику на пиксель
-        int maxFrameVisible;
-        if (isPlaying || isAudioActive()) {
-            int cur = (int)Math.floor(playProgressSec / Math.max(1e-4f, sd.secondsPerFrame));
-            maxFrameVisible = Math.max(0, Math.min(frames - 1, cur));
-        } else {
-            maxFrameVisible = frames - 1;     // не играем — отображаем всю картинку
-        }
+                final int frames = sd.bands.length;
+        final int cols   = w; // по одному столбику на пиксель
+        int cur = (int)Math.floor(playProgressSec / Math.max(1e-4f, sd.secondsPerFrame));
+        int maxFrameVisible = Math.max(0, Math.min(frames - 1, cur));
         int drawCols = Math.max(1, (int)Math.ceil(((maxFrameVisible + 1) / (float)frames) * cols));
+
 
         // высота ячейки по полосам (низкие частоты внизу)
         int cellH = Math.max(1, h / SPEC_BANDS);
 
         for (int cx = 0; cx < drawCols; cx++) {
-            // соответствующий кадр спектра этому x
             int fi = (int)Math.floor((cx / (float)Math.max(1, cols - 1)) * (frames - 1));
             float[] row = sd.bands[fi];
 
@@ -486,8 +502,7 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
             int x1 = x0 + 1;
 
             for (int b = 0; b < SPEC_BANDS; b++) {
-                float amp = (row != null && b < row.length) ? row[b] : 0f;   // 0..1
-                // лёгкая гамма для читаемости
+                float amp = (row != null && b < row.length) ? row[b] : 0f;
                 float bright = (float)Math.sqrt(Math.max(0f, Math.min(1f, amp)));
                 int base = gradientColor(b);
                 int col  = scaleColor(base, bright);
@@ -505,8 +520,6 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
 
         gg.renderOutline(r.x, r.y, r.w, r.h, 0xFF404040);
     }
-
-
 
     private void drawTextBlockProgressive(GuiGraphics gg, IntRect r) {
         SignalEntry s = getSelected();
@@ -545,8 +558,8 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
 
     private void drawBottomButtons(GuiGraphics gg) {
         // Подложка панельки
-        int bx = SCREEN_X + 4;
-        int by = BTN_BAR_Y - 6;
+        // int bx = SCREEN_X + 4;
+        // int by = BTN_BAR_Y - 6;
 
         // Иконки/подписи
         drawKnob(gg, btnVolKnob, volume01, 0xFFB0FFB0, "VOL");
@@ -581,15 +594,19 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
         java.util.Arrays.fill(specNow, 0f);
     }
 
-
     private void startPlayback() {
+    	// Сбрасываем предыдущее воспроизведение (во избежание блокировки повторного старта)
+        stopPlayback();
+        awaitingActivation = false;
+//      playProgressSec не трогаем — визуализации «замерзают» на текущем месте
+
+
         SignalEntry s = getSelected();
         if (s == null || s.soundRawId == null) return;
 
         SoundEvent se = resolveSound(s.soundRawId);
         if (se == null) return;
         final ResourceLocation eventId = BuiltInRegistries.SOUND_EVENT.getKey(se);
-
 
         // Узнаём длину именно для ЭТОГО сигнала
         double known = measuredDurSecById.getOrDefault(s.id, -1.0);
@@ -603,24 +620,34 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
                 CHAT("[PanelPlayback] Using fallback duration = " + FMT(FALLBACK_DURATION_SEC) + "s for id=" + s.id);
             }
         }
-// Спектр обязательно: и при первом, и при последующих запусках (после рестарта игры карта пустая)
-        if (!specCacheById.containsKey(s.id)) {
-            SpecData sd = buildSpectrumFor(eventId);
-            if (sd != null) {
-                specCacheById.put(s.id, sd);
-                CHAT("Spectrum cached: id=" + s.id + ", frames=" + sd.bands.length + ", sr=" + sd.sampleRate);
-            } else {
-                CHAT("Spectrum build FAILED for " + eventId);
-            }
+
+        // Спектр: если нет — запускаем сборку асинхронно (без фриза UI)
+        if (!specCacheById.containsKey(s.id) && eventId != null && !specBuildTasks.containsKey(eventId)) {
+            specBuildTasks.put(eventId,
+                CompletableFuture.supplyAsync(() -> buildSpectrumFor(eventId))
+                    .whenComplete((sd, ex) -> {
+                        if (ex == null && sd != null) {
+                            specCacheById.put(s.id, sd);
+                            CHAT("Spectrum cached: id=" + s.id + ", frames=" + sd.bands.length + ", sr=" + sd.sampleRate);
+                        } else {
+                            CHAT("Spectrum build FAILED for " + eventId);
+                        }
+                        specBuildTasks.remove(eventId);
+                    })
+            );
         }
-// сброс текущих столбиков перед новым проигрыванием
+
+        // сброс текущих столбиков перед новым проигрыванием
         java.util.Arrays.fill(specNow, 0f);
 
+                activeSound = new PlaybackSound(se, () -> volume01);
+        // Запускаем на следующий тик — даём движку освободить предыдущий инстанс
+        Minecraft.getInstance().execute(() -> {
+            if (activeSound != null) {
+                Minecraft.getInstance().getSoundManager().play(activeSound);
+            }
+        });
 
-        stopPlayback(); // гарантированно один инстанс
-
-        activeSound = new PlaybackSound(se, () -> volume01);
-        Minecraft.getInstance().getSoundManager().play(activeSound);
 
         isPlaying = true;
         awaitingActivation = true;
@@ -630,13 +657,15 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
 
     private void stopPlayback() {
         if (activeSound != null) {
-            // мы в своём инстансе вызовем stop() через флаг
             activeSound.requestStop();
-            // и попросим менеджер звуков принудительно прекратить
             Minecraft.getInstance().getSoundManager().stop(activeSound);
             activeSound = null;
         }
-        isPlaying = false;
+                isPlaying = false;
+        awaitingActivation = false;
+//      playProgressSec не трогаем — визуализации (картинка, BARS, HEAT) «замерзают» на текущем месте
+
+
     }
 
     /** Полный пересчёт прогресса и фиксация фактической длительности при естественном окончании звука. */
@@ -645,6 +674,7 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
 
         Minecraft mc = Minecraft.getInstance();
         if (mc == null) {
+            // Без клиента — прерываем воспроизведение
             isPlaying = false;
             activeSound = null;
             return;
@@ -696,7 +726,6 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
             savePersistent();
         }
     }
-
 
     // ----------------- Утилиты отрисовки -----------------
     private void drawKnob(GuiGraphics gg, IntRect r, float value01, int color, String label) {
@@ -754,17 +783,13 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
 
     private boolean isHovering(IntRect r, double mouseX, double mouseY) {
         if (mouseX < guiX || mouseY < guiY ||
-                mouseX >= guiX + guiScale * VIRTUAL_W ||
-                mouseY >= guiY + guiScale * VIRTUAL_H) {
+            mouseX >= guiX + guiScale * VIRTUAL_W ||
+            mouseY >= guiY + guiScale * VIRTUAL_H) {
             return false;
         }
         double vx = (mouseX - guiX) / guiScale;
         double vy = (mouseY - guiY) / guiScale;
         return r.contains((int) Math.floor(vx), (int) Math.floor(vy));
-    }
-
-    private boolean isHoveringList(double mouseX, double mouseY) {
-        return isHovering(cellRect(0), mouseX, mouseY);
     }
 
     private IntRect cellRect(int index) {
@@ -798,7 +823,6 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
             specMode = (m == 1) ? SpecMode.HEAT : SpecMode.BARS;
         }
 
-
         firstSeenDates.clear();
         if (root.contains("firstSeen")) {
             var fs = root.getCompound("firstSeen");
@@ -820,7 +844,6 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
 
         clampIndices();
     }
-
 
     private void savePersistent() {
         var mc = Minecraft.getInstance();
@@ -851,7 +874,6 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
 
         tag.put("thisnotamod_panel_playback", root);
     }
-
 
     private void ensureFirstSeenDates() {
         // При первом открытии — всем уже видимым сигналам присвоим дату
@@ -971,6 +993,7 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
         ResourceLocation imageRaw;
         int imageRawWidth = 352;
         int imageRawHeight = 288;
+        Boolean imageExists; // ленивый кэш наличия ресурса
 
         String soundRawId;
 
@@ -991,7 +1014,6 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
             s.specialPrice = getAsBoolean(o, "special_price", false);
 
             s.imageRaw = toGuiTexture(rlOrNull(getAsString(o, "image_high", null)));
-            // на случай, если где-то есть размеры
             s.imageRawWidth = 352;
             s.imageRawHeight = 288;
 
@@ -1020,7 +1042,6 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
     private static ResourceLocation rlOrNull(String s) {
         if (s == null || s.isBlank()) return null;
         try {
-            // допускаем формат "namespace:path"
             if (s.contains(":")) return new ResourceLocation(s);
             return new ResourceLocation("thisnotamod", s);
         } catch (Exception e) { return null; }
@@ -1049,19 +1070,19 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
                 data = readAllToBuffer(in);
                 if (data == null || !data.hasRemaining()) { CHAT("Empty buffer for " + fileRl); return -1.0; }
 
-                try (org.lwjgl.system.MemoryStack stack = org.lwjgl.system.MemoryStack.stackPush()) {
-                    var err = stack.mallocInt(1);
-                    long decoder = org.lwjgl.stb.STBVorbis.stb_vorbis_open_memory(data, err, null);
-                    if (decoder == org.lwjgl.system.MemoryUtil.NULL) {
+                try (MemoryStack stack = MemoryStack.stackPush()) {
+                    IntBuffer err = stack.mallocInt(1);
+                    long decoder = STBVorbis.stb_vorbis_open_memory(data, err, null);
+                    if (decoder == MemoryUtil.NULL) {
                         CHAT("stb_vorbis_open_memory failed (" + err.get(0) + ") for " + fileRl);
                         return -1.0;
                     }
 
-                    org.lwjgl.stb.STBVorbisInfo info = org.lwjgl.stb.STBVorbisInfo.malloc(stack);
-                    org.lwjgl.stb.STBVorbis.stb_vorbis_get_info(decoder, info);
+                    STBVorbisInfo info = STBVorbisInfo.malloc(stack);
+                    STBVorbis.stb_vorbis_get_info(decoder, info);
                     int sampleRate    = info.sample_rate();
-                    int totalSamples  = org.lwjgl.stb.STBVorbis.stb_vorbis_stream_length_in_samples(decoder);
-                    org.lwjgl.stb.STBVorbis.stb_vorbis_close(decoder);
+                    int totalSamples  = STBVorbis.stb_vorbis_stream_length_in_samples(decoder);
+                    STBVorbis.stb_vorbis_close(decoder);
 
                     if (sampleRate <= 0 || totalSamples <= 0) {
                         CHAT("Bad vorbis info for " + fileRl + " (rate=" + sampleRate + ", samples=" + totalSamples + ")");
@@ -1072,7 +1093,7 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
                     return lenSec;
                 }
             } finally {
-                if (data != null) org.lwjgl.system.MemoryUtil.memFree(data);
+                if (data != null) MemoryUtil.memFree(data);
             }
         } catch (Exception e) {
             CHAT("tryProbeOgg exception for " + fileRl + ": " + e.getClass().getSimpleName());
@@ -1126,7 +1147,6 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
         return null;
     }
 
-
     // Возвращает длительность OGG (сек) или -1, если не удалось
     private static double probeOggDurationSec(ResourceLocation soundEventId) {
         try {
@@ -1157,7 +1177,6 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
         }
     }
 
-
     // Читает весь InputStream в ByteBuffer (и выделяет нативную память под него)
     private static ByteBuffer readAllToBuffer(InputStream in) throws java.io.IOException {
         byte[] bytes = in.readAllBytes();
@@ -1167,8 +1186,6 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
         buf.flip();
         return buf;
     }
-
-
 
     private static ResourceLocation toGuiTexture(ResourceLocation rl) {
         if (rl == null) return null;
@@ -1181,7 +1198,7 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
             return new ResourceLocation(ns, p);
         }
 
-        // Если есть подкаталог ("screens/foo" и т.п.) — кладём под textures/<subdir>/...
+        // Если есть подкаталог — кладём под textures/<subdir>/...
         if (p.contains("/")) {
             p = "textures/" + p;
         } else {
@@ -1193,18 +1210,15 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
         return new ResourceLocation(ns, p);
     }
 
-
-
     private static boolean resourceExists(ResourceLocation rl) {
         try {
             var mc = Minecraft.getInstance();
             return mc != null && mc.getResourceManager() != null && rl != null
-                    && mc.getResourceManager().getResource(rl).isPresent();
+                && mc.getResourceManager().getResource(rl).isPresent();
         } catch (Exception e) {
             return false;
         }
     }
-
 
     private static SoundEvent resolveSound(String id) {
         if (id == null) return null;
@@ -1250,22 +1264,22 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
         return activeSound != null && mc != null && mc.getSoundManager().isActive(activeSound);
     }
 
-private double getPlannedDurationSecFor(int id) {
-    double d = measuredDurSecById.getOrDefault(id, -1.0);
-    return (d > 0.0 && Double.isFinite(d)) ? d : FALLBACK_DURATION_SEC;
-}
-
-private double getUiDurationSec(boolean active) {
-    SignalEntry s = getSelected();
-    int id = (s != null) ? s.id : -1;
-    double planned = (id >= 0) ? getPlannedDurationSecFor(id) : FALLBACK_DURATION_SEC;
-    if (active && playProgressSec + 0.001 >= planned) {
-        return playProgressSec + 0.25; // маленький запас под буферы
+    private double getPlannedDurationSecFor(int id) {
+        double d = measuredDurSecById.getOrDefault(id, -1.0);
+        return (d > 0.0 && Double.isFinite(d)) ? d : FALLBACK_DURATION_SEC;
     }
-    return planned;
-}
 
-    // Построить спектр для события звука. Пробуем прямой путь и через sounds.json.
+    private double getUiDurationSec(boolean active) {
+        SignalEntry s = getSelected();
+        int id = (s != null) ? s.id : -1;
+        double planned = (id >= 0) ? getPlannedDurationSecFor(id) : FALLBACK_DURATION_SEC;
+        if (active && playProgressSec >= planned - 1e-3) {
+            return planned + 0.25; // маленький запас под буферы
+        }
+        return planned;
+    }
+
+    // Построить спектр для события звука (может вызываться из фонового потока).
     private SpecData buildSpectrumFor(ResourceLocation eventId) {
         try {
             var mc = Minecraft.getInstance();
@@ -1304,30 +1318,34 @@ private double getUiDurationSec(boolean active) {
                 ShortBuffer pcm = STBVorbis.stb_vorbis_decode_memory(data, chBuf, rateBuf);
                 if (pcm == null) {
                     CHAT("buildSpectrum: stb_vorbis_decode_memory failed for " + fileRl);
+                    MemoryUtil.memFree(data);
                     return null;
                 }
 
-                int channels = Math.max(1, chBuf.get(0));
-                int rate     = Math.max(8000, rateBuf.get(0));
+                try {
+                    int channels = Math.max(1, chBuf.get(0));
+                    int rate     = Math.max(8000, rateBuf.get(0));
 
-                int frames = pcm.remaining() / channels;
-                float[] mono = new float[frames];
-                for (int i = 0; i < frames; i++) {
-                    int sum = 0;
-                    int base = i * channels;
-                    for (int c = 0; c < channels; c++) sum += pcm.get(base + c);
-                    mono[i] = (sum / (32768f * channels));
+                    int frames = pcm.remaining() / channels;
+                    float[] mono = new float[frames];
+                    for (int i = 0; i < frames; i++) {
+                        int sum = 0;
+                        int base = i * channels;
+                        for (int c = 0; c < channels; c++) sum += pcm.get(base + c);
+                        mono[i] = (sum / (32768f * channels));
+                    }
+
+                    float[][] bands = computeBands(mono, rate, FFT_SIZE, SPEC_BANDS);
+                    SpecData sd = new SpecData();
+                    sd.sampleRate      = rate;
+                    sd.secondsPerFrame = (FFT_SIZE / 2f) / rate; // hop = FFT/2
+                    sd.bands           = bands;
+                    CHAT("buildSpectrum: frames=" + bands.length + ", sr=" + rate + "Hz for " + eventId);
+                    return sd;
+                } finally {
+                    MemoryUtil.memFree(pcm);   // освободить PCM ОБЯЗАТЕЛЬНО
+                    MemoryUtil.memFree(data);  // и исходный буфер
                 }
-
-                float[][] bands = computeBands(mono, rate, FFT_SIZE, SPEC_BANDS);
-                SpecData sd = new SpecData();
-                sd.sampleRate      = rate;
-                sd.secondsPerFrame = (FFT_SIZE / 2f) / rate; // hop = FFT/2
-                sd.bands           = bands;
-                CHAT("buildSpectrum: frames=" + bands.length + ", sr=" + rate + "Hz for " + eventId);
-                return sd;
-            } finally {
-                MemoryUtil.memFree(data);
             }
         } catch (Throwable t) {
             CHAT("buildSpectrum exception: " + t.getClass().getSimpleName());
@@ -1449,19 +1467,17 @@ private double getUiDurationSec(boolean active) {
     private static int scaleColor(int rgb, float v) {
         v = Math.max(0f, Math.min(1f, v));
         int r = (int)(((rgb >> 16) & 0xFF) * v);
-        int g = (int)(((rgb >> 8)  & 0xFF) * v);
+        int g = (int)(((rgb >> 8)  & 0xFF) * v);	
         int b = (int)(( rgb        & 0xFF) * v);
         return 0xFF000000 | (r << 16) | (g << 8) | b;
     }
 
-
-
-// ----------------- Кастомный звук с динамической громкостью -----------------
+    // ----------------- Кастомный звук с динамической громкостью -----------------
     private static class PlaybackSound extends AbstractTickableSoundInstance {
-        private final java.util.function.Supplier<Float> volumeSupplier;
+        private final Supplier<Float> volumeSupplier;
         private boolean requestedStop = false;
 
-        PlaybackSound(SoundEvent event, java.util.function.Supplier<Float> vol) {
+        PlaybackSound(SoundEvent event, Supplier<Float> vol) {
             super(event, SoundSource.RECORDS, SoundInstance.createUnseededRandom());
             this.volumeSupplier = vol != null ? vol : () -> 1.0f;
             this.looping = false;
@@ -1471,11 +1487,10 @@ private double getUiDurationSec(boolean active) {
             this.y = 0.0;
             this.z = 0.0;
             this.volume = this.volumeSupplier.get();
-            this.pitch = 1.0f;
-            // Позволяет мгновенно обновить громкость извне
+                        this.pitch = 1.0f + ((java.util.concurrent.ThreadLocalRandom.current().nextFloat() - 0.5f) * 1.0e-4f);
+            
         }
 
-        // Позволяет мгновенно обновить громкость извне (например, при прокрутке крутилки)
         void setVolumeDynamic(float v) {
             this.volume = clamp01f(v);
         }
@@ -1483,20 +1498,12 @@ private double getUiDurationSec(boolean active) {
         @Override
         public void tick() {
             if (requestedStop) {
-                this.stop(); // protected, но мы внутри класса
+                this.stop();
                 return;
             }
-            // динамически подтягиваем громкость
             this.volume = clamp01f(this.volumeSupplier.get());
         }
 
         void requestStop() { this.requestedStop = true; }
-
-        boolean isActuallyStopped() {
-            // когда stop() сработал — движок перестаёт тикать инстанс и он пропадает из менеджера.
-            // У нас прямого флага нет; снаружи будем считать «остановлен», когда SoundManager его уже не знает.
-            // Это проверим косвенно в Screen через null/замену ссылки.
-            return this.requestedStop;
-        }
     }
 }
