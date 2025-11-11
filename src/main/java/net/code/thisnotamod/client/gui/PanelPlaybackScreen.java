@@ -20,6 +20,13 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.level.Level;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.item.ItemStack;
+
+import net.code.thisnotamod.block.entity.TestPlaybackBlockEntity;
+import net.code.thisnotamod.item.DriveItem;
 
 import org.lwjgl.stb.STBVorbis;
 import org.lwjgl.stb.STBVorbisInfo;
@@ -39,6 +46,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.*;
 import java.util.function.Supplier;
 
+
 /** Экран PanelPlayback: 640x360, 4 секции, список сигналов, прогрессивный рендер изображения/текста, play/pause. */
 public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMenu> {
     // ---- Виртуальная геометрия и инкрусты ----
@@ -46,8 +54,8 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
     public static final int VIRTUAL_H = 360;
 
     // РАЗМЕРЫ КОЛОНОК/СТРОК (0..1). Меняешь тут.
-	private static float COL_SPLIT = 0.58f; // доля ширины левого столбца (области 0 и 2)
-	private static float ROW_SPLIT = 0.50f; // доля высоты верхнего ряда  (области 0 и 1)
+    private static float COL_SPLIT = 0.58f; // доля ширины левого столбца (области 0 и 2)
+    private static float ROW_SPLIT = 0.50f; // доля высоты верхнего ряда  (области 0 и 1)
 
     private static final int INSET_LEFT = 12;
     private static final int INSET_RIGHT = 12;
@@ -65,19 +73,19 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
     private static final float FOCUS_NUM_SCALE = 1.25f;
 
     private static final int LINE_WHITE = 0xFFFFFFFF;
-	private static final int LINE_GREEN   = 0xFF00FF00; // lvl=3
-	private static final int LINE_YELLOW  = 0xFFFFFF00; // lvl=2
-	private static final int LINE_RED     = 0xFFFF4040; // lvl=1
-	private static final int TEXT_NAME_Y  = 0xFFFFD700; // жёлтый текст имени
+    private static final int LINE_GREEN   = 0xFF00FF00; // lvl=3
+    private static final int LINE_YELLOW  = 0xFFFFFF00; // lvl=2
+    private static final int LINE_RED     = 0xFFFF4040; // lvl=1
+    private static final int TEXT_NAME_Y  = 0xFFFFD700; // жёлтый текст имени
 
-	private static int colorForLevel(int lvl) {
-    	return switch (lvl) {
-        	case 3 -> LINE_GREEN;
-        	case 2 -> LINE_YELLOW;
-        	case 1 -> LINE_RED;
-        	default -> LINE_WHITE;
-   		 };
-	}
+    private static int colorForLevel(int lvl) {
+        return switch (lvl) {
+            case 3 -> LINE_GREEN;
+            case 2 -> LINE_YELLOW;
+            case 1 -> LINE_RED;
+            default -> LINE_WHITE;
+        };
+    }
 
     // Нижняя полоса с кнопками
     private static final int BTN_BAR_Y = SCREEN_Y + SCREEN_H + 20;
@@ -112,14 +120,17 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
     private final IntRect btnList    = new IntRect(SCREEN_X + 46, BTN_BAR_Y, 24, 24);          // 1 — прокрутка списка (колесо)
     private final IntRect btnStub2   = new IntRect(SCREEN_X + 82, BTN_BAR_Y, 24, 24);          // 2 — заглушка / смена спектра
     private final IntRect btnPlay    = new IntRect(SCREEN_X + 118, BTN_BAR_Y, 24, 24);         // 3 — Play/Pause
-    private final IntRect btnStub4   = new IntRect(SCREEN_X + 154, BTN_BAR_Y, 24, 24);         // 4 — заглушка
+    private final IntRect btnImpExp  = new IntRect(SCREEN_X + 154, BTN_BAR_Y, 24, 24); 		   // Import/Export
 
     // ---- Рендер-скейл в окне ----
     private int guiX, guiY;
     private float guiScale;
 
     // ---- Данные сигналов и состояние ----
-    private static List<SignalEntry> SIGNALS = null; // лениво загружаем один раз
+    // мастер-таблица всех сигналов из JSON по id (lookup)
+    private static final Map<Integer, SignalEntry> MASTER = new HashMap<>();
+    // видимый список — только то, что импортировано в блок
+    private static List<SignalEntry> SIGNALS = new ArrayList<>();
     private static Map<Integer, String> firstSeenDates = new HashMap<>(); // id -> date string
 
     private int listScroll = 0;             // верхний индекс списка (для прокрутки)
@@ -151,8 +162,9 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
         super(menu, inv, title);
         this.imageWidth = VIRTUAL_W;
         this.imageHeight = VIRTUAL_H;
-        ensureSignalsLoaded();
+        ensureMasterSignalsLoaded();
         loadPersistent();
+        refreshVisibleFromBlock();
         clampIndices();
         ensureFirstSeenDates();
         this.listScroll = this.selectedIndex; // скроллбар указывает на выбранный элемент
@@ -200,6 +212,9 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
 
         // Рамка экрана и сетка 2x2
         drawScreenFrameAndGrid(gg);
+        // тянем актуальный список из блока (дёшево, синхронизируется по пакетам BE)
+        refreshVisibleFromBlock();
+
 
         // Прямоугольники секций
         IntRect r0 = cellRect(0);
@@ -233,6 +248,16 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (button == 0) {
+            if (isHovering(btnImpExp, mouseX, mouseY)) {
+                // 1) optionally: отправка на сервер через clickMenuButton — если обработчик появится
+                if (this.minecraft != null && this.minecraft.gameMode != null) {
+                    this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, 1);
+                }
+                // 2) локальная попытка — обновить UI сразу
+                doLocalImportExport();
+                return true;
+            }
+
             if (isHovering(btnPlay, mouseX, mouseY)) {
                 togglePlayPause();
                 return true;
@@ -259,15 +284,15 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
             setVolume01(volume01 + sign * 0.05f);
             return true;
         }
-                if (isHovering(btnList, mouseX, mouseY)) {
+        if (isHovering(btnList, mouseX, mouseY)) {
             int n = (SIGNALS != null) ? SIGNALS.size() : 0;
-if (n > 0) {
-    int next = (selectedIndex - sign) % n;
-    if (next < 0) next += n;
-    setSelectedIndex(next);
-    clampIndices();
-}
-return true;
+            if (n > 0) {
+                int next = (selectedIndex - sign) % n;
+                if (next < 0) next += n;
+                setSelectedIndex(next);
+                clampIndices();
+            }
+            return true;
         }
 
         return super.mouseScrolled(mouseX, mouseY, delta);
@@ -280,16 +305,16 @@ return true;
     }
 
     // ----------------- Рисовач -----------------
-private void drawScreenFrameAndGrid(GuiGraphics gg) {
-    int x = SCREEN_X, y = SCREEN_Y, w = SCREEN_W, h = SCREEN_H;
-    gg.fill(x, y, x + w, y + h, 0xFF000000);              // фон
-    gg.renderOutline(x, y, w, h, LINE_WHITE);             // внешняя рамка (белая)
+    private void drawScreenFrameAndGrid(GuiGraphics gg) {
+        int x = SCREEN_X, y = SCREEN_Y, w = SCREEN_W, h = SCREEN_H;
+        gg.fill(x, y, x + w, y + h, 0xFF000000);              // фон
+        gg.renderOutline(x, y, w, h, LINE_WHITE);             // внешняя рамка (белая)
 
-    int midX = x + Math.round(w * COL_SPLIT);
-    int midY = y + Math.round(h * ROW_SPLIT);
-    gg.vLine(midX, y, y + h, LINE_WHITE);                 // вертикальный разделитель
-    gg.hLine(x, x + w, midY, LINE_WHITE);                 // горизонтальный разделитель
-}
+        int midX = x + Math.round(w * COL_SPLIT);
+        int midY = y + Math.round(h * ROW_SPLIT);
+        gg.vLine(midX, y, y + h, LINE_WHITE);                 // вертикальный разделитель
+        gg.hLine(x, x + w, midY, LINE_WHITE);                 // горизонтальный разделитель
+    }
 
 
     private static class SpecData {
@@ -299,122 +324,122 @@ private void drawScreenFrameAndGrid(GuiGraphics gg) {
     }
 
     private void drawGridOverlay(GuiGraphics gg) {
-    int x = SCREEN_X, y = SCREEN_Y, w = SCREEN_W, h = SCREEN_H;
-    int midX = x + Math.round(w * COL_SPLIT);
-    int midY = y + Math.round(h * ROW_SPLIT);
+        int x = SCREEN_X, y = SCREEN_Y, w = SCREEN_W, h = SCREEN_H;
+        int midX = x + Math.round(w * COL_SPLIT);
+        int midY = y + Math.round(h * ROW_SPLIT);
 
-    // только линии, без заливки — поверх контента
-    gg.renderOutline(x, y, w, h, LINE_WHITE);
-    gg.vLine(midX, y, y + h, LINE_WHITE);
-    gg.hLine(x, x + w, midY, LINE_WHITE);
-}
+        // только линии, без заливки — поверх контента
+        gg.renderOutline(x, y, w, h, LINE_WHITE);
+        gg.vLine(midX, y, y + h, LINE_WHITE);
+        gg.hLine(x, x + w, midY, LINE_WHITE);
+    }
 
-private void drawSignalList(GuiGraphics gg, IntRect r) {
-    // без заголовка
-    final int rowH = 32;
-    final int sectionPadX = 4;
+    private void drawSignalList(GuiGraphics gg, IntRect r) {
+        // без заголовка
+        final int rowH = 32;
+        final int sectionPadX = 4;
 
-    // сколько строк влезает в секцию
-    int visible = Math.max(1, r.h / rowH);
-    int centerRow = visible / 2;
+        // сколько строк влезает в секцию
+        int visible = Math.max(1, r.h / rowH);
+        int centerRow = visible / 2;
 
-    // такой top, чтобы выбранная строка была РОВНО по центру секции
-    int top = r.centerY() - (centerRow * rowH + rowH / 2);
+        // такой top, чтобы выбранная строка была РОВНО по центру секции
+        int top = r.centerY() - (centerRow * rowH + rowH / 2);
 
-    // глобальная вертикальная полоса после "0>" — во всю высоту секции
-    final int laneRightGlobal = Math.min(r.x + sectionPadX + LIST_LANE_W, r.x + r.w - 6);
-    gg.vLine(laneRightGlobal, r.y + 2, r.y + r.h - 2, LINE_WHITE);
+        // глобальная вертикальная полоса после "0>" — во всю высоту секции
+        final int laneRightGlobal = Math.min(r.x + sectionPadX + LIST_LANE_W, r.x + r.w - 6);
+        gg.vLine(laneRightGlobal, r.y + 2, r.y + r.h - 2, LINE_WHITE);
 
-    // индекс верхней логической строки
-    int virtualTop = selectedIndex - centerRow;
+        // индекс верхней логической строки
+        int virtualTop = selectedIndex - centerRow;
 
-    for (int i = 0; i < visible; i++) {
-        int idx = virtualTop + i;
-        int y0 = top + i * rowH;
-        int y1 = y0 + rowH - 2;
-        int x0 = r.x + sectionPadX;
-        int w0 = r.w - sectionPadX * 2;
+        for (int i = 0; i < visible; i++) {
+            int idx = virtualTop + i;
+            int y0 = top + i * rowH;
+            int y1 = y0 + rowH - 2;
+            int x0 = r.x + sectionPadX;
+            int w0 = r.w - sectionPadX * 2;
 
-        // общий фон строки
-        gg.fill(x0, y0, x0 + w0, y1, 0x20101010);
+            // общий фон строки
+            gg.fill(x0, y0, x0 + w0, y1, 0x20101010);
 
-        if (idx < 0 || SIGNALS == null || idx >= SIGNALS.size()) continue;
+            if (idx < 0 || SIGNALS == null || idx >= SIGNALS.size()) continue;
 
-        boolean focused = (idx == selectedIndex);
-        SignalEntry s = SIGNALS.get(idx);
+            boolean focused = (idx == selectedIndex);
+            SignalEntry s = SIGNALS.get(idx);
 
-        // горизонтальные линии фокуса — во всю ширину секции
-        if (focused) {
-            gg.hLine(r.x + 1, r.x + r.w - 2, y0,     LINE_WHITE);
-            gg.hLine(r.x + 1, r.x + r.w - 2, y1 - 1, LINE_WHITE);
-        }
+            // горизонтальные линии фокуса — во всю ширину секции
+            if (focused) {
+                gg.hLine(r.x + 1, r.x + r.w - 2, y0,     LINE_WHITE);
+                gg.hLine(r.x + 1, r.x + r.w - 2, y1 - 1, LINE_WHITE);
+            }
 
-        // левая зона с номером "0>"
-        int laneLeft = x0 + 2;
-        if (focused) {
-            String label = idx + ">";
-            float scale = FOCUS_NUM_SCALE;
-            int laneW = Math.max(1, laneRightGlobal - laneLeft);
-            float textW = this.font.width(label) * scale;
-            float textH = this.font.lineHeight * scale;
-            float tx = laneLeft + (laneW - textW) / 2f;
-            float ty = y0 + ((rowH - 2) - textH) / 2f;
+            // левая зона с номером "0>"
+            int laneLeft = x0 + 2;
+            if (focused) {
+                String label = idx + ">";
+                float scale = FOCUS_NUM_SCALE;
+                int laneW = Math.max(1, laneRightGlobal - laneLeft);
+                float textW = this.font.width(label) * scale;
+                float textH = this.font.lineHeight * scale;
+                float tx = laneLeft + (laneW - textW) / 2f;
+                float ty = y0 + ((rowH - 2) - textH) / 2f;
 
-            gg.pose().pushPose();
-            gg.pose().translate(tx, ty, 0);
-            gg.pose().scale(scale, scale, 1f);
-            gg.drawString(this.font, label, 0, 0, 0xFFE0FFFF, false);
-            gg.pose().popPose();
-        }
+                gg.pose().pushPose();
+                gg.pose().translate(tx, ty, 0);
+                gg.pose().scale(scale, scale, 1f);
+                gg.drawString(this.font, label, 0, 0, 0xFFE0FFFF, false);
+                gg.pose().popPose();
+            }
 
-        // данные
-        String objName = s.objectNameKey != null ? I18n.get(s.objectNameKey) : s.name;
-        if (objName == null || objName.isBlank()) objName = (s.name != null ? s.name : "—");
-        String date = firstSeenDates.getOrDefault(s.id, "");
+            // данные
+            String diskName = (s.diskLabel != null && !s.diskLabel.isBlank()) ? s.diskLabel
+                    : (s.name != null ? s.name : "—");
+            String date = firstSeenDates.getOrDefault(s.id, "");
 
-        // ----- внутренняя обводка по уровню + разделение на 2 ячейки -----
-        // ----- внутренняя обводка по уровню + разделение на 2 ячейки -----
-int lvlColor = colorForLevel(s.level);
+            // ----- внутренняя обводка по уровню + разделение на 2 ячейки -----
+            // ----- внутренняя обводка по уровню + разделение на 2 ячейки -----
+            int lvlColor = colorForLevel(s.level);
 
-int innerPad = 2;                      // одинаковый отступ со всех сторон
-int innerX   = laneRightGlobal + 4;    // чуть ближе к левой рамке списка
-int rowPixH  = Math.max(1, y1 - y0);   // реальная высота строки в пикселях
-int innerY   = y0 + innerPad;
-int innerW   = Math.max(8, (r.x + r.w - innerPad) - innerX); // симметричный правый отступ
-int innerH   = Math.max(8, rowPixH - innerPad * 2);          // симметрия по вертикали
+            int innerPad = 2;                      // одинаковый отступ со всех сторон
+            int innerX   = laneRightGlobal + 4;    // чуть ближе к левой рамке списка
+            int rowPixH  = Math.max(1, y1 - y0);   // реальная высота строки в пикселях
+            int innerY   = y0 + innerPad;
+            int innerW   = Math.max(8, (r.x + r.w - innerPad) - innerX); // симметричный правый отступ
+            int innerH   = Math.max(8, rowPixH - innerPad * 2);          // симметрия по вертикали
 
 // рамка уровня
-gg.renderOutline(innerX, innerY, innerW, innerH, lvlColor);
+            gg.renderOutline(innerX, innerY, innerW, innerH, lvlColor);
 
 // разделитель пополам
-int splitY = innerY + innerH / 2;
-gg.hLine(innerX + 1, innerX + innerW - 1, splitY, lvlColor);
+            int splitY = innerY + innerH / 2;
+            gg.hLine(innerX + 1, innerX + innerW - 1, splitY, lvlColor);
 
 // тексты «чуть меньше»
-float tScale = 0.90f;
-int tx = innerX + 4;
+            float tScale = 0.90f;
+            int tx = innerX + 4;
 
 
-        // ограничиваем ширину с учётом скейла
-        int maxTextWpx = Math.max(1, (int)Math.floor((innerW - 8) / tScale));
-        String nameDraw = this.font.plainSubstrByWidth(objName, maxTextWpx);
-        String dateDraw = this.font.plainSubstrByWidth(date,     maxTextWpx);
+            // ограничиваем ширину с учётом скейла
+            int maxTextWpx = Math.max(1, (int)Math.floor((innerW - 8) / tScale));
+            String nameDraw = this.font.plainSubstrByWidth(diskName, maxTextWpx);
+            String dateDraw = this.font.plainSubstrByWidth(date,     maxTextWpx);
 
-        // верх: имя (жёлтым)
-        gg.pose().pushPose();
-        gg.pose().translate(tx, innerY + 2, 0);
-        gg.pose().scale(tScale, tScale, 1f);
-        gg.drawString(this.font, nameDraw, 0, 0, TEXT_NAME_Y, false);
-        gg.pose().popPose();
+            // верх: имя (жёлтым)
+            gg.pose().pushPose();
+            gg.pose().translate(tx, innerY + 2, 0);
+            gg.pose().scale(tScale, tScale, 1f);
+            gg.drawString(this.font, nameDraw, 0, 0, TEXT_NAME_Y, false);
+            gg.pose().popPose();
 
-        // низ: дата (белым)
-        gg.pose().pushPose();
-        gg.pose().translate(tx, splitY + 2, 0);
-        gg.pose().scale(tScale, tScale, 1f);
-        gg.drawString(this.font, dateDraw, 0, 0, LINE_WHITE, false);
-        gg.pose().popPose();
+            // низ: дата (белым)
+            gg.pose().pushPose();
+            gg.pose().translate(tx, splitY + 2, 0);
+            gg.pose().scale(tScale, tScale, 1f);
+            gg.drawString(this.font, dateDraw, 0, 0, LINE_WHITE, false);
+            gg.pose().popPose();
+        }
     }
-}
 
 
 
@@ -434,9 +459,9 @@ int tx = innerX + 4;
         // Лог один раз при смене картинки
         if (dbgLastImage != s.imageRaw) {
             CHAT("IMG: rl=" + s.imageRaw +
-                " exists=" + s.imageExists +
-                " sizeHint=" + s.imageRawWidth + "x" + s.imageRawHeight +
-                " (expected file: assets/" + s.imageRaw.getNamespace() + "/" + s.imageRaw.getPath() + ")");
+                    " exists=" + s.imageExists +
+                    " sizeHint=" + s.imageRawWidth + "x" + s.imageRawHeight +
+                    " (expected file: assets/" + s.imageRaw.getNamespace() + "/" + s.imageRaw.getPath() + ")");
             dbgLastImage = s.imageRaw;
         }
 
@@ -449,213 +474,213 @@ int tx = innerX + 4;
         int srcH = s.imageRawHeight > 0 ? s.imageRawHeight : 288;
 
         // Вписываем в секцию: по вертикали — без отступов
-int padX = 6;     // горизонтальный отступ можно оставить
-int padY = 0;     // по вертикали — в упор
-int availW = Math.max(1, r.w - padX * 2);
-int availH = Math.max(1, r.h - padY * 2);
+        int padX = 6;     // горизонтальный отступ можно оставить
+        int padY = 0;     // по вертикали — в упор
+        int availW = Math.max(1, r.w - padX * 2);
+        int availH = Math.max(1, r.h - padY * 2);
 
 // Масштаб по высоте
-float scale = availH / (float) srcH;
-int drawH = Math.max(1, Math.round(srcH * scale));
-int drawW = Math.max(1, Math.round(srcW * scale));
+        float scale = availH / (float) srcH;
+        int drawH = Math.max(1, Math.round(srcH * scale));
+        int drawW = Math.max(1, Math.round(srcW * scale));
 
 // Если вдруг не влезли по ширине — ужмём пропорционально
-if (drawW > availW) {
-    float k = availW / (float) drawW;
-    drawW = Math.max(1, Math.round(drawW * k));
-    drawH = Math.max(1, Math.round(drawH * k));
-}
+        if (drawW > availW) {
+            float k = availW / (float) drawW;
+            drawW = Math.max(1, Math.round(drawW * k));
+            drawH = Math.max(1, Math.round(drawH * k));
+        }
 
-int dx = r.x + (r.w - drawW) / 2;
-int dy = r.y + (r.h - drawH) / 2;
+        int dx = r.x + (r.w - drawW) / 2;
+        int dy = r.y + (r.h - drawH) / 2;
 
 // фон всей области
-gg.fill(r.x, r.y, r.x + r.w, r.y + r.h, 0xFF000000);
+        gg.fill(r.x, r.y, r.x + r.w, r.y + r.h, 0xFF000000);
 
 // ВЫЧИСЛЯЕМ видимую высоту по прогрессу (и соответствующую высоту исходной текстуры)
-int cutH    = Math.max(1, (int)Math.round(drawH * t));
-int texCutH = Math.max(1, (int)Math.round(srcH * t));
+        int cutH    = Math.max(1, (int)Math.round(drawH * t));
+        int texCutH = Math.max(1, (int)Math.round(srcH * t));
 
-if (Boolean.TRUE.equals(s.imageExists)) {
-    gg.pose().pushPose();
-    gg.pose().translate(dx, dy, 0);
+        if (Boolean.TRUE.equals(s.imageExists)) {
+            gg.pose().pushPose();
+            gg.pose().translate(dx, dy, 0);
 
-    // масштаб по ширине — к полной ширине, по высоте — только к видимой части
-    float sx = drawW / (float) Math.max(1, srcW);
-    float sy = cutH / (float) Math.max(1, texCutH);
-    gg.pose().scale(sx, sy, 1f);
+            // масштаб по ширине — к полной ширине, по высоте — только к видимой части
+            float sx = drawW / (float) Math.max(1, srcW);
+            float sy = cutH / (float) Math.max(1, texCutH);
+            gg.pose().scale(sx, sy, 1f);
 
-    RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-    // рисуем верхнюю часть исходной текстуры (0..texCutH)
-    gg.blit(s.imageRaw, 0, 0, 0, 0, srcW, texCutH, srcW, srcH);
+            RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+            // рисуем верхнюю часть исходной текстуры (0..texCutH)
+            gg.blit(s.imageRaw, 0, 0, 0, 0, srcW, texCutH, srcW, srcH);
 
-    gg.pose().popPose();
+            gg.pose().popPose();
 
-    if (t <= 0.0001 || Math.abs(t - 1.0) <= 0.0001) {
-        CHAT("IMG draw: " + s.imageRaw + " dst=" + drawW + "x" + cutH +
-             " of src " + srcW + "x" + texCutH + " at " + dx + "," + dy + " (t=" + FMT(t) + ")");
-    }
-} else {
-    centerLabel(gg, r, "IMAGE NOT FOUND");
-}
-
-
-gg.renderOutline(dx, dy, drawW, drawH, LINE_WHITE);
-    }
-
-private void drawSpectrogram(GuiGraphics gg, IntRect r) {
-    // фон
-    gg.fill(r.x + 1, r.y + 1, r.x + r.w - 1, r.y + r.h - 1, 0xFF000000);
-
-    // подготовим данные
-    SignalEntry s = getSelected();
-    SpecData sd = (s != null) ? specCacheById.get(s.id) : null;
-
-    // геометрия области
-    int pad   = 6;
-    int w     = Math.max(1, r.w - pad * 2);
-    int h     = Math.max(1, r.h - pad * 2);
-    int xLeft = r.x + pad;
-    int yTop  = r.y + pad;
-    int yBot  = yTop + h;
-
-    if (specMode == SpecMode.BARS) {
-        // ===== РЕЖИМ BARS =====
-        float[] tgt = null;
-        if (sd != null && (isPlaying || isAudioActive())) {
-            int fi = (int) Math.floor(playProgressSec / Math.max(1e-4f, sd.secondsPerFrame));
-            fi = Math.max(0, Math.min(sd.bands.length - 1, fi));
-            tgt = sd.bands[fi];
+            if (t <= 0.0001 || Math.abs(t - 1.0) <= 0.0001) {
+                CHAT("IMG draw: " + s.imageRaw + " dst=" + drawW + "x" + cutH +
+                        " of src " + srcW + "x" + texCutH + " at " + dx + "," + dy + " (t=" + FMT(t) + ")");
+            }
+        } else {
+            centerLabel(gg, r, "IMAGE NOT FOUND");
         }
 
-        if (tgt != null) {
-            for (int b = 0; b < SPEC_BANDS; b++) {
-                float tVal = (b < tgt.length) ? tgt[b] : 0f;
-                if (tVal > specNow[b]) {
-                    specNow[b] += (tVal - specNow[b]) * 0.35f;
-                } else {
-                    specNow[b] = specNow[b] * SPEC_DECAY + tVal * (1f - SPEC_DECAY);
+
+        gg.renderOutline(dx, dy, drawW, drawH, LINE_WHITE);
+    }
+
+    private void drawSpectrogram(GuiGraphics gg, IntRect r) {
+        // фон
+        gg.fill(r.x + 1, r.y + 1, r.x + r.w - 1, r.y + r.h - 1, 0xFF000000);
+
+        // подготовим данные
+        SignalEntry s = getSelected();
+        SpecData sd = (s != null) ? specCacheById.get(s.id) : null;
+
+        // геометрия области
+        int pad   = 6;
+        int w     = Math.max(1, r.w - pad * 2);
+        int h     = Math.max(1, r.h - pad * 2);
+        int xLeft = r.x + pad;
+        int yTop  = r.y + pad;
+        int yBot  = yTop + h;
+
+        if (specMode == SpecMode.BARS) {
+            // ===== РЕЖИМ BARS =====
+            float[] tgt = null;
+            if (sd != null && (isPlaying || isAudioActive())) {
+                int fi = (int) Math.floor(playProgressSec / Math.max(1e-4f, sd.secondsPerFrame));
+                fi = Math.max(0, Math.min(sd.bands.length - 1, fi));
+                tgt = sd.bands[fi];
+            }
+
+            if (tgt != null) {
+                for (int b = 0; b < SPEC_BANDS; b++) {
+                    float tVal = (b < tgt.length) ? tgt[b] : 0f;
+                    if (tVal > specNow[b]) {
+                        specNow[b] += (tVal - specNow[b]) * 0.35f;
+                    } else {
+                        specNow[b] = specNow[b] * SPEC_DECAY + tVal * (1f - SPEC_DECAY);
+                    }
                 }
             }
+
+            int bandW = Math.max(2, w / SPEC_BANDS);
+            int gap   = Math.max(1, Math.min(2, bandW / 6));
+            for (int i = 0; i < SPEC_BANDS; i++) {
+                float v = Math.max(0f, Math.min(1f, specNow[i]));
+                int bh = (int) Math.round(h * v);
+                int x0 = xLeft + i * bandW;
+                int x1 = x0 + bandW - gap;
+                if (x1 <= x0) x1 = x0 + 1;
+                gg.fill(x0, yBot - bh, x1, yBot, gradientColor(i));
+            }
+
+            gg.renderOutline(r.x, r.y, r.w, r.h, 0xFF404040);
+            return;
         }
 
-        int bandW = Math.max(2, w / SPEC_BANDS);
-        int gap   = Math.max(1, Math.min(2, bandW / 6));
-        for (int i = 0; i < SPEC_BANDS; i++) {
-            float v = Math.max(0f, Math.min(1f, specNow[i]));
-            int bh = (int) Math.round(h * v);
-            int x0 = xLeft + i * bandW;
-            int x1 = x0 + bandW - gap;
-            if (x1 <= x0) x1 = x0 + 1;
-            gg.fill(x0, yBot - bh, x1, yBot, gradientColor(i));
+        // ===== РЕЖИМ HEAT =====
+        if (sd == null || sd.bands == null || sd.bands.length == 0) {
+            boolean building = false;
+            if (s != null && s.soundRawId != null) {
+                SoundEvent se = resolveSound(s.soundRawId);
+                if (se != null) {
+                    ResourceLocation eventId = BuiltInRegistries.SOUND_EVENT.getKey(se);
+                    building = eventId != null && specBuildTasks.containsKey(eventId);
+                }
+            }
+            centerLabel(gg, r, building ? "BUILDING…" : "NO SPECTRUM");
+            gg.renderOutline(r.x, r.y, r.w, r.h, 0xFF404040);
+            return;
         }
 
-        gg.renderOutline(r.x, r.y, r.w, r.h, 0xFF404040);
-        return;
-    }
+        final int frames = sd.bands.length;
+        final int cols   = w; // по одному столбику на пиксель
+        int cur = (int)Math.floor(playProgressSec / Math.max(1e-4f, sd.secondsPerFrame));
+        int maxFrameVisible = Math.max(0, Math.min(frames - 1, cur));
+        int drawCols = Math.max(1, (int)Math.ceil(((maxFrameVisible + 1) / (float)frames) * cols));
 
-    // ===== РЕЖИМ HEAT =====
-    if (sd == null || sd.bands == null || sd.bands.length == 0) {
-        boolean building = false;
-        if (s != null && s.soundRawId != null) {
-            SoundEvent se = resolveSound(s.soundRawId);
-            if (se != null) {
-                ResourceLocation eventId = BuiltInRegistries.SOUND_EVENT.getKey(se);
-                building = eventId != null && specBuildTasks.containsKey(eventId);
+        // равномерно распределяем полосы на всю высоту (без «потери» пикселей)
+        final float bandStep = h / (float) SPEC_BANDS; // дробный шаг по высоте
+
+        for (int cx = 0; cx < drawCols; cx++) {
+            int fi = (int)Math.floor((cx / (float)Math.max(1, cols - 1)) * (frames - 1));
+            float[] row = sd.bands[fi];
+
+            int x0 = xLeft + cx;
+            int x1 = x0 + 1;
+
+            for (int b = 0; b < SPEC_BANDS; b++) {
+                float amp = (row != null && b < row.length) ? row[b] : 0f;
+                float bright = (float)Math.sqrt(Math.max(0f, Math.min(1f, amp)));
+                int base = gradientColor(b);
+                int col  = scaleColor(base, bright);
+
+                // низкие частоты внизу
+                int y0 = yTop + Math.round((SPEC_BANDS - 1 - b) * bandStep);
+                int y1 = yTop + Math.round((SPEC_BANDS - b) * bandStep);
+                if (y1 <= y0) y1 = y0 + 1;
+                if (y1 > yBot) y1 = yBot;
+                gg.fill(x0, y0, x1, y1, col);
             }
         }
-        centerLabel(gg, r, building ? "BUILDING…" : "NO SPECTRUM");
-        gg.renderOutline(r.x, r.y, r.w, r.h, 0xFF404040);
-        return;
-    }
 
-    final int frames = sd.bands.length;
-    final int cols   = w; // по одному столбику на пиксель
-    int cur = (int)Math.floor(playProgressSec / Math.max(1e-4f, sd.secondsPerFrame));
-    int maxFrameVisible = Math.max(0, Math.min(frames - 1, cur));
-    int drawCols = Math.max(1, (int)Math.ceil(((maxFrameVisible + 1) / (float)frames) * cols));
-
-    // равномерно распределяем полосы на всю высоту (без «потери» пикселей)
-    final float bandStep = h / (float) SPEC_BANDS; // дробный шаг по высоте
-
-    for (int cx = 0; cx < drawCols; cx++) {
-        int fi = (int)Math.floor((cx / (float)Math.max(1, cols - 1)) * (frames - 1));
-        float[] row = sd.bands[fi];
-
-        int x0 = xLeft + cx;
-        int x1 = x0 + 1;
-
-        for (int b = 0; b < SPEC_BANDS; b++) {
-            float amp = (row != null && b < row.length) ? row[b] : 0f;
-            float bright = (float)Math.sqrt(Math.max(0f, Math.min(1f, amp)));
-            int base = gradientColor(b);
-            int col  = scaleColor(base, bright);
-
-            // низкие частоты внизу
-            int y0 = yTop + Math.round((SPEC_BANDS - 1 - b) * bandStep);
-            int y1 = yTop + Math.round((SPEC_BANDS - b) * bandStep);
-            if (y1 <= y0) y1 = y0 + 1;
-            if (y1 > yBot) y1 = yBot;
-            gg.fill(x0, y0, x1, y1, col);
+        // справа от «фронта» — чёрная область (заполнение слева-направо)
+        if (drawCols < cols) {
+            gg.fill(xLeft + drawCols, yTop, xLeft + cols, yBot, 0xFF000000);
         }
-    }
 
-    // справа от «фронта» — чёрная область (заполнение слева-направо)
-    if (drawCols < cols) {
-        gg.fill(xLeft + drawCols, yTop, xLeft + cols, yBot, 0xFF000000);
+        gg.renderOutline(r.x, r.y, r.w, r.h, LINE_WHITE);
     }
-
-    gg.renderOutline(r.x, r.y, r.w, r.h, LINE_WHITE);
-}
 
 
     private void drawTextBlockProgressive(GuiGraphics gg, IntRect r) {
-    final String EMPTY_LABEL = "Текстовые данные";
+        final String EMPTY_LABEL = "Текстовые данные";
 
-    // фон секции
-    gg.fill(r.x + 1, r.y + 1, r.x + r.w - 1, r.y + r.h - 1, 0xFF000000);
+        // фон секции
+        gg.fill(r.x + 1, r.y + 1, r.x + r.w - 1, r.y + r.h - 1, 0xFF000000);
 
-    // геометрия текста
-    int pad = 8;
-    int rw  = r.w - pad * 2;
-    int x   = r.x + pad;
-    int y   = r.y + pad;
+        // геометрия текста
+        int pad = 8;
+        int rw  = r.w - pad * 2;
+        int x   = r.x + pad;
+        int y   = r.y + pad;
 
-    SignalEntry s = getSelected();
+        SignalEntry s = getSelected();
 
-    // нет текста у сигнала — рисуем заглушку в том же месте, где был бы текст
-    if (s == null || s.textRawKey == null || s.textRawKey.isBlank()) {
-        gg.drawString(this.font, EMPTY_LABEL, x, y, 0xFF808080, false);
+        // нет текста у сигнала — рисуем заглушку в том же месте, где был бы текст
+        if (s == null || s.textRawKey == null || s.textRawKey.isBlank()) {
+            gg.drawString(this.font, EMPTY_LABEL, x, y, 0xFF808080, false);
+            gg.renderOutline(r.x, r.y, r.w, r.h, LINE_WHITE);
+            return;
+        }
+
+        String full = I18n.get(s.textRawKey);
+        if (full == null) full = s.textRawKey;
+
+        // порог «проявления» текста по прогрессу
+        double dur = getUiDurationSec(isAudioActive());
+        double t   = clamp01(playProgressSec / Math.max(0.1, dur));
+        int maxChars = (int) Math.round(full.length() * t);
+
+        // ещё ничего не проявилось — показываем заглушку на месте текста
+        if (maxChars <= 0) {
+            gg.drawString(this.font, EMPTY_LABEL, x, y, 0xFF808080, false);
+            gg.renderOutline(r.x, r.y, r.w, r.h, LINE_WHITE);
+            return;
+        }
+
+        String part = full.substring(0, Math.min(maxChars, full.length()));
+
+        // перенос по словам
+        for (String line : wrapText(part, rw)) {
+            gg.drawString(this.font, line, x, y, 0xFFFFFFFF, false);
+            y += this.font.lineHeight + 2;
+            if (y > r.y + r.h - pad - this.font.lineHeight) break;
+        }
+
         gg.renderOutline(r.x, r.y, r.w, r.h, LINE_WHITE);
-        return;
     }
-
-    String full = I18n.get(s.textRawKey);
-    if (full == null) full = s.textRawKey;
-
-    // порог «проявления» текста по прогрессу
-    double dur = getUiDurationSec(isAudioActive());
-    double t   = clamp01(playProgressSec / Math.max(0.1, dur));
-    int maxChars = (int) Math.round(full.length() * t);
-
-    // ещё ничего не проявилось — показываем заглушку на месте текста
-    if (maxChars <= 0) {
-        gg.drawString(this.font, EMPTY_LABEL, x, y, 0xFF808080, false);
-        gg.renderOutline(r.x, r.y, r.w, r.h, LINE_WHITE);
-        return;
-    }
-
-    String part = full.substring(0, Math.min(maxChars, full.length()));
-
-    // перенос по словам
-    for (String line : wrapText(part, rw)) {
-        gg.drawString(this.font, line, x, y, 0xFFFFFFFF, false);
-        y += this.font.lineHeight + 2;
-        if (y > r.y + r.h - pad - this.font.lineHeight) break;
-    }
-
-    gg.renderOutline(r.x, r.y, r.w, r.h, LINE_WHITE);
-}
 
 
 
@@ -670,14 +695,14 @@ private void drawSpectrogram(GuiGraphics gg, IntRect r) {
         drawButtonLabel(gg, btnStub2,
                 (specMode == SpecMode.BARS ? "HEAT" : "BARS"), 0xFFE0E0E0);
         drawButtonLabel(gg, btnPlay, isPlaying ? "PAUSE" : "PLAY", 0xFFE0FFE0);
-        drawButtonLabel(gg, btnStub4, "—", 0xFF808080);
+        drawButtonLabel(gg, btnImpExp, "I/E", 0xFFE0E0E0);
 
         if (DEBUG_BUTTONS) {
             debugRect(gg, btnVolKnob, 0x40FFFF00);
             debugRect(gg, btnList,    0x40FFFFFF);
             debugRect(gg, btnStub2,   0x4020FFFF);
             debugRect(gg, btnPlay,    0x4000FF00);
-            debugRect(gg, btnStub4,   0x4020FFFF);
+            debugRect(gg, btnImpExp,  0x4020FFFF);
         }
     }
 
@@ -690,6 +715,31 @@ private void drawSpectrogram(GuiGraphics gg, IntRect r) {
         }
     }
 
+    // +++ только локально (клиент), чтобы UI обновился мгновенно
+    private void doLocalImportExport() {
+        TestPlaybackBlockEntity b = be();
+        if (b == null) return;
+        ItemStack drv = b.getDrive();
+        if (drv.isEmpty()) return;
+
+        int sid = drv.getOrCreateTag().getInt(DriveItem.TAG_SIGNAL_ID);
+
+        if (sid >= 0) {
+            // На диске ЕСТЬ сигнал -> ИМПОРТ в список + ОЧИСТКА диска
+            b.importFromInsertedDrive();
+        } else {
+            // На диске НЕТ сигнала -> ЭКСПОРТ выбранного в диск + УДАЛЕНИЕ из списка
+            SignalEntry sel = getSelected();
+            if (sel != null) {
+                b.exportToInsertedDrive(sel.id, sel.level, sel.size);
+            }
+        }
+
+        // Обновить отображение списка
+        refreshVisibleFromBlock();
+    }
+
+
     private void toggleSpecMode() {
         specMode = (specMode == SpecMode.BARS) ? SpecMode.HEAT : SpecMode.BARS;
         CHAT("Spectrogram mode: " + (specMode == SpecMode.BARS ? "BARS" : "HEAT"));
@@ -698,7 +748,7 @@ private void drawSpectrogram(GuiGraphics gg, IntRect r) {
     }
 
     private void startPlayback() {
-    	// Сбрасываем предыдущее воспроизведение (во избежание блокировки повторного старта)
+        // Сбрасываем предыдущее воспроизведение (во избежание блокировки повторного старта)
         stopPlayback();
         awaitingActivation = false;
 //      playProgressSec не трогаем — визуализации «замерзают» на текущем месте
@@ -727,23 +777,23 @@ private void drawSpectrogram(GuiGraphics gg, IntRect r) {
         // Спектр: если нет — запускаем сборку асинхронно (без фриза UI)
         if (!specCacheById.containsKey(s.id) && eventId != null && !specBuildTasks.containsKey(eventId)) {
             specBuildTasks.put(eventId,
-                CompletableFuture.supplyAsync(() -> buildSpectrumFor(eventId))
-                    .whenComplete((sd, ex) -> {
-                        if (ex == null && sd != null) {
-                            specCacheById.put(s.id, sd);
-                            CHAT("Spectrum cached: id=" + s.id + ", frames=" + sd.bands.length + ", sr=" + sd.sampleRate);
-                        } else {
-                            CHAT("Spectrum build FAILED for " + eventId);
-                        }
-                        specBuildTasks.remove(eventId);
-                    })
+                    CompletableFuture.supplyAsync(() -> buildSpectrumFor(eventId))
+                            .whenComplete((sd, ex) -> {
+                                if (ex == null && sd != null) {
+                                    specCacheById.put(s.id, sd);
+                                    CHAT("Spectrum cached: id=" + s.id + ", frames=" + sd.bands.length + ", sr=" + sd.sampleRate);
+                                } else {
+                                    CHAT("Spectrum build FAILED for " + eventId);
+                                }
+                                specBuildTasks.remove(eventId);
+                            })
             );
         }
 
         // сброс текущих столбиков перед новым проигрыванием
         java.util.Arrays.fill(specNow, 0f);
 
-                activeSound = new PlaybackSound(se, () -> volume01);
+        activeSound = new PlaybackSound(se, () -> volume01);
         // Запускаем на следующий тик — даём движку освободить предыдущий инстанс
         Minecraft.getInstance().execute(() -> {
             if (activeSound != null) {
@@ -764,7 +814,7 @@ private void drawSpectrogram(GuiGraphics gg, IntRect r) {
             Minecraft.getInstance().getSoundManager().stop(activeSound);
             activeSound = null;
         }
-                isPlaying = false;
+        isPlaying = false;
         awaitingActivation = false;
 //      playProgressSec не трогаем — визуализации (картинка, BARS, HEAT) «замерзают» на текущем месте
 
@@ -772,21 +822,21 @@ private void drawSpectrogram(GuiGraphics gg, IntRect r) {
     }
 
     private void setSelectedIndex(int idx) {
-    if (SIGNALS == null || SIGNALS.isEmpty()) return;
-    int n = SIGNALS.size();
-    idx = clamp(idx, 0, n - 1);
+        if (SIGNALS == null || SIGNALS.isEmpty()) return;
+        int n = SIGNALS.size();
+        idx = clamp(idx, 0, n - 1);
 
-    if (idx == this.selectedIndex) return;
+        if (idx == this.selectedIndex) return;
 
-    // стопаем, если что-то играет
-    if (isPlaying || isAudioActive()) {
-        stopPlayback(); // playProgressSec не сбрасываем — замрёт, как и раньше
+        // стопаем, если что-то играет
+        if (isPlaying || isAudioActive()) {
+            stopPlayback(); // playProgressSec не сбрасываем — замрёт, как и раньше
+        }
+
+        this.selectedIndex = idx;
+        ensureFirstSeenFor(this.selectedIndex);
+        this.listScroll = this.selectedIndex; // центрируем логически
     }
-
-    this.selectedIndex = idx;
-    ensureFirstSeenFor(this.selectedIndex);
-    this.listScroll = this.selectedIndex; // центрируем логически
-}
 
     /** Полный пересчёт прогресса и фиксация фактической длительности при естественном окончании звука. */
     private void tickPlaybackProgress() {
@@ -903,8 +953,8 @@ private void drawSpectrogram(GuiGraphics gg, IntRect r) {
 
     private boolean isHovering(IntRect r, double mouseX, double mouseY) {
         if (mouseX < guiX || mouseY < guiY ||
-            mouseX >= guiX + guiScale * VIRTUAL_W ||
-            mouseY >= guiY + guiScale * VIRTUAL_H) {
+                mouseX >= guiX + guiScale * VIRTUAL_W ||
+                mouseY >= guiY + guiScale * VIRTUAL_H) {
             return false;
         }
         double vx = (mouseX - guiX) / guiScale;
@@ -913,16 +963,16 @@ private void drawSpectrogram(GuiGraphics gg, IntRect r) {
     }
 
     private IntRect cellRect(int index) {
-    int col = index % 2;
-    int row = index / 2;
+        int col = index % 2;
+        int row = index / 2;
 
-    int x0 = (col == 0) ? SCREEN_X : SCREEN_X + Math.round(SCREEN_W * COL_SPLIT);
-    int x1 = (col == 0) ? SCREEN_X + Math.round(SCREEN_W * COL_SPLIT) : SCREEN_X + SCREEN_W;
-    int y0 = (row == 0) ? SCREEN_Y : SCREEN_Y + Math.round(SCREEN_H * ROW_SPLIT);
-    int y1 = (row == 0) ? SCREEN_Y + Math.round(SCREEN_H * ROW_SPLIT) : SCREEN_Y + SCREEN_H;
+        int x0 = (col == 0) ? SCREEN_X : SCREEN_X + Math.round(SCREEN_W * COL_SPLIT);
+        int x1 = (col == 0) ? SCREEN_X + Math.round(SCREEN_W * COL_SPLIT) : SCREEN_X + SCREEN_W;
+        int y0 = (row == 0) ? SCREEN_Y : SCREEN_Y + Math.round(SCREEN_H * ROW_SPLIT);
+        int y1 = (row == 0) ? SCREEN_Y + Math.round(SCREEN_H * ROW_SPLIT) : SCREEN_Y + SCREEN_H;
 
-    return new IntRect(x0, y0, Math.max(0, x1 - x0), Math.max(0, y1 - y0));
-}
+        return new IntRect(x0, y0, Math.max(0, x1 - x0), Math.max(0, y1 - y0));
+    }
 
     // ----------------- Загрузка / сохранение -----------------
     private void loadPersistent() {
@@ -1032,40 +1082,21 @@ private void drawSpectrogram(GuiGraphics gg, IntRect r) {
         return SIGNALS.get(selectedIndex);
     }
 
-    private static void ensureSignalsLoaded() {
-        if (SIGNALS != null) return;
-        SIGNALS = new ArrayList<>();
+    private static void ensureMasterSignalsLoaded() {
+        if (!MASTER.isEmpty()) return;
         try (InputStream in = openSignalsJsonStream()) {
             if (in != null) {
                 JsonArray arr = JsonParser.parseReader(new InputStreamReader(in, StandardCharsets.UTF_8)).getAsJsonArray();
                 for (JsonElement el : arr) {
                     if (!el.isJsonObject()) continue;
-                    SIGNALS.add(SignalEntry.fromJson(el.getAsJsonObject()));
+                    SignalEntry s = SignalEntry.fromJson(el.getAsJsonObject());
+                    MASTER.put(s.id, s);
                 }
             }
-        } catch (Exception e) {
-            // ignored -> fallback
-        }
-        if (SIGNALS.isEmpty()) {
-            // Fallback — «меркурий» из нулевого элемента
-            SignalEntry s = new SignalEntry();
-            s.id = 0;
-            s.name = "mercury";
-            s.size = "0.8160";
-            s.weight = 100f;
-            s.objectImage = rlOrNull("thisnotamod:mercury_obj");
-            s.type = "regular";
-            s.objectNameKey = "signalmanager.object_name.0";
-            s.specialResponse = false;
-            s.specialPrice = true;
-            s.imageRaw = toGuiTexture(rlOrNull("thisnotamod:signal_planet_mercury_raw"));
-            s.imageRawWidth = 352; s.imageRawHeight = 288;
-            s.soundRawId = "CUSTOM:mercury_raw";
-            s.priceRaw = "5"; s.priceLow = "10"; s.priceNoisy = "15"; s.priceHigh = "30";
-            s.textRawKey = "signalmanager.default_text";
-            SIGNALS.add(s);
-        }
+        } catch (Exception ignored) { }
+        // ВАЖНО: никаких fallback/заглушек. Видимый список формируется ТОЛЬКО из импортов в блоке.
     }
+
 
     // Пытаемся открыть /data/thisnotamod/signals.json из JAR или ресурсов
     private static InputStream openSignalsJsonStream() {
@@ -1100,13 +1131,14 @@ private void drawSpectrogram(GuiGraphics gg, IntRect r) {
         int id;
         String name;
         String size;
+        String diskLabel;
         float weight;
         ResourceLocation objectImage;
         String type;
         String objectNameKey;
         boolean specialResponse;
         boolean specialPrice;
-        int level = 0; 
+        int level = 0;
 
         ResourceLocation imageRaw;
         int imageRawWidth = 352;
@@ -1130,7 +1162,8 @@ private void drawSpectrogram(GuiGraphics gg, IntRect r) {
             s.objectNameKey = getAsString(o, "object_name", "");
             s.specialResponse = getAsBoolean(o, "special_response", false);
             s.specialPrice = getAsBoolean(o, "special_price", false);
-			s.level = getAsInt(o, "level", getAsInt(o, "lvl", 0));
+            s.level = getAsInt(o, "level", getAsInt(o, "lvl", 0));
+
 
 
             s.imageRaw = toGuiTexture(rlOrNull(getAsString(o, "image_high", null)));
@@ -1158,8 +1191,8 @@ private void drawSpectrogram(GuiGraphics gg, IntRect r) {
             return o.has(k) && !o.get(k).isJsonNull() && o.get(k).getAsBoolean();
         }
         private static int getAsInt(JsonObject o, String k, int def) {
-   		 	return o.has(k) && !o.get(k).isJsonNull() ? o.get(k).getAsInt() : def;
-		}
+            return o.has(k) && !o.get(k).isJsonNull() ? o.get(k).getAsInt() : def;
+        }
 
     }
 
@@ -1301,6 +1334,60 @@ private void drawSpectrogram(GuiGraphics gg, IntRect r) {
         }
     }
 
+    // Получить наш BE по координатам из меню
+    private TestPlaybackBlockEntity be() {
+        try {
+            Level w = this.menu.world;
+            BlockPos pos = new BlockPos(this.menu.x, this.menu.y, this.menu.z);
+            BlockEntity raw = w.getBlockEntity(pos);
+            return (raw instanceof TestPlaybackBlockEntity t) ? t : null;
+        } catch (Throwable ignored) {
+            return null;
+        }
+    }
+
+    // Сконструировать видимый список из импортов в блоке (lookup MASTER по id)
+    private void refreshVisibleFromBlock() {
+        SIGNALS.clear();
+        TestPlaybackBlockEntity b = be();
+        if (b == null) return;
+
+        for (TestPlaybackBlockEntity.ImportedSignal is : b.getImportsView()) {
+            SignalEntry m = MASTER.get(is.signalId);
+            if (m == null) continue;
+
+            SignalEntry v = new SignalEntry();
+            v.id = m.id;
+            v.name = m.name;
+            v.size = m.size;
+            v.weight = m.weight;
+            v.objectImage = m.objectImage;
+            v.type = m.type;
+            v.objectNameKey = m.objectNameKey;
+            v.specialResponse = m.specialResponse;
+            v.specialPrice = m.specialPrice;
+
+            v.level = is.level;
+            v.diskLabel = (is.diskName != null && !is.diskName.isBlank()) ? is.diskName : m.name;
+
+            v.imageRaw = m.imageRaw;
+            v.imageRawWidth = m.imageRawWidth;
+            v.imageRawHeight = m.imageRawHeight;
+            v.imageExists = m.imageExists;
+
+            v.soundRawId = m.soundRawId;
+            v.priceRaw = m.priceRaw;
+            v.priceLow = m.priceLow;
+            v.priceNoisy = m.priceNoisy;
+            v.priceHigh = m.priceHigh;
+            v.textRawKey = m.textRawKey;
+
+            SIGNALS.add(v);
+        }
+        clampIndices();
+    }
+
+
     // Читает весь InputStream в ByteBuffer (и выделяет нативную память под него)
     private static ByteBuffer readAllToBuffer(InputStream in) throws java.io.IOException {
         byte[] bytes = in.readAllBytes();
@@ -1338,7 +1425,7 @@ private void drawSpectrogram(GuiGraphics gg, IntRect r) {
         try {
             var mc = Minecraft.getInstance();
             return mc != null && mc.getResourceManager() != null && rl != null
-                && mc.getResourceManager().getResource(rl).isPresent();
+                    && mc.getResourceManager().getResource(rl).isPresent();
         } catch (Exception e) {
             return false;
         }
@@ -1591,7 +1678,7 @@ private void drawSpectrogram(GuiGraphics gg, IntRect r) {
     private static int scaleColor(int rgb, float v) {
         v = Math.max(0f, Math.min(1f, v));
         int r = (int)(((rgb >> 16) & 0xFF) * v);
-        int g = (int)(((rgb >> 8)  & 0xFF) * v);	
+        int g = (int)(((rgb >> 8)  & 0xFF) * v);
         int b = (int)(( rgb        & 0xFF) * v);
         return 0xFF000000 | (r << 16) | (g << 8) | b;
     }
@@ -1613,8 +1700,8 @@ private void drawSpectrogram(GuiGraphics gg, IntRect r) {
             this.y = 0.0;
             this.z = 0.0;
             this.volume = this.volumeSupplier.get();
-                        this.pitch = 1.0f + ((java.util.concurrent.ThreadLocalRandom.current().nextFloat() - 0.5f) * 1.0e-4f);
-            
+            this.pitch = 1.0f + ((java.util.concurrent.ThreadLocalRandom.current().nextFloat() - 0.5f) * 1.0e-4f);
+
         }
 
         void setVolumeDynamic(float v) {
