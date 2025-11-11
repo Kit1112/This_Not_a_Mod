@@ -45,6 +45,10 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
     public static final int VIRTUAL_W = 640;
     public static final int VIRTUAL_H = 360;
 
+    // РАЗМЕРЫ КОЛОНОК/СТРОК (0..1). Меняешь тут.
+	private static float COL_SPLIT = 0.58f; // доля ширины левого столбца (области 0 и 2)
+	private static float ROW_SPLIT = 0.50f; // доля высоты верхнего ряда  (области 0 и 1)
+
     private static final int INSET_LEFT = 12;
     private static final int INSET_RIGHT = 12;
     private static final int INSET_TOP = 12;
@@ -57,6 +61,23 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
 
     private static final int GRID_COLS = 2;
     private static final int GRID_ROWS = 2;
+    private static final int LIST_LANE_W = 22;
+    private static final float FOCUS_NUM_SCALE = 1.25f;
+
+    private static final int LINE_WHITE = 0xFFFFFFFF;
+	private static final int LINE_GREEN   = 0xFF00FF00; // lvl=3
+	private static final int LINE_YELLOW  = 0xFFFFFF00; // lvl=2
+	private static final int LINE_RED     = 0xFFFF4040; // lvl=1
+	private static final int TEXT_NAME_Y  = 0xFFFFD700; // жёлтый текст имени
+
+	private static int colorForLevel(int lvl) {
+    	return switch (lvl) {
+        	case 3 -> LINE_GREEN;
+        	case 2 -> LINE_YELLOW;
+        	case 1 -> LINE_RED;
+        	default -> LINE_WHITE;
+   		 };
+	}
 
     // Нижняя полоса с кнопками
     private static final int BTN_BAR_Y = SCREEN_Y + SCREEN_H + 20;
@@ -75,12 +96,7 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
     private SpecMode specMode = SpecMode.BARS;
 
     private float[] specHold = null;
-    // --- Лог в чат ---
-    private static void CHAT(String msg) {
-        var mc = Minecraft.getInstance();
-        if (mc == null || mc.player == null) return;
-        mc.player.sendSystemMessage(Component.literal("[PanelPlayback] " + msg));
-    }
+    private static void CHAT(String msg) { /* no-op */ }
     private static String FMT(double v) {
         return String.format(java.util.Locale.US, "%.3f", v);
     }
@@ -202,6 +218,7 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
 
         // Нижние кнопки (без подложки)
         drawBottomButtons(gg);
+        drawGridOverlay(gg);
 
         gg.pose().popPose();
     }
@@ -244,17 +261,13 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
         }
                 if (isHovering(btnList, mouseX, mouseY)) {
             int n = (SIGNALS != null) ? SIGNALS.size() : 0;
-            if (n > 0) {
-                // колесо вверх -> предыдущий; вниз -> следующий
-                selectedIndex = (selectedIndex - sign) % n;
-                if (selectedIndex < 0) selectedIndex += n;
-                ensureFirstSeenFor(selectedIndex);
-
-                // центрируем выбор логически: скроллбар = текущему индексу
-                listScroll = selectedIndex;
-                clampIndices();
-            }
-            return true;
+if (n > 0) {
+    int next = (selectedIndex - sign) % n;
+    if (next < 0) next += n;
+    setSelectedIndex(next);
+    clampIndices();
+}
+return true;
         }
 
         return super.mouseScrolled(mouseX, mouseY, delta);
@@ -267,19 +280,17 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
     }
 
     // ----------------- Рисовач -----------------
-    private void drawScreenFrameAndGrid(GuiGraphics gg) {
-        int x = SCREEN_X, y = SCREEN_Y, w = SCREEN_W, h = SCREEN_H;
+private void drawScreenFrameAndGrid(GuiGraphics gg) {
+    int x = SCREEN_X, y = SCREEN_Y, w = SCREEN_W, h = SCREEN_H;
+    gg.fill(x, y, x + w, y + h, 0xFF000000);              // фон
+    gg.renderOutline(x, y, w, h, LINE_WHITE);             // внешняя рамка (белая)
 
-        // Чёрное поле + тонкая рамка
-        gg.fill(x, y, x + w, y + h, 0xFF000000);
-        gg.renderOutline(x, y, w, h, 0xFF7F7F7F);
+    int midX = x + Math.round(w * COL_SPLIT);
+    int midY = y + Math.round(h * ROW_SPLIT);
+    gg.vLine(midX, y, y + h, LINE_WHITE);                 // вертикальный разделитель
+    gg.hLine(x, x + w, midY, LINE_WHITE);                 // горизонтальный разделитель
+}
 
-        // Сетка 2x2
-        int midX = x + w / 2;
-        int midY = y + h / 2;
-        gg.vLine(midX, y, y + h, 0xFF7F7F7F);
-        gg.hLine(x, x + w, midY, 0xFF7F7F7F);
-    }
 
     private static class SpecData {
         int sampleRate;
@@ -287,59 +298,126 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
         float[][] bands; // [frameIndex][band] значения 0..1
     }
 
-    private void drawSignalList(GuiGraphics gg, IntRect r) {
-        // Заголовок
-        gg.drawString(this.font, I18n.get("signalmanager.ui.playback.list_title"), r.x + 8, r.y + 6, 0xFFFFFFFF, false);
+    private void drawGridOverlay(GuiGraphics gg) {
+    int x = SCREEN_X, y = SCREEN_Y, w = SCREEN_W, h = SCREEN_H;
+    int midX = x + Math.round(w * COL_SPLIT);
+    int midY = y + Math.round(h * ROW_SPLIT);
 
-        int rowH = 32;
-        int top = r.y + 8 + 12;
-        int visible = Math.max(1, (r.h - 24) / rowH);
+    // только линии, без заливки — поверх контента
+    gg.renderOutline(x, y, w, h, LINE_WHITE);
+    gg.vLine(midX, y, y + h, LINE_WHITE);
+    gg.hLine(x, x + w, midY, LINE_WHITE);
+}
 
-                // Центр по вертикали
-        int centerRow = visible / 2;
-        int virtualTop = selectedIndex - centerRow;
+private void drawSignalList(GuiGraphics gg, IntRect r) {
+    // без заголовка
+    final int rowH = 32;
+    final int sectionPadX = 4;
 
-        for (int i = 0; i < visible; i++) {
-            int idx = virtualTop + i;
+    // сколько строк влезает в секцию
+    int visible = Math.max(1, r.h / rowH);
+    int centerRow = visible / 2;
 
-            int y0 = top + i * rowH;
-            int y1 = y0 + rowH - 2;
+    // такой top, чтобы выбранная строка была РОВНО по центру секции
+    int top = r.centerY() - (centerRow * rowH + rowH / 2);
 
-            // Пустая строка-подложка для «вне диапазона» (чтобы нулевой мог быть по центру)
-            if (idx < 0 || idx >= SIGNALS.size()) {
-                gg.fill(r.x + 4, y0, r.x + r.w - 4, y1, 0x20101010);
-                continue;
-            }
+    // глобальная вертикальная полоса после "0>" — во всю высоту секции
+    final int laneRightGlobal = Math.min(r.x + sectionPadX + LIST_LANE_W, r.x + r.w - 6);
+    gg.vLine(laneRightGlobal, r.y + 2, r.y + r.h - 2, LINE_WHITE);
 
-            SignalEntry s = SIGNALS.get(idx);
+    // индекс верхней логической строки
+    int virtualTop = selectedIndex - centerRow;
 
-            int bg = (idx == selectedIndex) ? 0x4020A0FF : 0x20101010;
-            gg.fill(r.x + 4, y0, r.x + r.w - 4, y1, bg);
+    for (int i = 0; i < visible; i++) {
+        int idx = virtualTop + i;
+        int y0 = top + i * rowH;
+        int y1 = y0 + rowH - 2;
+        int x0 = r.x + sectionPadX;
+        int w0 = r.w - sectionPadX * 2;
 
-            // № внутри UI — С НУЛЯ
-            String num = String.valueOf(idx);
-            gg.drawString(this.font, num, r.x + 8, y0 + 4, 0xFFBBBBBB, false);
+        // общий фон строки
+        gg.fill(x0, y0, x0 + w0, y1, 0x20101010);
 
-            // Имя объекта (локализация по object_name)
-            String objName = s.objectNameKey != null ? I18n.get(s.objectNameKey) : s.name;
-            if (objName == null || objName.isBlank()) objName = s.name != null ? s.name : "—";
-            gg.drawString(this.font, objName, r.x + 28, y0 + 4, 0xFFFFFFFF, false);
+        if (idx < 0 || SIGNALS == null || idx >= SIGNALS.size()) continue;
 
-            // Дата первого попадания на панель (сохранённая)
-            String date = firstSeenDates.getOrDefault(s.id, "");
-            gg.drawString(this.font, date, r.x + 28, y0 + 4 + this.font.lineHeight + 2, 0xFF888888, false);
+        boolean focused = (idx == selectedIndex);
+        SignalEntry s = SIGNALS.get(idx);
+
+        // горизонтальные линии фокуса — во всю ширину секции
+        if (focused) {
+            gg.hLine(r.x + 1, r.x + r.w - 2, y0,     LINE_WHITE);
+            gg.hLine(r.x + 1, r.x + r.w - 2, y1 - 1, LINE_WHITE);
         }
 
+        // левая зона с номером "0>"
+        int laneLeft = x0 + 2;
+        if (focused) {
+            String label = idx + ">";
+            float scale = FOCUS_NUM_SCALE;
+            int laneW = Math.max(1, laneRightGlobal - laneLeft);
+            float textW = this.font.width(label) * scale;
+            float textH = this.font.lineHeight * scale;
+            float tx = laneLeft + (laneW - textW) / 2f;
+            float ty = y0 + ((rowH - 2) - textH) / 2f;
 
-        // Скролл-индикатор
-                int total = Math.max(1, SIGNALS.size());
-        int logicalScroll = Math.max(0, Math.min(total - 1, selectedIndex)); // скроллбар = фокусу
-        int barH = 36;
-        int barY = r.y + (int) Math.round((r.h - barH) * (logicalScroll / (double) Math.max(1, total - 1)));
+            gg.pose().pushPose();
+            gg.pose().translate(tx, ty, 0);
+            gg.pose().scale(scale, scale, 1f);
+            gg.drawString(this.font, label, 0, 0, 0xFFE0FFFF, false);
+            gg.pose().popPose();
+        }
 
-        gg.fill(r.x + r.w - 6, r.y + 4, r.x + r.w - 4, r.y + r.h - 4, 0x30202020);
-        gg.fill(r.x + r.w - 6, barY, r.x + r.w - 4, barY + barH, 0x80FFFFFF);
+        // данные
+        String objName = s.objectNameKey != null ? I18n.get(s.objectNameKey) : s.name;
+        if (objName == null || objName.isBlank()) objName = (s.name != null ? s.name : "—");
+        String date = firstSeenDates.getOrDefault(s.id, "");
+
+        // ----- внутренняя обводка по уровню + разделение на 2 ячейки -----
+        // ----- внутренняя обводка по уровню + разделение на 2 ячейки -----
+int lvlColor = colorForLevel(s.level);
+
+int innerPad = 2;                      // одинаковый отступ со всех сторон
+int innerX   = laneRightGlobal + 4;    // чуть ближе к левой рамке списка
+int rowPixH  = Math.max(1, y1 - y0);   // реальная высота строки в пикселях
+int innerY   = y0 + innerPad;
+int innerW   = Math.max(8, (r.x + r.w - innerPad) - innerX); // симметричный правый отступ
+int innerH   = Math.max(8, rowPixH - innerPad * 2);          // симметрия по вертикали
+
+// рамка уровня
+gg.renderOutline(innerX, innerY, innerW, innerH, lvlColor);
+
+// разделитель пополам
+int splitY = innerY + innerH / 2;
+gg.hLine(innerX + 1, innerX + innerW - 1, splitY, lvlColor);
+
+// тексты «чуть меньше»
+float tScale = 0.90f;
+int tx = innerX + 4;
+
+
+        // ограничиваем ширину с учётом скейла
+        int maxTextWpx = Math.max(1, (int)Math.floor((innerW - 8) / tScale));
+        String nameDraw = this.font.plainSubstrByWidth(objName, maxTextWpx);
+        String dateDraw = this.font.plainSubstrByWidth(date,     maxTextWpx);
+
+        // верх: имя (жёлтым)
+        gg.pose().pushPose();
+        gg.pose().translate(tx, innerY + 2, 0);
+        gg.pose().scale(tScale, tScale, 1f);
+        gg.drawString(this.font, nameDraw, 0, 0, TEXT_NAME_Y, false);
+        gg.pose().popPose();
+
+        // низ: дата (белым)
+        gg.pose().pushPose();
+        gg.pose().translate(tx, splitY + 2, 0);
+        gg.pose().scale(tScale, tScale, 1f);
+        gg.drawString(this.font, dateDraw, 0, 0, LINE_WHITE, false);
+        gg.pose().popPose();
     }
+}
+
+
+
 
     private void drawSignalImageProgressive(GuiGraphics gg, IntRect r) {
         SignalEntry s = getSelected();
@@ -370,191 +448,216 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
         int srcW = s.imageRawWidth  > 0 ? s.imageRawWidth  : 352;
         int srcH = s.imageRawHeight > 0 ? s.imageRawHeight : 288;
 
-        // Вписываем в секцию
-        int pad = 6;
-        int availW = Math.max(1, r.w - pad * 2);
-        int availH = Math.max(1, r.h - pad * 2);
+        // Вписываем в секцию: по вертикали — без отступов
+int padX = 6;     // горизонтальный отступ можно оставить
+int padY = 0;     // по вертикали — в упор
+int availW = Math.max(1, r.w - padX * 2);
+int availH = Math.max(1, r.h - padY * 2);
 
-        float scale = Math.min(availW / (float) srcW, availH / (float) srcH);
-        int drawW = Math.max(1, Math.round(srcW * scale));
-        int drawH = Math.max(1, Math.round(srcH * scale));
+// Масштаб по высоте
+float scale = availH / (float) srcH;
+int drawH = Math.max(1, Math.round(srcH * scale));
+int drawW = Math.max(1, Math.round(srcW * scale));
 
-        int dx = r.x + (r.w - drawW) / 2;
-        int dy = r.y + (r.h - drawH) / 2;
+// Если вдруг не влезли по ширине — ужмём пропорционально
+if (drawW > availW) {
+    float k = availW / (float) drawW;
+    drawW = Math.max(1, Math.round(drawW * k));
+    drawH = Math.max(1, Math.round(drawH * k));
+}
 
-        // Высота видимой части по прогрессу
-        int cutH    = Math.max(1, (int)Math.round(drawH * t));
-        int texCutH = Math.max(1, (int)Math.round(srcH * t));
+int dx = r.x + (r.w - drawW) / 2;
+int dy = r.y + (r.h - drawH) / 2;
 
-        // Фон
-        gg.fill(r.x + 1, r.y + 1, r.x + r.w - 1, r.y + r.h - 1, 0xFF000000);
+// фон всей области
+gg.fill(r.x, r.y, r.x + r.w, r.y + r.h, 0xFF000000);
 
-        if (Boolean.TRUE.equals(s.imageExists)) {
-            // Масштабируем через матрицу, чтобы корректно растянуть texCutH -> cutH и srcW -> drawW
-            gg.pose().pushPose();
-            gg.pose().translate(dx, dy, 0);
-            float sx = drawW / (float) Math.max(1, srcW);
-            float sy = cutH / (float) Math.max(1, texCutH);
-            gg.pose().scale(sx, sy, 1f);
+// ВЫЧИСЛЯЕМ видимую высоту по прогрессу (и соответствующую высоту исходной текстуры)
+int cutH    = Math.max(1, (int)Math.round(drawH * t));
+int texCutH = Math.max(1, (int)Math.round(srcH * t));
 
-            RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-            // Рисуем верхнюю часть исходной текстуры (0..texCutH)
-            gg.blit(s.imageRaw, 0, 0, 0, 0, srcW, texCutH, srcW, srcH);
+if (Boolean.TRUE.equals(s.imageExists)) {
+    gg.pose().pushPose();
+    gg.pose().translate(dx, dy, 0);
 
-            gg.pose().popPose();
+    // масштаб по ширине — к полной ширине, по высоте — только к видимой части
+    float sx = drawW / (float) Math.max(1, srcW);
+    float sy = cutH / (float) Math.max(1, texCutH);
+    gg.pose().scale(sx, sy, 1f);
 
-            // Лёгкий лог на ключевых этапах (0% и 100%)
-            if (t <= 0.0001 || Math.abs(t - 1.0) <= 0.0001) {
-                CHAT("IMG draw: " + s.imageRaw + " dst=" + drawW + "x" + cutH +
-                    " of src " + srcW + "x" + texCutH + " at " + dx + "," + dy + " (t=" + FMT(t) + ")");
-            }
-        } else {
-            centerLabel(gg, r, "IMAGE NOT FOUND");
-        }
+    RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+    // рисуем верхнюю часть исходной текстуры (0..texCutH)
+    gg.blit(s.imageRaw, 0, 0, 0, 0, srcW, texCutH, srcW, srcH);
 
-        gg.renderOutline(dx, dy, drawW, drawH, 0xFF404040);
+    gg.pose().popPose();
+
+    if (t <= 0.0001 || Math.abs(t - 1.0) <= 0.0001) {
+        CHAT("IMG draw: " + s.imageRaw + " dst=" + drawW + "x" + cutH +
+             " of src " + srcW + "x" + texCutH + " at " + dx + "," + dy + " (t=" + FMT(t) + ")");
+    }
+} else {
+    centerLabel(gg, r, "IMAGE NOT FOUND");
+}
+
+
+gg.renderOutline(dx, dy, drawW, drawH, LINE_WHITE);
     }
 
-    private void drawSpectrogram(GuiGraphics gg, IntRect r) {
-        // фон
-        gg.fill(r.x + 1, r.y + 1, r.x + r.w - 1, r.y + r.h - 1, 0xFF000000);
+private void drawSpectrogram(GuiGraphics gg, IntRect r) {
+    // фон
+    gg.fill(r.x + 1, r.y + 1, r.x + r.w - 1, r.y + r.h - 1, 0xFF000000);
 
-        // подготовим данные
-        SignalEntry s = getSelected();
-        SpecData sd = (s != null) ? specCacheById.get(s.id) : null;
+    // подготовим данные
+    SignalEntry s = getSelected();
+    SpecData sd = (s != null) ? specCacheById.get(s.id) : null;
 
-        // геометрия области
-        int pad   = 6;
-        int w     = Math.max(1, r.w - pad * 2);
-        int h     = Math.max(1, r.h - pad * 2);
-        int xLeft = r.x + pad;
-        int yTop  = r.y + pad;
-        int yBot  = yTop + h;
+    // геометрия области
+    int pad   = 6;
+    int w     = Math.max(1, r.w - pad * 2);
+    int h     = Math.max(1, r.h - pad * 2);
+    int xLeft = r.x + pad;
+    int yTop  = r.y + pad;
+    int yBot  = yTop + h;
 
-                if (specMode == SpecMode.BARS) {
-            // ===== РЕЖИМ BARS =====
-            float[] tgt = null;
-            if (sd != null && (isPlaying || isAudioActive())) {
-                int fi = (int) Math.floor(playProgressSec / Math.max(1e-4f, sd.secondsPerFrame));
-                fi = Math.max(0, Math.min(sd.bands.length - 1, fi));
-                tgt = sd.bands[fi];
-            }
-
-            // Обновляем только когда идёт воспроизведение; иначе — «замерзаем» на последнем значении
-            if (tgt != null) {
-                for (int b = 0; b < SPEC_BANDS; b++) {
-                    float tVal = (b < tgt.length) ? tgt[b] : 0f;
-                    if (tVal > specNow[b]) {
-                        specNow[b] += (tVal - specNow[b]) * 0.35f; // рост быстрее
-                    } else {
-                        specNow[b] = specNow[b] * SPEC_DECAY + tVal * (1f - SPEC_DECAY); // плавный спад к tgt
-                    }
-                }
-            }
-
-
-            int bandW = Math.max(2, w / SPEC_BANDS);
-            int gap   = Math.max(1, Math.min(2, bandW / 6));
-            for (int i = 0; i < SPEC_BANDS; i++) {
-                float v = Math.max(0f, Math.min(1f, specNow[i]));
-                int bh = (int) Math.round(h * v);
-                int x0 = xLeft + i * bandW;
-                int x1 = x0 + bandW - gap;
-                if (x1 <= x0) x1 = x0 + 1;
-                gg.fill(x0, yBot - bh, x1, yBot, gradientColor(i));
-            }
-
-            gg.renderOutline(r.x, r.y, r.w, r.h, 0xFF404040);
-            return;
+    if (specMode == SpecMode.BARS) {
+        // ===== РЕЖИМ BARS =====
+        float[] tgt = null;
+        if (sd != null && (isPlaying || isAudioActive())) {
+            int fi = (int) Math.floor(playProgressSec / Math.max(1e-4f, sd.secondsPerFrame));
+            fi = Math.max(0, Math.min(sd.bands.length - 1, fi));
+            tgt = sd.bands[fi];
         }
 
-        // ===== РЕЖИМ HEAT =====
-        if (sd == null || sd.bands == null || sd.bands.length == 0) {
-            // Показать статус сборки, если уже строим
-            boolean building = false;
-            if (s != null && s.soundRawId != null) {
-                SoundEvent se = resolveSound(s.soundRawId);
-                if (se != null) {
-                    ResourceLocation eventId = BuiltInRegistries.SOUND_EVENT.getKey(se);
-                    building = eventId != null && specBuildTasks.containsKey(eventId);
-                }
-            }
-            centerLabel(gg, r, building ? "BUILDING…" : "NO SPECTRUM");
-            gg.renderOutline(r.x, r.y, r.w, r.h, 0xFF404040);
-            return;
-        }
-
-                final int frames = sd.bands.length;
-        final int cols   = w; // по одному столбику на пиксель
-        int cur = (int)Math.floor(playProgressSec / Math.max(1e-4f, sd.secondsPerFrame));
-        int maxFrameVisible = Math.max(0, Math.min(frames - 1, cur));
-        int drawCols = Math.max(1, (int)Math.ceil(((maxFrameVisible + 1) / (float)frames) * cols));
-
-
-        // высота ячейки по полосам (низкие частоты внизу)
-        int cellH = Math.max(1, h / SPEC_BANDS);
-
-        for (int cx = 0; cx < drawCols; cx++) {
-            int fi = (int)Math.floor((cx / (float)Math.max(1, cols - 1)) * (frames - 1));
-            float[] row = sd.bands[fi];
-
-            int x0 = xLeft + cx;
-            int x1 = x0 + 1;
-
+        if (tgt != null) {
             for (int b = 0; b < SPEC_BANDS; b++) {
-                float amp = (row != null && b < row.length) ? row[b] : 0f;
-                float bright = (float)Math.sqrt(Math.max(0f, Math.min(1f, amp)));
-                int base = gradientColor(b);
-                int col  = scaleColor(base, bright);
-
-                int y0 = yTop + (SPEC_BANDS - 1 - b) * cellH;
-                int y1 = Math.min(y0 + cellH, yBot);
-                gg.fill(x0, y0, x1, y1, col);
+                float tVal = (b < tgt.length) ? tgt[b] : 0f;
+                if (tVal > specNow[b]) {
+                    specNow[b] += (tVal - specNow[b]) * 0.35f;
+                } else {
+                    specNow[b] = specNow[b] * SPEC_DECAY + tVal * (1f - SPEC_DECAY);
+                }
             }
         }
 
-        // справа от «фронта» — чёрная область (заполнение слева-направо)
-        if (drawCols < cols) {
-            gg.fill(xLeft + drawCols, yTop, xLeft + cols, yBot, 0xFF000000);
+        int bandW = Math.max(2, w / SPEC_BANDS);
+        int gap   = Math.max(1, Math.min(2, bandW / 6));
+        for (int i = 0; i < SPEC_BANDS; i++) {
+            float v = Math.max(0f, Math.min(1f, specNow[i]));
+            int bh = (int) Math.round(h * v);
+            int x0 = xLeft + i * bandW;
+            int x1 = x0 + bandW - gap;
+            if (x1 <= x0) x1 = x0 + 1;
+            gg.fill(x0, yBot - bh, x1, yBot, gradientColor(i));
         }
 
         gg.renderOutline(r.x, r.y, r.w, r.h, 0xFF404040);
+        return;
     }
+
+    // ===== РЕЖИМ HEAT =====
+    if (sd == null || sd.bands == null || sd.bands.length == 0) {
+        boolean building = false;
+        if (s != null && s.soundRawId != null) {
+            SoundEvent se = resolveSound(s.soundRawId);
+            if (se != null) {
+                ResourceLocation eventId = BuiltInRegistries.SOUND_EVENT.getKey(se);
+                building = eventId != null && specBuildTasks.containsKey(eventId);
+            }
+        }
+        centerLabel(gg, r, building ? "BUILDING…" : "NO SPECTRUM");
+        gg.renderOutline(r.x, r.y, r.w, r.h, 0xFF404040);
+        return;
+    }
+
+    final int frames = sd.bands.length;
+    final int cols   = w; // по одному столбику на пиксель
+    int cur = (int)Math.floor(playProgressSec / Math.max(1e-4f, sd.secondsPerFrame));
+    int maxFrameVisible = Math.max(0, Math.min(frames - 1, cur));
+    int drawCols = Math.max(1, (int)Math.ceil(((maxFrameVisible + 1) / (float)frames) * cols));
+
+    // равномерно распределяем полосы на всю высоту (без «потери» пикселей)
+    final float bandStep = h / (float) SPEC_BANDS; // дробный шаг по высоте
+
+    for (int cx = 0; cx < drawCols; cx++) {
+        int fi = (int)Math.floor((cx / (float)Math.max(1, cols - 1)) * (frames - 1));
+        float[] row = sd.bands[fi];
+
+        int x0 = xLeft + cx;
+        int x1 = x0 + 1;
+
+        for (int b = 0; b < SPEC_BANDS; b++) {
+            float amp = (row != null && b < row.length) ? row[b] : 0f;
+            float bright = (float)Math.sqrt(Math.max(0f, Math.min(1f, amp)));
+            int base = gradientColor(b);
+            int col  = scaleColor(base, bright);
+
+            // низкие частоты внизу
+            int y0 = yTop + Math.round((SPEC_BANDS - 1 - b) * bandStep);
+            int y1 = yTop + Math.round((SPEC_BANDS - b) * bandStep);
+            if (y1 <= y0) y1 = y0 + 1;
+            if (y1 > yBot) y1 = yBot;
+            gg.fill(x0, y0, x1, y1, col);
+        }
+    }
+
+    // справа от «фронта» — чёрная область (заполнение слева-направо)
+    if (drawCols < cols) {
+        gg.fill(xLeft + drawCols, yTop, xLeft + cols, yBot, 0xFF000000);
+    }
+
+    gg.renderOutline(r.x, r.y, r.w, r.h, LINE_WHITE);
+}
+
 
     private void drawTextBlockProgressive(GuiGraphics gg, IntRect r) {
-        SignalEntry s = getSelected();
-        if (s == null || s.textRawKey == null || s.textRawKey.isBlank()) {
-            centerLabel(gg, r, "—");
-            return;
-        }
-        String full = I18n.get(s.textRawKey);
-        if (full == null) full = s.textRawKey;
+    final String EMPTY_LABEL = "Текстовые данные";
 
-        // Порог символов по прогрессу
-        double dur = getUiDurationSec(isAudioActive());
-        double t   = clamp01(playProgressSec / Math.max(0.1, dur));
-        int maxChars = (int) Math.round(full.length() * t);
-        if (maxChars <= 0) {
-            centerLabel(gg, r, "");
-            return;
-        }
-        String part = full.substring(0, Math.min(maxChars, full.length()));
+    // фон секции
+    gg.fill(r.x + 1, r.y + 1, r.x + r.w - 1, r.y + r.h - 1, 0xFF000000);
 
-        // Примитивный перенос по словам
-        int pad = 8;
-        int rw = r.w - pad * 2;
-        int x  = r.x + pad;
-        int y  = r.y + pad;
+    // геометрия текста
+    int pad = 8;
+    int rw  = r.w - pad * 2;
+    int x   = r.x + pad;
+    int y   = r.y + pad;
 
-        gg.fill(r.x + 1, r.y + 1, r.x + r.w - 1, r.y + r.h - 1, 0xFF000000);
+    SignalEntry s = getSelected();
 
-        for (String line : wrapText(part, rw)) {
-            gg.drawString(this.font, line, x, y, 0xFFFFFFFF, false);
-            y += this.font.lineHeight + 2;
-            if (y > r.y + r.h - pad - this.font.lineHeight) break;
-        }
-        gg.renderOutline(r.x, r.y, r.w, r.h, 0xFF404040);
+    // нет текста у сигнала — рисуем заглушку в том же месте, где был бы текст
+    if (s == null || s.textRawKey == null || s.textRawKey.isBlank()) {
+        gg.drawString(this.font, EMPTY_LABEL, x, y, 0xFF808080, false);
+        gg.renderOutline(r.x, r.y, r.w, r.h, LINE_WHITE);
+        return;
     }
+
+    String full = I18n.get(s.textRawKey);
+    if (full == null) full = s.textRawKey;
+
+    // порог «проявления» текста по прогрессу
+    double dur = getUiDurationSec(isAudioActive());
+    double t   = clamp01(playProgressSec / Math.max(0.1, dur));
+    int maxChars = (int) Math.round(full.length() * t);
+
+    // ещё ничего не проявилось — показываем заглушку на месте текста
+    if (maxChars <= 0) {
+        gg.drawString(this.font, EMPTY_LABEL, x, y, 0xFF808080, false);
+        gg.renderOutline(r.x, r.y, r.w, r.h, LINE_WHITE);
+        return;
+    }
+
+    String part = full.substring(0, Math.min(maxChars, full.length()));
+
+    // перенос по словам
+    for (String line : wrapText(part, rw)) {
+        gg.drawString(this.font, line, x, y, 0xFFFFFFFF, false);
+        y += this.font.lineHeight + 2;
+        if (y > r.y + r.h - pad - this.font.lineHeight) break;
+    }
+
+    gg.renderOutline(r.x, r.y, r.w, r.h, LINE_WHITE);
+}
+
+
 
     private void drawBottomButtons(GuiGraphics gg) {
         // Подложка панельки
@@ -668,6 +771,23 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
 
     }
 
+    private void setSelectedIndex(int idx) {
+    if (SIGNALS == null || SIGNALS.isEmpty()) return;
+    int n = SIGNALS.size();
+    idx = clamp(idx, 0, n - 1);
+
+    if (idx == this.selectedIndex) return;
+
+    // стопаем, если что-то играет
+    if (isPlaying || isAudioActive()) {
+        stopPlayback(); // playProgressSec не сбрасываем — замрёт, как и раньше
+    }
+
+    this.selectedIndex = idx;
+    ensureFirstSeenFor(this.selectedIndex);
+    this.listScroll = this.selectedIndex; // центрируем логически
+}
+
     /** Полный пересчёт прогресса и фиксация фактической длительности при естественном окончании звука. */
     private void tickPlaybackProgress() {
         if (!isPlaying) return;
@@ -778,7 +898,7 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
     private void centerLabel(GuiGraphics gg, IntRect r, String text) {
         int tw = this.font.width(text);
         gg.drawString(this.font, text, r.x + (r.w - tw) / 2, r.y + (r.h - this.font.lineHeight) / 2, 0xFF808080, false);
-        gg.renderOutline(r.x, r.y, r.w, r.h, 0xFF404040);
+        gg.renderOutline(r.x, r.y, r.w, r.h, LINE_WHITE);
     }
 
     private boolean isHovering(IntRect r, double mouseX, double mouseY) {
@@ -793,19 +913,16 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
     }
 
     private IntRect cellRect(int index) {
-        int col = index % GRID_COLS;
-        int row = index / GRID_COLS;
+    int col = index % 2;
+    int row = index / 2;
 
-        double cw = SCREEN_W / (double) GRID_COLS;
-        double rh = SCREEN_H / (double) GRID_ROWS;
+    int x0 = (col == 0) ? SCREEN_X : SCREEN_X + Math.round(SCREEN_W * COL_SPLIT);
+    int x1 = (col == 0) ? SCREEN_X + Math.round(SCREEN_W * COL_SPLIT) : SCREEN_X + SCREEN_W;
+    int y0 = (row == 0) ? SCREEN_Y : SCREEN_Y + Math.round(SCREEN_H * ROW_SPLIT);
+    int y1 = (row == 0) ? SCREEN_Y + Math.round(SCREEN_H * ROW_SPLIT) : SCREEN_Y + SCREEN_H;
 
-        int x = SCREEN_X + (int) Math.round(col * cw);
-        int y = SCREEN_Y + (int) Math.round(row * rh);
-        int x2 = SCREEN_X + (int) Math.round((col + 1) * cw);
-        int y2 = SCREEN_Y + (int) Math.round((row + 1) * rh);
-
-        return new IntRect(x, y, Math.max(0, x2 - x), Math.max(0, y2 - y));
-    }
+    return new IntRect(x0, y0, Math.max(0, x1 - x0), Math.max(0, y1 - y0));
+}
 
     // ----------------- Загрузка / сохранение -----------------
     private void loadPersistent() {
@@ -989,6 +1106,7 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
         String objectNameKey;
         boolean specialResponse;
         boolean specialPrice;
+        int level = 0; 
 
         ResourceLocation imageRaw;
         int imageRawWidth = 352;
@@ -1012,6 +1130,8 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
             s.objectNameKey = getAsString(o, "object_name", "");
             s.specialResponse = getAsBoolean(o, "special_response", false);
             s.specialPrice = getAsBoolean(o, "special_price", false);
+			s.level = getAsInt(o, "level", getAsInt(o, "lvl", 0));
+
 
             s.imageRaw = toGuiTexture(rlOrNull(getAsString(o, "image_high", null)));
             s.imageRawWidth = 352;
@@ -1037,6 +1157,10 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
         private static boolean getAsBoolean(JsonObject o, String k, boolean def) {
             return o.has(k) && !o.get(k).isJsonNull() && o.get(k).getAsBoolean();
         }
+        private static int getAsInt(JsonObject o, String k, int def) {
+   		 	return o.has(k) && !o.get(k).isJsonNull() ? o.get(k).getAsInt() : def;
+		}
+
     }
 
     private static ResourceLocation rlOrNull(String s) {
@@ -1471,6 +1595,8 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
         int b = (int)(( rgb        & 0xFF) * v);
         return 0xFF000000 | (r << 16) | (g << 8) | b;
     }
+
+
 
     // ----------------- Кастомный звук с динамической громкостью -----------------
     private static class PlaybackSound extends AbstractTickableSoundInstance {
