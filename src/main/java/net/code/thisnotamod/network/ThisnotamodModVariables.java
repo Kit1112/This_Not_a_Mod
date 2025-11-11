@@ -146,6 +146,7 @@ public class ThisnotamodModVariables {
 			clone.signalsCaughtHex = original.signalsCaughtHex;
 			clone.signalsQueueCsv = original.signalsQueueCsv;
 			clone.AllowDebug = original.AllowDebug;
+			clone.heat_spec_purchased = original.heat_spec_purchased;
 			if (!event.isWasDeath()) {
 			}
 		}
@@ -437,6 +438,7 @@ public class ThisnotamodModVariables {
 		public String signalsCaughtHex = "\"\"";
 		public String signalsQueueCsv = "\"\"";
 		public boolean AllowDebug = false;
+		public boolean heat_spec_purchased = false;
 
 		public void syncPlayerVariables(Entity entity) {
 			if (entity instanceof ServerPlayer serverPlayer)
@@ -508,6 +510,7 @@ public class ThisnotamodModVariables {
 			nbt.putString("signalsCaughtHex", signalsCaughtHex);
 			nbt.putString("signalsQueueCsv", signalsQueueCsv);
 			nbt.putBoolean("AllowDebug", AllowDebug);
+			nbt.putBoolean("heat_spec_purchased", heat_spec_purchased);
 			return nbt;
 		}
 
@@ -572,6 +575,7 @@ public class ThisnotamodModVariables {
 			signalsCaughtHex = nbt.getString("signalsCaughtHex");
 			signalsQueueCsv = nbt.getString("signalsQueueCsv");
 			AllowDebug = nbt.getBoolean("AllowDebug");
+			heat_spec_purchased = nbt.getBoolean("heat_spec_purchased");
 		}
 	}
 
@@ -652,6 +656,7 @@ public class ThisnotamodModVariables {
 					variables.signalsCaughtHex = message.data.signalsCaughtHex;
 					variables.signalsQueueCsv = message.data.signalsQueueCsv;
 					variables.AllowDebug = message.data.AllowDebug;
+					variables.heat_spec_purchased = message.data.heat_spec_purchased;
 				}
 			});
 			context.setPacketHandled(true);

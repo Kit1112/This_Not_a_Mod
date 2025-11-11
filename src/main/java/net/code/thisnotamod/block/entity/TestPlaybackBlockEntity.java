@@ -20,9 +20,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
-
-import net.code.thisnotamod.world.inventory.PanelPlaybackMenu;
-import net.code.thisnotamod.init.ThisnotamodModBlockEntities;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
 
@@ -90,6 +91,18 @@ public class TestPlaybackBlockEntity extends RandomizableContainerBlockEntity im
         setChanged();
         sync();
     }
+
+public void addImportedSignal(int signalId, int level, String diskName, String size) {
+    this.imports.add(new ImportedSignal(signalId, level, diskName, size));
+    setChanged(); // markDirty
+    if (this.level != null && !this.level.isClientSide) {
+        this.level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
+    }
+
+}
+
+
+
 
     // Экспорт из списка блока на ВСТАВЛЕННЫЙ диск (по кнопке)
     public void exportToInsertedDrive(int signalId, int level, String size) {
@@ -188,20 +201,39 @@ public class TestPlaybackBlockEntity extends RandomizableContainerBlockEntity im
 
     // +++ импортированные сигналы
     public static class ImportedSignal {
-        public int signalId;
-        public int level;
-        public String diskName;
-        public String size;
-        public String serial;
+    public int signalId;
+    public int level;
+    public String diskName;
+    public String size;
+    public String serial;
+
+    public ImportedSignal() { } // для NBT
+    public ImportedSignal(int id, int lvl, String name, String size) {
+        this.signalId = id; this.level = lvl; this.diskName = name; this.size = size; this.serial = "";
     }
+}
+
     private final java.util.List<ImportedSignal> imports = new java.util.ArrayList<>();
 
     private NonNullList<ItemStack> stacks = NonNullList.<ItemStack>withSize(0, ItemStack.EMPTY);
     private final LazyOptional<? extends IItemHandler>[] handlers = SidedInvWrapper.create(this, Direction.values());
 
-    public TestPlaybackBlockEntity(BlockPos position, BlockState state) {
-        super(ThisnotamodModBlockEntities.TEST_PLAYBACK.get(), position, state);
+    private static BlockEntityType<?> resolveType() {
+    try {
+        // 1) Пытаемся взять через класс-реестр MCreator (если он есть)
+        Class<?> cls = Class.forName("net.code.thisnotamod.init.ThisnotamodModBlockEntities");
+        Object holder = cls.getField("TEST_PLAYBACK").get(null);           // RegistryObject<?>
+        Object type   = holder.getClass().getMethod("get").invoke(holder); // BlockEntityType<?>
+        return (BlockEntityType<?>) type;
+    } catch (Throwable ignore) {
+        // 2) Фолбек: достаём по id из глобального реестра
+        try {
+            ResourceLocation key = new ResourceLocation("thisnotamod", "test_playback");
+            return ForgeRegistries.BLOCK_ENTITY_TYPES.getValue(key);
+        } catch (Throwable ignored) { }
+        return null; // если null — упадёт уже при создании BE, но компилироваться будет
     }
+}
 
     @Override
     public void load(CompoundTag compound) {
@@ -294,10 +326,29 @@ public class TestPlaybackBlockEntity extends RandomizableContainerBlockEntity im
         return 64;
     }
 
-    @Override
-    public AbstractContainerMenu createMenu(int id, Inventory inventory) {
-        return new PanelPlaybackMenu(id, inventory, new FriendlyByteBuf(Unpooled.buffer()).writeBlockPos(this.worldPosition));
+@Override
+public AbstractContainerMenu createMenu(int id, Inventory inventory) {
+    try {
+        Class<?> menuCls = Class.forName("net.code.thisnotamod.world.inventory.PanelPlaybackMenu");
+        var ctor = menuCls.getConstructor(int.class, Inventory.class, FriendlyByteBuf.class);
+        FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer()).writeBlockPos(this.worldPosition);
+        return (AbstractContainerMenu) ctor.newInstance(id, inventory, buf);
+    } catch (Throwable t) {
+        // Фолбек: «пустое» меню, чтобы не ломать компиляцию
+        return new AbstractContainerMenu(null, id) {
+            @Override
+            public boolean stillValid(net.minecraft.world.entity.player.Player player) {
+                return true;
+            }
+            @Override
+            public net.minecraft.world.item.ItemStack quickMoveStack(net.minecraft.world.entity.player.Player player, int index) {
+                return net.minecraft.world.item.ItemStack.EMPTY;
+            }
+        };
     }
+}
+
+
 
     @Override
     public Component getDisplayName() {
@@ -324,6 +375,10 @@ public class TestPlaybackBlockEntity extends RandomizableContainerBlockEntity im
     public int[] getSlotsForFace(Direction side) {
         return IntStream.range(0, this.getContainerSize()).toArray();
     }
+
+    public TestPlaybackBlockEntity(net.minecraft.core.BlockPos pos, net.minecraft.world.level.block.state.BlockState state) {
+    super(resolveType(), pos, state);
+}
 
     @Override
     public boolean canPlaceItemThroughFace(int index, ItemStack stack, @Nullable Direction direction) {

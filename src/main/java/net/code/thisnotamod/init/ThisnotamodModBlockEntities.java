@@ -12,6 +12,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.Block;
 
 import net.code.thisnotamod.block.entity.WorkStatTileEntity;
+import net.code.thisnotamod.block.entity.WorkStatTest2TileEntity;
 import net.code.thisnotamod.block.entity.WindowRightDTileEntity;
 import net.code.thisnotamod.block.entity.WindowAleftTTileEntity;
 import net.code.thisnotamod.block.entity.WindowAleftDTileEntity;
@@ -123,6 +124,8 @@ public class ThisnotamodModBlockEntities {
 	public static final RegistryObject<BlockEntityType<KerfuHeadTileEntity>> KERFU_HEAD = REGISTRY.register("kerfu_head", () -> BlockEntityType.Builder.of(KerfuHeadTileEntity::new, ThisnotamodModBlocks.KERFU_HEAD.get()).build(null));
 	public static final RegistryObject<BlockEntityType<KerfuBlockTileEntity>> KERFU_BLOCK = REGISTRY.register("kerfu_block", () -> BlockEntityType.Builder.of(KerfuBlockTileEntity::new, ThisnotamodModBlocks.KERFU_BLOCK.get()).build(null));
 	public static final RegistryObject<BlockEntityType<?>> TEST_PLAYBACK = register("test_playback", ThisnotamodModBlocks.TEST_PLAYBACK, TestPlaybackBlockEntity::new);
+	public static final RegistryObject<BlockEntityType<WorkStatTest2TileEntity>> WORK_STAT_TEST_2 = REGISTRY.register("work_stat_test_2",
+			() -> BlockEntityType.Builder.of(WorkStatTest2TileEntity::new, ThisnotamodModBlocks.WORK_STAT_TEST_2.get()).build(null));
 
 	private static RegistryObject<BlockEntityType<?>> register(String registryname, RegistryObject<Block> block, BlockEntityType.BlockEntitySupplier<?> supplier) {
 		return REGISTRY.register(registryname, () -> BlockEntityType.Builder.of(supplier, block.get()).build(null));

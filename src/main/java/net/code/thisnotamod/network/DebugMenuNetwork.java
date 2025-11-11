@@ -140,6 +140,8 @@ private static final class ClientHandlers {
                             } else { // BOOL
                                 if ("debug".equals(m.name))       vars.debug = m.bool;
                                 if ("TimeDisplay".equals(m.name)) vars.TimeDisplay = m.bool;
+                                if ("heat_spec_purchased".equals(m.name)) vars.heat_spec_purchased = m.bool;
+
                             }
                             vars.syncPlayerVariables(player);
                         }
@@ -319,6 +321,7 @@ private static final class ClientHandlers {
         public boolean worldDebug;
         public boolean timeDisplay;
         public boolean alarm;
+        public boolean heatSpecPurchased;
 
         public static void encode(S2CInitState m, FriendlyByteBuf buf) {
             buf.writeDouble(m.signalScanerSpeedMod);
@@ -335,6 +338,7 @@ private static final class ClientHandlers {
             buf.writeBoolean(m.worldDebug);
             buf.writeBoolean(m.timeDisplay);
             buf.writeBoolean(m.alarm);
+            buf.writeBoolean(m.heatSpecPurchased);
         }
 
         public static S2CInitState decode(FriendlyByteBuf buf) {
@@ -353,6 +357,7 @@ private static final class ClientHandlers {
             m.worldDebug  = buf.readBoolean();
             m.timeDisplay = buf.readBoolean();
             m.alarm       = buf.readBoolean();
+            m.heatSpecPurchased = buf.readBoolean();
             return m;
         }
 
@@ -378,6 +383,8 @@ private static final class ClientHandlers {
                     // player bools
                     s.debug       = vars.debug;
                     s.timeDisplay = vars.TimeDisplay;
+                    s.heatSpecPurchased = vars.heat_spec_purchased;
+
                 }
 
                 var map = net.code.thisnotamod.network.ThisnotamodModVariables.MapVariables.get(p.level());

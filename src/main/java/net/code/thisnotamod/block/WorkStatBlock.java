@@ -1,6 +1,9 @@
 
 package net.code.thisnotamod.block;
 
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
@@ -36,7 +39,7 @@ public class WorkStatBlock extends BaseEntityBlock implements EntityBlock {
 	public static final DirectionProperty FACING = HorizontalDirectionalBlock.FACING;
 
 	public WorkStatBlock() {
-		super(BlockBehaviour.Properties.of().sound(SoundType.GRAVEL).strength(1f, 10f));
+		super(BlockBehaviour.Properties.of().sound(SoundType.GRAVEL).strength(1f, 10f).noOcclusion().isRedstoneConductor((bs, br, bp) -> false));
 		this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
 	}
 
@@ -65,6 +68,17 @@ public class WorkStatBlock extends BaseEntityBlock implements EntityBlock {
 	@Override
 	public int getLightBlock(BlockState state, BlockGetter worldIn, BlockPos pos) {
 		return 0;
+	}
+
+	@Override
+	public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+
+		return switch (state.getValue(FACING)) {
+			default -> Shapes.or(box(0, 0, 0, 16, 16, 16), box(0, 0, 0, 15, 16, 16), box(0, 0, 0, 15, 16, 16));
+			case NORTH -> Shapes.or(box(0, 0, 0, 16, 16, 16), box(1, 0, 0, 16, 16, 16), box(1, 0, 0, 16, 16, 16));
+			case EAST -> Shapes.or(box(0, 0, 0, 16, 16, 16), box(0, 0, 1, 16, 16, 16), box(0, 0, 1, 16, 16, 16));
+			case WEST -> Shapes.or(box(0, 0, 0, 16, 16, 16), box(0, 0, 0, 16, 16, 15), box(0, 0, 0, 16, 16, 15));
+		};
 	}
 
 	@Override

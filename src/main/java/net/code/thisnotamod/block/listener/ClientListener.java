@@ -8,6 +8,7 @@ import net.minecraftforge.api.distmarker.Dist;
 
 import net.code.thisnotamod.init.ThisnotamodModBlockEntities;
 import net.code.thisnotamod.block.renderer.WorkStatTileRenderer;
+import net.code.thisnotamod.block.renderer.WorkStatTest2TileRenderer;
 import net.code.thisnotamod.block.renderer.WindowRightDTileRenderer;
 import net.code.thisnotamod.block.renderer.WindowAleftTTileRenderer;
 import net.code.thisnotamod.block.renderer.WindowAleftDTileRenderer;
@@ -100,5 +101,6 @@ public class ClientListener {
 		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.CRAFTING_TABLE_R.get(), context -> new CraftingTableRTileRenderer());
 		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.KERFU_HEAD.get(), context -> new KerfuHeadTileRenderer());
 		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.KERFU_BLOCK.get(), context -> new KerfuBlockTileRenderer());
+		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.WORK_STAT_TEST_2.get(), context -> new WorkStatTest2TileRenderer());
 	}
 }

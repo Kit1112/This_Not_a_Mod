@@ -32,6 +32,7 @@ import net.code.thisnotamod.item.DriveItem;
 import net.code.thisnotamod.item.BloodGuidebookItem;
 import net.code.thisnotamod.item.ArsGuidebookItem;
 import net.code.thisnotamod.item.ApotheosisGuidebookItem;
+import net.code.thisnotamod.block.display.WorkStatTest2DisplayItem;
 import net.code.thisnotamod.block.display.WorkStatDisplayItem;
 import net.code.thisnotamod.block.display.WindowRightDDisplayItem;
 import net.code.thisnotamod.block.display.WindowAleftTDisplayItem;
@@ -172,6 +173,7 @@ public class ThisnotamodModItems {
 	public static final RegistryObject<Item> TEST_PLAYBACK = block(ThisnotamodModBlocks.TEST_PLAYBACK);
 	public static final RegistryObject<Item> MUSIC_DISC_VOTV_HALLOWEEN = REGISTRY.register("music_disc_votv_halloween", () -> new MusicDiscVotvHalloweenItem());
 	public static final RegistryObject<Item> DRIVE = REGISTRY.register("drive", () -> new DriveItem());
+	public static final RegistryObject<Item> WORK_STAT_TEST_2 = REGISTRY.register(ThisnotamodModBlocks.WORK_STAT_TEST_2.getId().getPath(), () -> new WorkStatTest2DisplayItem(ThisnotamodModBlocks.WORK_STAT_TEST_2.get(), new Item.Properties()));
 
 	// Start of user code block custom items
 	// End of user code block custom items

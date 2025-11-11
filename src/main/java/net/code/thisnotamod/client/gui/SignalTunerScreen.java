@@ -21,6 +21,7 @@ import org.joml.Matrix4f;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL30;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.BlockPos;
 
 import net.minecraft.client.resources.language.I18n; // локализация
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -493,43 +494,78 @@ if (tip != null) {
 
     }
 
-    @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == 0 && isHovering(rectByIndex(0), mouseX, mouseY)) {
+@Override
+public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    if (button != 0) return super.mouseClicked(mouseX, mouseY, button);
+
+    // --- SAVE (idx 9) ---
+    if (isHovering(rectByIndex(9), mouseX, mouseY)) {
+        boolean ready = hasSignal() && (Background.downloadedPercent >= 100.0 - 1e-6);
+        if (ready) {
+            // целевая панель плейбека (рядом с тюнером)
+            net.minecraft.core.BlockPos target = resolveTargetPanelPos(); // если ещё не вставлял этот хелпер — пингани, кину ещё раз
+
+            // ВАЖНО: всегда уровень 0 от тюнера
+            int lvl = 0;
+            String objectKey = (sDetectedObjectKey == null) ? "" : sDetectedObjectKey;
+
+            net.code.thisnotamod.ThisnotamodMod.PACKET_HANDLER.sendToServer(
+                    new net.code.thisnotamod.network.SaveTunerSignalC2SPacket(target, objectKey, lvl)
+            );
+
+            // локально очищаем тюнер
+            clearSignal();
+
+            // клик-подтверждение
+            Minecraft.getInstance().getSoundManager()
+                    .play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+        } else {
+            Minecraft.getInstance().getSoundManager()
+                    .play(SimpleSoundInstance.forUI(SoundEvents.VILLAGER_NO, 1.0F));
+        }
+        return true;
+    }
+
+    // --- CHANGE POLARITY DIRECTION (idx 0) ---
+    if (isHovering(rectByIndex(0), mouseX, mouseY)) {
+        if (hasSignal()) {
             Background.currentPolarityDir = (Background.currentPolarityDir + 1) % 3;
             playKnobSound();
-            return true;
+        } else {
+            Minecraft.getInstance().getSoundManager()
+                    .play(SimpleSoundInstance.forUI(SoundEvents.VILLAGER_NO, 1.0F));
         }
-      
-        // Новая кнопка удаления сигнала
-        if (button == 0 && isHovering(rectByIndex(7), mouseX, mouseY)) {
+        return true;
+    }
 
+    // --- DELETE SIGNAL (idx 7) ---
+    if (isHovering(rectByIndex(7), mouseX, mouseY)) {
+        if (hasSignal()) {
             clearSignal();
-            return true;
+            Minecraft.getInstance().getSoundManager()
+                    .play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+        } else {
+            Minecraft.getInstance().getSoundManager()
+                    .play(SimpleSoundInstance.forUI(SoundEvents.VILLAGER_NO, 1.0F));
         }
-        // Кнопка phone: проиграть ванильный звук клика
-if (button == 0 && isHovering(rectByIndex(8), mouseX, mouseY)) {
-    Minecraft.getInstance().getSoundManager()
-            .play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
-    return true;
-}
-// Кнопка save: сгенерировать код координат и скопировать в буфер обмена
-if (button == 0 && isHovering(rectByIndex(9), mouseX, mouseY)) {
-    String dump = dumpCurrentButtonCode();
-    Minecraft.getInstance().keyboardHandler.setClipboard(dump);
-    System.out.println("[SignalTunerScreen] New button code:\n" + dump);
-    if (Minecraft.getInstance().player != null) {
-        Minecraft.getInstance().player.displayClientMessage(
-                Component.translatable("signalmanager.ui.tuner.butsave"), true);
+        return true;
     }
-    // Звук подтверждения
-    Minecraft.getInstance().getSoundManager()
-            .play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
-    return true;
+
+    // --- PHONE CLICK (idx 8) ---
+    if (isHovering(rectByIndex(8), mouseX, mouseY)) {
+        var custom = BuiltInRegistries.SOUND_EVENT.getOptional(new ResourceLocation("thisnotamod", "phone_click"));
+        custom.ifPresentOrElse(
+                ev -> Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(ev, 1.0F)),
+                ()  -> Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_TOAST_IN, 1.0F))
+        );
+        return true;
+    }
+
+    return super.mouseClicked(mouseX, mouseY, button);
 }
 
-        return super.mouseClicked(mouseX, mouseY, button);
-    }
+
+
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
@@ -972,6 +1008,41 @@ private String dumpCurrentButtonCode() {
     return null;
 }
 
+private net.minecraft.core.BlockPos resolveTargetPanelPos() {
+    net.minecraft.core.BlockPos origin = new net.minecraft.core.BlockPos(this.menu.x, this.menu.y, this.menu.z);
+    Minecraft mc = Minecraft.getInstance();
+    if (mc == null || mc.level == null) return origin;
+
+    net.minecraft.core.BlockPos best = null;
+    double bestDist2 = Double.MAX_VALUE;
+    int r = 2; // радиус поиска
+
+    for (int dx = -r; dx <= r; dx++) {
+        for (int dy = -r; dy <= r; dy++) {
+            for (int dz = -r; dz <= r; dz++) {
+                net.minecraft.core.BlockPos p = origin.offset(dx, dy, dz);
+                var be = mc.level.getBlockEntity(p);
+                if (be instanceof net.code.thisnotamod.block.entity.TestPlaybackBlockEntity) {
+                    double d2 = origin.distSqr(p);
+                    if (d2 < bestDist2) { bestDist2 = d2; best = p; }
+                }
+            }
+        }
+    }
+
+    if (best != null) return best;
+
+    // хелпер-эвристика: попробуем запад (-X) от тюнера
+    net.minecraft.core.BlockPos west = origin.west();
+    if (mc.level.getBlockEntity(west) instanceof net.code.thisnotamod.block.entity.TestPlaybackBlockEntity) {
+        return west;
+    }
+
+    // фолбек — вернём исходный (скорее всего тюнер), сервер это отвергнет и покажет тост
+    return origin;
+}
+
+
 
     private static int angularDiffDeg(int a, int b) {
         int d = Math.abs(a - b) % 360;
@@ -1150,6 +1221,15 @@ if (hasSignal()) {
                 .orElse(FREQUENCY_WIDTH_DEFAULT);
         return (v > 0) ? v : FREQUENCY_WIDTH_DEFAULT;
     }
+    
+    private static int qualityToLevel(String q) {
+    if (q == null) return 1;
+    String s = q.toLowerCase(Locale.ROOT);
+    if (s.equals("high")) return 3;
+    if (s.equals("middle")) return 2;
+    return 1; // low/other
+}
+
 
     private static int clamp(int v, int min, int max) { return Math.max(min, Math.min(max, v)); }
     private static double clampDouble(double v, double min, double max) { return Math.max(min, Math.min(max, v)); }

@@ -1,0 +1,7 @@
+
+{
+  "parent": "thisnotamod:displaysettings/crafting_table_votv_left.geo",
+  "textures": {
+    "particle": "thisnotamod:block/tex_panel2"
+  }
+}

@@ -10,6 +10,7 @@ import net.minecraftforge.registries.DeferredRegister;
 
 import net.minecraft.world.level.block.Block;
 
+import net.code.thisnotamod.block.WorkStatTest2Block;
 import net.code.thisnotamod.block.WorkStatBlock;
 import net.code.thisnotamod.block.WindowRightDBlock;
 import net.code.thisnotamod.block.WindowAleftTBlock;
@@ -142,6 +143,7 @@ public class ThisnotamodModBlocks {
 	public static final RegistryObject<Block> KERFU_HEAD = REGISTRY.register("kerfu_head", () -> new KerfuHeadBlock());
 	public static final RegistryObject<Block> KERFU_BLOCK = REGISTRY.register("kerfu_block", () -> new KerfuBlockBlock());
 	public static final RegistryObject<Block> TEST_PLAYBACK = REGISTRY.register("test_playback", () -> new TestPlaybackBlock());
+	public static final RegistryObject<Block> WORK_STAT_TEST_2 = REGISTRY.register("work_stat_test_2", () -> new WorkStatTest2Block());
 	// Start of user code block custom blocks
 	// End of user code block custom blocks
 }

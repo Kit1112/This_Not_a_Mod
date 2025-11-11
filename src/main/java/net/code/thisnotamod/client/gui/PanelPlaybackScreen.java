@@ -24,6 +24,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.inventory.AbstractContainerMenu;
 
 import net.code.thisnotamod.block.entity.TestPlaybackBlockEntity;
 import net.code.thisnotamod.item.DriveItem;
@@ -48,7 +49,8 @@ import java.util.function.Supplier;
 
 
 /** Экран PanelPlayback: 640x360, 4 секции, список сигналов, прогрессивный рендер изображения/текста, play/pause. */
-public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMenu> {
+
+public class PanelPlaybackScreen extends AbstractContainerScreen<AbstractContainerMenu> {
     // ---- Виртуальная геометрия и инкрусты ----
     public static final int VIRTUAL_W = 640;
     public static final int VIRTUAL_H = 360;
@@ -77,6 +79,19 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
     private static final int LINE_YELLOW  = 0xFFFFFF00; // lvl=2
     private static final int LINE_RED     = 0xFFFF4040; // lvl=1
     private static final int TEXT_NAME_Y  = 0xFFFFD700; // жёлтый текст имени
+
+    // --- Глобальный активный звук (разделяется всеми экранами) ---
+    private static PlaybackSound GLOBAL_ACTIVE_SOUND = null;
+    private static int GLOBAL_ACTIVE_ID = -1;
+
+    // --- Резюмирование после повторного входа ---
+    private int currentPlayingId = -1;      // id сигнала, который проигрывается
+    private boolean ghostPlaying = false;   // "призрачное" воспроизведение (нет своего SoundInstance, но идёт визуальный прогресс)
+
+    // Прочитано из persistent при открытии экрана (для резюма)
+    private Integer resumePlayingId = null;
+    private double resumePlayStartAt = 0.0;
+    private boolean resumeWasPlaying = false;
 
     private static int colorForLevel(int lvl) {
         return switch (lvl) {
@@ -158,7 +173,7 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
     // debug: чтобы не спамить чат — логируем картинку один раз на смену
     private ResourceLocation dbgLastImage = null;
 
-    public PanelPlaybackScreen(PanelPlaybackMenu menu, Inventory inv, Component title) {
+    public PanelPlaybackScreen(AbstractContainerMenu menu, Inventory inv, Component title) {
         super(menu, inv, title);
         this.imageWidth = VIRTUAL_W;
         this.imageHeight = VIRTUAL_H;
@@ -168,6 +183,7 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
         clampIndices();
         ensureFirstSeenDates();
         this.listScroll = this.selectedIndex; // скроллбар указывает на выбранный элемент
+        resumePlaybackIfNeeded();
 
     }
 
@@ -334,203 +350,262 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
         gg.hLine(x, x + w, midY, LINE_WHITE);
     }
 
-    private void drawSignalList(GuiGraphics gg, IntRect r) {
-        // без заголовка
-        final int rowH = 32;
-        final int sectionPadX = 4;
-
-        // сколько строк влезает в секцию
-        int visible = Math.max(1, r.h / rowH);
-        int centerRow = visible / 2;
-
-        // такой top, чтобы выбранная строка была РОВНО по центру секции
-        int top = r.centerY() - (centerRow * rowH + rowH / 2);
-
-        // глобальная вертикальная полоса после "0>" — во всю высоту секции
-        final int laneRightGlobal = Math.min(r.x + sectionPadX + LIST_LANE_W, r.x + r.w - 6);
-        gg.vLine(laneRightGlobal, r.y + 2, r.y + r.h - 2, LINE_WHITE);
-
-        // индекс верхней логической строки
-        int virtualTop = selectedIndex - centerRow;
-
-        for (int i = 0; i < visible; i++) {
-            int idx = virtualTop + i;
-            int y0 = top + i * rowH;
-            int y1 = y0 + rowH - 2;
-            int x0 = r.x + sectionPadX;
-            int w0 = r.w - sectionPadX * 2;
-
-            // общий фон строки
-            gg.fill(x0, y0, x0 + w0, y1, 0x20101010);
-
-            if (idx < 0 || SIGNALS == null || idx >= SIGNALS.size()) continue;
-
-            boolean focused = (idx == selectedIndex);
-            SignalEntry s = SIGNALS.get(idx);
-
-            // горизонтальные линии фокуса — во всю ширину секции
-            if (focused) {
-                gg.hLine(r.x + 1, r.x + r.w - 2, y0,     LINE_WHITE);
-                gg.hLine(r.x + 1, r.x + r.w - 2, y1 - 1, LINE_WHITE);
-            }
-
-            // левая зона с номером "0>"
-            int laneLeft = x0 + 2;
-            if (focused) {
-                String label = idx + ">";
-                float scale = FOCUS_NUM_SCALE;
-                int laneW = Math.max(1, laneRightGlobal - laneLeft);
-                float textW = this.font.width(label) * scale;
-                float textH = this.font.lineHeight * scale;
-                float tx = laneLeft + (laneW - textW) / 2f;
-                float ty = y0 + ((rowH - 2) - textH) / 2f;
-
-                gg.pose().pushPose();
-                gg.pose().translate(tx, ty, 0);
-                gg.pose().scale(scale, scale, 1f);
-                gg.drawString(this.font, label, 0, 0, 0xFFE0FFFF, false);
-                gg.pose().popPose();
-            }
-
-            // данные
-            String diskName = (s.diskLabel != null && !s.diskLabel.isBlank()) ? s.diskLabel
-                    : (s.name != null ? s.name : "—");
-            String date = firstSeenDates.getOrDefault(s.id, "");
-
-            // ----- внутренняя обводка по уровню + разделение на 2 ячейки -----
-            // ----- внутренняя обводка по уровню + разделение на 2 ячейки -----
-            int lvlColor = colorForLevel(s.level);
-
-            int innerPad = 2;                      // одинаковый отступ со всех сторон
-            int innerX   = laneRightGlobal + 4;    // чуть ближе к левой рамке списка
-            int rowPixH  = Math.max(1, y1 - y0);   // реальная высота строки в пикселях
-            int innerY   = y0 + innerPad;
-            int innerW   = Math.max(8, (r.x + r.w - innerPad) - innerX); // симметричный правый отступ
-            int innerH   = Math.max(8, rowPixH - innerPad * 2);          // симметрия по вертикали
-
-// рамка уровня
-            gg.renderOutline(innerX, innerY, innerW, innerH, lvlColor);
-
-// разделитель пополам
-            int splitY = innerY + innerH / 2;
-            gg.hLine(innerX + 1, innerX + innerW - 1, splitY, lvlColor);
-
-// тексты «чуть меньше»
-            float tScale = 0.90f;
-            int tx = innerX + 4;
-
-
-            // ограничиваем ширину с учётом скейла
-            int maxTextWpx = Math.max(1, (int)Math.floor((innerW - 8) / tScale));
-            String nameDraw = this.font.plainSubstrByWidth(diskName, maxTextWpx);
-            String dateDraw = this.font.plainSubstrByWidth(date,     maxTextWpx);
-
-            // верх: имя (жёлтым)
-            gg.pose().pushPose();
-            gg.pose().translate(tx, innerY + 2, 0);
-            gg.pose().scale(tScale, tScale, 1f);
-            gg.drawString(this.font, nameDraw, 0, 0, TEXT_NAME_Y, false);
-            gg.pose().popPose();
-
-            // низ: дата (белым)
-            gg.pose().pushPose();
-            gg.pose().translate(tx, splitY + 2, 0);
-            gg.pose().scale(tScale, tScale, 1f);
-            gg.drawString(this.font, dateDraw, 0, 0, LINE_WHITE, false);
-            gg.pose().popPose();
-        }
-    }
-
-
-
-
-    private void drawSignalImageProgressive(GuiGraphics gg, IntRect r) {
-        SignalEntry s = getSelected();
-        if (s == null || s.imageRaw == null) {
-            centerLabel(gg, r, "NO IMAGE");
+    // Если в persistent было записано, что что-то играет — восстановить визуализации
+    private void resumePlaybackIfNeeded() {
+        // сперва пробуем усыновить реально играющий инстанс
+        if (adoptGlobalIfPossible()) {
+            // прогресс считаем от сохранённого старта
+            if (resumePlayingId != null) this.currentPlayingId = resumePlayingId;
+            this.playStartTimeSec = resumePlayStartAt;
+            this.playProgressSec = Math.max(0.0, nowSec() - this.playStartTimeSec);
             return;
         }
 
-        // Кэшируем наличие ресурса лениво
-        if (s.imageExists == null) {
-            s.imageExists = resourceExists(s.imageRaw);
-        }
+        // иначе — ghost-визуализация
+        if (!resumeWasPlaying || resumePlayingId == null || resumePlayingId < 0) return;
+        this.isPlaying = true;
+        this.ghostPlaying = true;
+        this.currentPlayingId = resumePlayingId;
+        this.playStartTimeSec = resumePlayStartAt;
+        this.playProgressSec  = Math.max(0.0, nowSec() - this.playStartTimeSec);
 
-        // Лог один раз при смене картинки
-        if (dbgLastImage != s.imageRaw) {
-            CHAT("IMG: rl=" + s.imageRaw +
-                    " exists=" + s.imageExists +
-                    " sizeHint=" + s.imageRawWidth + "x" + s.imageRawHeight +
-                    " (expected file: assets/" + s.imageRaw.getNamespace() + "/" + s.imageRaw.getPath() + ")");
-            dbgLastImage = s.imageRaw;
-        }
-
-        // Прогресс проявления сверху-вниз
-        double dur = getUiDurationSec(isAudioActive());
-        double t   = clamp01(playProgressSec / Math.max(0.1, dur));
-
-        // Исходный размер (хинт) — если не задан, берём 352x288
-        int srcW = s.imageRawWidth  > 0 ? s.imageRawWidth  : 352;
-        int srcH = s.imageRawHeight > 0 ? s.imageRawHeight : 288;
-
-        // Вписываем в секцию: по вертикали — без отступов
-        int padX = 6;     // горизонтальный отступ можно оставить
-        int padY = 0;     // по вертикали — в упор
-        int availW = Math.max(1, r.w - padX * 2);
-        int availH = Math.max(1, r.h - padY * 2);
-
-// Масштаб по высоте
-        float scale = availH / (float) srcH;
-        int drawH = Math.max(1, Math.round(srcH * scale));
-        int drawW = Math.max(1, Math.round(srcW * scale));
-
-// Если вдруг не влезли по ширине — ужмём пропорционально
-        if (drawW > availW) {
-            float k = availW / (float) drawW;
-            drawW = Math.max(1, Math.round(drawW * k));
-            drawH = Math.max(1, Math.round(drawH * k));
-        }
-
-        int dx = r.x + (r.w - drawW) / 2;
-        int dy = r.y + (r.h - drawH) / 2;
-
-// фон всей области
-        gg.fill(r.x, r.y, r.x + r.w, r.y + r.h, 0xFF000000);
-
-// ВЫЧИСЛЯЕМ видимую высоту по прогрессу (и соответствующую высоту исходной текстуры)
-        int cutH    = Math.max(1, (int)Math.round(drawH * t));
-        int texCutH = Math.max(1, (int)Math.round(srcH * t));
-
-        if (Boolean.TRUE.equals(s.imageExists)) {
-            gg.pose().pushPose();
-            gg.pose().translate(dx, dy, 0);
-
-            // масштаб по ширине — к полной ширине, по высоте — только к видимой части
-            float sx = drawW / (float) Math.max(1, srcW);
-            float sy = cutH / (float) Math.max(1, texCutH);
-            gg.pose().scale(sx, sy, 1f);
-
-            RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-            // рисуем верхнюю часть исходной текстуры (0..texCutH)
-            gg.blit(s.imageRaw, 0, 0, 0, 0, srcW, texCutH, srcW, srcH);
-
-            gg.pose().popPose();
-
-            if (t <= 0.0001 || Math.abs(t - 1.0) <= 0.0001) {
-                CHAT("IMG draw: " + s.imageRaw + " dst=" + drawW + "x" + cutH +
-                        " of src " + srcW + "x" + texCutH + " at " + dx + "," + dy + " (t=" + FMT(t) + ")");
-            }
-        } else {
-            centerLabel(gg, r, "IMAGE NOT FOUND");
-        }
-
-
-        gg.renderOutline(dx, dy, drawW, drawH, LINE_WHITE);
+        int idx = indexOfSignalIdInVisible(this.currentPlayingId);
+        if (idx >= 0) setSelectedIndexSilently(idx);
+        SignalEntry s = getSelected();
+        if (s != null) ensureSpecBuildFor(s);
     }
+
+
+    // Индекс сигнала с данным id в текущем видимом списке SIGNALS
+    private int indexOfSignalIdInVisible(int id) {
+        for (int i = 0; i < SIGNALS.size(); i++) {
+            if (SIGNALS.get(i).id == id) return i;
+        }
+        return -1;
+    }
+
+    // Установить выбранный индекс БЕЗ остановки воспроизведения (в отличие от setSelectedIndex)
+    private void setSelectedIndexSilently(int idx) {
+        if (SIGNALS == null || SIGNALS.isEmpty()) return;
+        idx = clamp(idx, 0, SIGNALS.size() - 1);
+        this.selectedIndex = idx;
+        ensureFirstSeenFor(this.selectedIndex);
+        this.listScroll = this.selectedIndex;
+    }
+
+    // Если спектра нет — запустить асинхронную сборку (как в startPlayback)
+    private void ensureSpecBuildFor(SignalEntry s) {
+        if (s == null || s.soundRawId == null) return;
+        SoundEvent se = resolveSound(s.soundRawId);
+        if (se == null) return;
+        ResourceLocation eventId = BuiltInRegistries.SOUND_EVENT.getKey(se);
+        if (eventId == null) return;
+
+        if (!specCacheById.containsKey(s.id) && !specBuildTasks.containsKey(eventId)) {
+            specBuildTasks.put(eventId,
+                    CompletableFuture.supplyAsync(() -> buildSpectrumFor(eventId))
+                            .whenComplete((sd, ex) -> {
+                                if (ex == null && sd != null) {
+                                    specCacheById.put(s.id, sd);
+                                    CHAT("Spectrum cached: id=" + s.id + ", frames=" + sd.bands.length + ", sr=" + sd.sampleRate);
+                                } else {
+                                    CHAT("Spectrum build FAILED for " + eventId);
+                                }
+                                specBuildTasks.remove(eventId);
+                            })
+            );
+        }
+    }
+
+
+private void drawSignalList(GuiGraphics gg, IntRect r) {
+    final int rowH = 32;
+    final int sectionPadX = 4;
+
+    int visible = Math.max(1, r.h / rowH);
+    int centerRow = visible / 2;
+    int top = r.centerY() - (centerRow * rowH + rowH / 2);
+
+    final int laneRightGlobal = Math.min(r.x + sectionPadX + LIST_LANE_W, r.x + r.w - 6);
+    gg.vLine(laneRightGlobal, r.y + 2, r.y + r.h - 2, LINE_WHITE);
+
+    int virtualTop = selectedIndex - centerRow;
+
+    for (int i = 0; i < visible; i++) {
+        int idx = virtualTop + i;
+        int y0 = top + i * rowH;
+        int y1 = y0 + rowH - 2;
+        int x0 = r.x + sectionPadX;
+        int w0 = r.w - sectionPadX * 2;
+
+        // фон строки
+        gg.fill(x0, y0, x0 + w0, y1, 0x20101010);
+
+        boolean valid = (SIGNALS != null && idx >= 0 && idx < SIGNALS.size());
+        boolean focused = (idx == selectedIndex);
+
+        // фокусные горизонтальные линии — ВСЕГДА
+        if (focused) {
+            gg.hLine(r.x + 1, r.x + r.w - 2, y0,     LINE_WHITE);
+            gg.hLine(r.x + 1, r.x + r.w - 2, y1 - 1, LINE_WHITE);
+        }
+
+        // левая зона с номером — показываем только для фокусной строки
+        if (focused) {
+            int laneLeft = x0 + 2;
+            String label = valid ? (idx + ">") : "0>";
+            float scale = FOCUS_NUM_SCALE;
+            int laneW = Math.max(1, laneRightGlobal - laneLeft);
+            float textW = this.font.width(label) * scale;
+            float textH = this.font.lineHeight * scale;
+            float tx = laneLeft + (laneW - textW) / 2f;
+            float ty = y0 + ((rowH - 2) - textH) / 2f;
+
+            gg.pose().pushPose();
+            gg.pose().translate(tx, ty, 0);
+            gg.pose().scale(scale, scale, 1f);
+            gg.drawString(this.font, label, 0, 0, 0xFFE0FFFF, false);
+            gg.pose().popPose();
+        }
+
+        // --- ДАЛЬШЕ ТОЛЬКО ДЛЯ РЕАЛЬНО СУЩЕСТВУЮЩЕГО ЭЛЕМЕНТА ---
+        if (!valid) continue;
+
+        SignalEntry s = SIGNALS.get(idx);
+
+        // индивидуальная рамка (цвет по уровню) и разделитель — ТОЛЬКО ПРИ valid
+        int innerPad = 2;
+        int innerX   = laneRightGlobal + 4;
+        int innerY   = y0 + innerPad;
+        int innerW   = Math.max(8, (r.x + r.w - innerPad) - innerX);
+        int innerH   = Math.max(8, (y1 - y0) - innerPad * 2);
+        int lvlColor = colorForLevel(s.level);
+
+        gg.renderOutline(innerX, innerY, innerW, innerH, lvlColor);
+        int splitY = innerY + innerH / 2;
+        gg.hLine(innerX + 1, innerX + innerW - 1, splitY, lvlColor);
+
+        // тексты
+        String diskName = (s.diskLabel != null && !s.diskLabel.isBlank()) ? s.diskLabel
+                : (s.name != null ? s.name : "—");
+        String date = firstSeenDates.getOrDefault(s.id, "");
+
+        float tScale = 0.90f;
+        int tx = innerX + 4;
+
+        int maxTextWpx = Math.max(1, (int)Math.floor((innerW - 8) / tScale));
+        String nameDraw = this.font.plainSubstrByWidth(diskName, maxTextWpx);
+        String dateDraw = this.font.plainSubstrByWidth(date,     maxTextWpx);
+
+        gg.pose().pushPose();
+        gg.pose().translate(tx, innerY + 2, 0);
+        gg.pose().scale(tScale, tScale, 1f);
+        gg.drawString(this.font, nameDraw, 0, 0, TEXT_NAME_Y, false);
+        gg.pose().popPose();
+
+        gg.pose().pushPose();
+        gg.pose().translate(tx, splitY + 2, 0);
+        gg.pose().scale(tScale, tScale, 1f);
+        gg.drawString(this.font, dateDraw, 0, 0, LINE_WHITE, false);
+        gg.pose().popPose();
+    }
+}
+
+
+
+
+
+
+private void drawSignalImageProgressive(GuiGraphics gg, IntRect r) {
+    SignalEntry s = getSelected();
+
+    // всегда чёрный фон секции
+    gg.fill(r.x, r.y, r.x + r.w, r.y + r.h, 0xFF000000);
+
+    if (s == null || s.imageRaw == null) {
+        // без надписей — только рамка секции
+        gg.renderOutline(r.x, r.y, r.w, r.h, LINE_WHITE);
+        return;
+    }
+
+    // Кэшируем наличие ресурса лениво
+    if (s.imageExists == null) {
+        s.imageExists = resourceExists(s.imageRaw);
+    }
+
+    if (dbgLastImage != s.imageRaw) {
+        CHAT("IMG: rl=" + s.imageRaw +
+                " exists=" + s.imageExists +
+                " sizeHint=" + s.imageRawWidth + "x" + s.imageRawHeight +
+                " (expected file: assets/" + s.imageRaw.getNamespace() + "/" + s.imageRaw.getPath() + ")");
+        dbgLastImage = s.imageRaw;
+    }
+
+    // Прогресс проявления сверху-вниз
+    double dur = getUiDurationSec(isAudioActive());
+    double t   = clamp01(playProgressSec / Math.max(0.1, dur));
+
+    int srcW = s.imageRawWidth  > 0 ? s.imageRawWidth  : 352;
+    int srcH = s.imageRawHeight > 0 ? s.imageRawHeight : 288;
+
+    int padX = 6;
+    int padY = 0;
+    int availW = Math.max(1, r.w - padX * 2);
+    int availH = Math.max(1, r.h - padY * 2);
+
+    float scale = availH / (float) srcH;
+    int drawH = Math.max(1, Math.round(srcH * scale));
+    int drawW = Math.max(1, Math.round(srcW * scale));
+
+    if (drawW > availW) {
+        float k = availW / (float) drawW;
+        drawW = Math.max(1, Math.round(drawW * k));
+        drawH = Math.max(1, Math.round(drawH * k));
+    }
+
+    int dx = r.x + (r.w - drawW) / 2;
+    int dy = r.y + (r.h - drawH) / 2;
+
+    int cutH    = Math.max(1, (int)Math.round(drawH * t));
+    int texCutH = Math.max(1, (int)Math.round(srcH * t));
+
+    if (Boolean.TRUE.equals(s.imageExists)) {
+        gg.pose().pushPose();
+        gg.pose().translate(dx, dy, 0);
+
+        float sx = drawW / (float) Math.max(1, srcW);
+        float sy = cutH / (float) Math.max(1, texCutH);
+        gg.pose().scale(sx, sy, 1f);
+
+        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+        gg.blit(s.imageRaw, 0, 0, 0, 0, srcW, texCutH, srcW, srcH);
+
+        gg.pose().popPose();
+
+        // рамка ровно по изображению
+        gg.renderOutline(dx, dy, drawW, drawH, LINE_WHITE);
+    } else {
+        // файл не найден — только рамка секции, без текста
+        gg.renderOutline(r.x, r.y, r.w, r.h, LINE_WHITE);
+    }
+}
+
+
 
     private void drawSpectrogram(GuiGraphics gg, IntRect r) {
         // фон
         gg.fill(r.x + 1, r.y + 1, r.x + r.w - 1, r.y + r.h - 1, 0xFF000000);
+
+        // Если режим HEAT включён, но модуль не куплен — показываем предупреждение и выходим
+    if (specMode == SpecMode.HEAT && !isHeatSpecPurchased()) {
+        String msg = I18n.get("signalmanager.ui.tuner.heat_spec_not_purchased");
+        if (msg == null || msg.isBlank()) msg = "MODULE NOT FOUND";
+        // большие красные буквы на всю ширину второй области
+        drawBigCenteredLabel(gg, r, msg, 0xFFFF3030);
+        gg.renderOutline(r.x, r.y, r.w, r.h, LINE_WHITE);
+        return;
+    }
+
 
         // подготовим данные
         SignalEntry s = getSelected();
@@ -708,6 +783,10 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
 
     // ----------------- Воспроизведение -----------------
     private void togglePlayPause() {
+        if (ghostPlaying) {
+            // попробуем получить хэндл и уже после этого остановить
+            adoptGlobalIfPossible();
+        }
         if (isPlaying) {
             stopPlayback();
         } else {
@@ -715,29 +794,41 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
         }
     }
 
+
+
     // +++ только локально (клиент), чтобы UI обновился мгновенно
     private void doLocalImportExport() {
-        TestPlaybackBlockEntity b = be();
-        if (b == null) return;
-        ItemStack drv = b.getDrive();
-        if (drv.isEmpty()) return;
+    TestPlaybackBlockEntity b = be();
+    if (b == null) return;
+    ItemStack drv = b.getDrive();
+    if (drv.isEmpty()) return;
 
-        int sid = drv.getOrCreateTag().getInt(DriveItem.TAG_SIGNAL_ID);
+    int sid = drv.getOrCreateTag().getInt(DriveItem.TAG_SIGNAL_ID);
 
-        if (sid >= 0) {
-            // На диске ЕСТЬ сигнал -> ИМПОРТ в список + ОЧИСТКА диска
-            b.importFromInsertedDrive();
-        } else {
-            // На диске НЕТ сигнала -> ЭКСПОРТ выбранного в диск + УДАЛЕНИЕ из списка
-            SignalEntry sel = getSelected();
-            if (sel != null) {
-                b.exportToInsertedDrive(sel.id, sel.level, sel.size);
+    if (sid >= 0) {
+        // Импорт с диска
+        b.importFromInsertedDrive();
+    } else {
+        // Экспорт выбранного в диск + удаление из списка
+        SignalEntry sel = getSelected();
+        if (sel != null) {
+            boolean exportingPlayingNow =
+                    (isPlaying || ghostPlaying || isAudioActive() || GLOBAL_ACTIVE_SOUND != null)
+                    && (currentPlayingId == sel.id || GLOBAL_ACTIVE_ID == sel.id);
+
+            if (exportingPlayingNow) {
+                // сначала гарантированно останавливаем звук (локальный или глобальный)
+                stopPlayback();
             }
-        }
 
-        // Обновить отображение списка
-        refreshVisibleFromBlock();
+            b.exportToInsertedDrive(sel.id, sel.level, sel.size);
+        }
     }
+
+    // Обновить отображение списка
+    refreshVisibleFromBlock();
+}
+
 
 
     private void toggleSpecMode() {
@@ -748,11 +839,8 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
     }
 
     private void startPlayback() {
-        // Сбрасываем предыдущее воспроизведение (во избежание блокировки повторного старта)
         stopPlayback();
         awaitingActivation = false;
-//      playProgressSec не трогаем — визуализации «замерзают» на текущем месте
-
 
         SignalEntry s = getSelected();
         if (s == null || s.soundRawId == null) return;
@@ -761,65 +849,74 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
         if (se == null) return;
         final ResourceLocation eventId = BuiltInRegistries.SOUND_EVENT.getKey(se);
 
-        // Узнаём длину именно для ЭТОГО сигнала
+        this.currentPlayingId = s.id;
+        this.ghostPlaying = false;
+
         double known = measuredDurSecById.getOrDefault(s.id, -1.0);
         if (!(known > 0.0)) {
             double d = probeOggDurationSec(eventId);
-            if (d > 0.0 && Double.isFinite(d)) {
-                measuredDurSecById.put(s.id, d);
-                CHAT("[PanelPlayback] Cached length for id=" + s.id + " = " + FMT(d) + "s");
-            } else {
-                measuredDurSecById.put(s.id, FALLBACK_DURATION_SEC);
-                CHAT("[PanelPlayback] Using fallback duration = " + FMT(FALLBACK_DURATION_SEC) + "s for id=" + s.id);
-            }
+            measuredDurSecById.put(s.id, (d > 0 && Double.isFinite(d)) ? d : FALLBACK_DURATION_SEC);
         }
 
-        // Спектр: если нет — запускаем сборку асинхронно (без фриза UI)
         if (!specCacheById.containsKey(s.id) && eventId != null && !specBuildTasks.containsKey(eventId)) {
             specBuildTasks.put(eventId,
                     CompletableFuture.supplyAsync(() -> buildSpectrumFor(eventId))
                             .whenComplete((sd, ex) -> {
-                                if (ex == null && sd != null) {
-                                    specCacheById.put(s.id, sd);
-                                    CHAT("Spectrum cached: id=" + s.id + ", frames=" + sd.bands.length + ", sr=" + sd.sampleRate);
-                                } else {
-                                    CHAT("Spectrum build FAILED for " + eventId);
-                                }
+                                if (ex == null && sd != null) specCacheById.put(s.id, sd);
                                 specBuildTasks.remove(eventId);
                             })
             );
         }
 
-        // сброс текущих столбиков перед новым проигрыванием
-        java.util.Arrays.fill(specNow, 0f);
+        Arrays.fill(specNow, 0f);
 
-        activeSound = new PlaybackSound(se, () -> volume01);
-        // Запускаем на следующий тик — даём движку освободить предыдущий инстанс
+        activeSound = new PlaybackSound(se);
+        activeSound.setVolumeDynamic(volume01);
+
         Minecraft.getInstance().execute(() -> {
             if (activeSound != null) {
                 Minecraft.getInstance().getSoundManager().play(activeSound);
             }
         });
 
+        // <-- СВЯЗЫВАЕМ С ГЛОБАЛЬНЫМИ
+        GLOBAL_ACTIVE_SOUND = activeSound;
+        GLOBAL_ACTIVE_ID = s.id;
 
         isPlaying = true;
         awaitingActivation = true;
-        playStartTimeSec = nowSec(); // скорректируем на момент активации
+        playStartTimeSec = nowSec();
         playProgressSec = 0.0;
+        savePersistent();
     }
+
 
     private void stopPlayback() {
-        if (activeSound != null) {
-            activeSound.requestStop();
-            Minecraft.getInstance().getSoundManager().stop(activeSound);
-            activeSound = null;
-        }
-        isPlaying = false;
-        awaitingActivation = false;
-//      playProgressSec не трогаем — визуализации (картинка, BARS, HEAT) «замерзают» на текущем месте
+    Minecraft mc = Minecraft.getInstance();
 
-
+    if (activeSound != null) {
+        activeSound.requestStop();
+        if (mc != null) mc.getSoundManager().stop(activeSound);
+        activeSound = null;
+    } else if (GLOBAL_ACTIVE_SOUND != null) {
+        // экстренно стопаем глобальный звук, если этот экран его ещё не «усыновил»
+        GLOBAL_ACTIVE_SOUND.requestStop();
+        if (mc != null) mc.getSoundManager().stop(GLOBAL_ACTIVE_SOUND);
     }
+
+    isPlaying = false;
+    awaitingActivation = false;
+    currentPlayingId = -1;
+    ghostPlaying = false;
+
+    // очистить глобальную связку
+    GLOBAL_ACTIVE_SOUND = null;
+    GLOBAL_ACTIVE_ID = -1;
+
+    savePersistent();
+}
+
+
 
     private void setSelectedIndex(int idx) {
         if (SIGNALS == null || SIGNALS.isEmpty()) return;
@@ -828,9 +925,9 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
 
         if (idx == this.selectedIndex) return;
 
-        // стопаем, если что-то играет
-        if (isPlaying || isAudioActive()) {
-            stopPlayback(); // playProgressSec не сбрасываем — замрёт, как и раньше
+        // стопаем ТОЛЬКО если звук запущен нами (локальный инстанс), а не «призрачно» после перезахода
+        if ((isPlaying && !ghostPlaying) || isAudioActive()) {
+            stopPlayback(); // playProgressSec не сбрасываем — картинка/спектр/текст замрут как и раньше
         }
 
         this.selectedIndex = idx;
@@ -838,25 +935,29 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
         this.listScroll = this.selectedIndex; // центрируем логически
     }
 
+
     /** Полный пересчёт прогресса и фиксация фактической длительности при естественном окончании звука. */
     private void tickPlaybackProgress() {
-        if (!isPlaying) return;
+        if (!isPlaying && !ghostPlaying) return;
 
         Minecraft mc = Minecraft.getInstance();
         if (mc == null) {
-            // Без клиента — прерываем воспроизведение
             isPlaying = false;
+            ghostPlaying = false;
             activeSound = null;
+            currentPlayingId = -1;
+            savePersistent();
             return;
         }
 
         boolean active = (activeSound != null) && mc.getSoundManager().isActive(activeSound);
+        boolean treatedAsActive = active || ghostPlaying;
 
-        // ждём фактического старта
+        // Ожидание фактического старта (только для локально запущенного звука)
         if (awaitingActivation) {
             if (active) {
                 playStartTimeSec = nowSec();
-                playProgressSec = 0.0;
+                playProgressSec  = 0.0;
                 awaitingActivation = false;
                 CHAT("[PanelPlayback] Sound activated; planned UI duration = " + FMT(getUiDurationSec(true)) + "s");
             } else {
@@ -865,37 +966,55 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
             }
         }
 
-        // обновляем прогресс
+        // Обновляем прогресс от момента старта (общая логика — и для ghost)
         playProgressSec = Math.max(0.0, nowSec() - playStartTimeSec);
 
-        // визуальный лимит по известной длине
-        SignalEntry s = getSelected();
-        int sid = (s != null) ? s.id : -1;
+        // Границы по известной/оценённой длительности
+        int sid = (currentPlayingId >= 0) ? currentPlayingId : (getSelected() != null ? getSelected().id : -1);
         double known = (sid >= 0) ? measuredDurSecById.getOrDefault(sid, -1.0) : -1.0;
         double dur   = (known > 0.0 && Double.isFinite(known)) ? known : FALLBACK_DURATION_SEC;
         if (Double.isFinite(dur) && playProgressSec > dur) {
             playProgressSec = dur;
         }
 
-        // окончание
-        if (!active) {
+        // Если мы в режиме ghostPlaying, у нас нет хэндла звука — НЕ считаем это окончанием.
+        if (ghostPlaying) {
+            // Доходим визуально до конца — и завершаем аккуратно
+            if (Double.isFinite(dur) && playProgressSec >= dur - 1e-3) {
+                double actual = Math.max(0.05, playProgressSec);
+                if (sid >= 0) {
+                    boolean unknown = !(known > 0.0 && Double.isFinite(known));
+                    boolean differs = !(Math.abs(known - actual) <= 0.08);
+                    if (unknown || differs) measuredDurSecById.put(sid, actual);
+                }
+                isPlaying = false;
+                ghostPlaying = false;
+                awaitingActivation = false;
+                activeSound = null;
+                currentPlayingId = -1;
+                savePersistent();
+            }
+            return; // до конца не дошли — продолжаем визуализацию
+        }
+
+        // Нормальный локальный режим: если движок уже выключил инстанс — завершаем
+        if (!treatedAsActive) {
             double actual = Math.max(0.05, playProgressSec);
             if (sid >= 0) {
                 boolean unknown = !(known > 0.0 && Double.isFinite(known));
                 boolean differs = !(Math.abs(known - actual) <= 0.08);
-                if (unknown || differs) {
-                    measuredDurSecById.put(sid, actual);
-                    CHAT("[PanelPlayback] Measured actual length for id=" + sid + " = " + FMT(actual) +
-                            "s (was " + (known > 0 ? FMT(known) + "s" : "unknown") + ")");
-                }
+                if (unknown || differs) measuredDurSecById.put(sid, actual);
             }
             isPlaying = false;
             awaitingActivation = false;
             activeSound = null;
+            currentPlayingId = -1;
+            // фиксируем финальную позицию и сохраняем
             playProgressSec = Math.min(playProgressSec, (sid >= 0 ? measuredDurSecById.getOrDefault(sid, dur) : dur));
             savePersistent();
         }
     }
+
 
     // ----------------- Утилиты отрисовки -----------------
     private void drawKnob(GuiGraphics gg, IntRect r, float value01, int color, String label) {
@@ -1009,6 +1128,12 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
             }
         }
 
+        // --- резюмирование воспроизведения ---
+        resumeWasPlaying = root.contains("playing") && root.getBoolean("playing");
+        resumePlayingId  = root.contains("playingId") ? root.getInt("playingId") : null;
+        resumePlayStartAt = root.contains("playStartAt") ? root.getDouble("playStartAt") : 0.0;
+
+
         clampIndices();
     }
 
@@ -1039,6 +1164,12 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
         root.put("durById", dm);
         root.putInt("specMode", (specMode == SpecMode.HEAT ? 1 : 0));
 
+        // --- резюмирование воспроизведения ---
+        root.putBoolean("playing", isPlaying || ghostPlaying);
+        root.putInt("playingId", currentPlayingId);
+        root.putDouble("playStartAt", playStartTimeSec);
+
+
         tag.put("thisnotamod_panel_playback", root);
     }
 
@@ -1068,7 +1199,9 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
     private void setVolume01(float v) {
         volume01 = clamp01f(v);
         if (activeSound != null) activeSound.setVolumeDynamic(volume01);
+        else if (GLOBAL_ACTIVE_SOUND != null) GLOBAL_ACTIVE_SOUND.setVolumeDynamic(volume01);
     }
+
 
     private void clampIndices() {
         if (SIGNALS == null || SIGNALS.isEmpty()) { selectedIndex = 0; listScroll = 0; return; }
@@ -1127,74 +1260,147 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
         boolean contains(int mx, int my) { return mx >= x && mx < x + w && my >= y && my < y + h; }
     }
 
-    private static class SignalEntry {
-        int id;
-        String name;
-        String size;
-        String diskLabel;
-        float weight;
-        ResourceLocation objectImage;
-        String type;
-        String objectNameKey;
-        boolean specialResponse;
-        boolean specialPrice;
-        int level = 0;
+    private boolean adoptGlobalIfPossible() {
+        var mc = Minecraft.getInstance();
+        if (mc == null || GLOBAL_ACTIVE_SOUND == null) return false;
+        if (!mc.getSoundManager().isActive(GLOBAL_ACTIVE_SOUND)) return false;
 
-        ResourceLocation imageRaw;
-        int imageRawWidth = 352;
-        int imageRawHeight = 288;
-        Boolean imageExists; // ленивый кэш наличия ресурса
+        this.activeSound = GLOBAL_ACTIVE_SOUND;
+        this.currentPlayingId = (GLOBAL_ACTIVE_ID >= 0) ? GLOBAL_ACTIVE_ID : this.currentPlayingId;
+        this.isPlaying = true;
+        this.ghostPlaying = false;
+        this.awaitingActivation = false;
 
-        String soundRawId;
+        // выберем строку, если она есть
+        int idx = indexOfSignalIdInVisible(this.currentPlayingId);
+        if (idx >= 0) setSelectedIndexSilently(idx);
 
-        String priceRaw, priceLow, priceNoisy, priceHigh;
+        // подтянем громкость под текущий экран
+        activeSound.setVolumeDynamic(volume01);
 
-        String textRawKey;
-
-        static SignalEntry fromJson(JsonObject o) {
-            SignalEntry s = new SignalEntry();
-            s.id = o.has("id") ? o.get("id").getAsInt() : 0;
-            s.name = getAsString(o, "name", "unknown");
-            s.size = getAsString(o, "size", "1.0");
-            s.weight = (float) getAsDouble(o, "weight", 1.0);
-            s.objectImage = rlOrNull(getAsString(o, "object_image", null));
-            s.type = getAsString(o, "type", "regular");
-            s.objectNameKey = getAsString(o, "object_name", "");
-            s.specialResponse = getAsBoolean(o, "special_response", false);
-            s.specialPrice = getAsBoolean(o, "special_price", false);
-            s.level = getAsInt(o, "level", getAsInt(o, "lvl", 0));
-
-
-
-            s.imageRaw = toGuiTexture(rlOrNull(getAsString(o, "image_high", null)));
-            s.imageRawWidth = 352;
-            s.imageRawHeight = 288;
-
-            s.soundRawId = getAsString(o, "sound_high", null);
-
-            s.priceRaw = getAsString(o, "price_raw", "");
-            s.priceLow = getAsString(o, "price_low", "");
-            s.priceNoisy = getAsString(o, "price_noisy", "");
-            s.priceHigh = getAsString(o, "price_high", "");
-
-            s.textRawKey = getAsString(o, "text_raw", "");
-            return s;
-        }
-
-        private static String getAsString(JsonObject o, String k, String def) {
-            return o.has(k) && !o.get(k).isJsonNull() ? o.get(k).getAsString() : def;
-        }
-        private static double getAsDouble(JsonObject o, String k, double def) {
-            return o.has(k) && !o.get(k).isJsonNull() ? o.get(k).getAsDouble() : def;
-        }
-        private static boolean getAsBoolean(JsonObject o, String k, boolean def) {
-            return o.has(k) && !o.get(k).isJsonNull() && o.get(k).getAsBoolean();
-        }
-        private static int getAsInt(JsonObject o, String k, int def) {
-            return o.has(k) && !o.get(k).isJsonNull() ? o.get(k).getAsInt() : def;
-        }
-
+        // гарантируем сборку спектра
+        ensureSpecBuildFor(getSelected());
+        return true;
     }
+
+private static class SignalEntry {
+    int id;
+    String name;
+    String size;
+    String diskLabel;
+    float weight;
+    ResourceLocation objectImage;
+    String type;
+    String objectNameKey;
+    boolean specialResponse;
+    boolean specialPrice;
+    int level = 0;
+
+    // Выбранные (актуальные для рендера/проигрывания) ресурсы под текущий level:
+    ResourceLocation imageRaw;        // выбранная картинка под уровень
+    int imageRawWidth = 352;
+    int imageRawHeight = 288;
+    Boolean imageExists;              // ленивый кэш
+
+    String soundRawId;                // выбранный sound event id под уровень
+
+    // Все варианты — из JSON
+    ResourceLocation imageLvl0, imageLvl1, imageLvl2, imageLvl3;
+    String soundLvl0, soundLvl1, soundLvl2, soundLvl3;
+
+    String priceRaw, priceLow, priceNoisy, priceHigh;
+
+    String textRawKey;
+
+    static SignalEntry fromJson(JsonObject o) {
+        SignalEntry s = new SignalEntry();
+        s.id = getAsInt(o, "id", 0);
+        s.name = getAsString(o, "name", "unknown");
+        s.size = getAsString(o, "size", "1.0");
+        s.weight = (float) getAsDouble(o, "weight", 1.0);
+        s.objectImage = rlOrNull(getAsString(o, "object_image", null));
+        s.type = getAsString(o, "type", "regular");
+        s.objectNameKey = getAsString(o, "object_name", "");
+        s.specialResponse = getAsBoolean(o, "special_response", false);
+        s.specialPrice = getAsBoolean(o, "special_price", false);
+        s.level = getAsInt(o, "level", getAsInt(o, "lvl", 0));
+
+        // картинки всех уровней
+        s.imageLvl0 = toGuiTexture(rlOrNull(getAsString(o, "image_raw",   null)));
+        s.imageLvl1 = toGuiTexture(rlOrNull(getAsString(o, "image_low",   null)));
+        s.imageLvl2 = toGuiTexture(rlOrNull(getAsString(o, "image_noisy", null)));
+        s.imageLvl3 = toGuiTexture(rlOrNull(getAsString(o, "image_high",  null)));
+
+        // звук всех уровней (id SoundEvent из sounds.json)
+        s.soundLvl0 = getAsString(o, "sound_raw",   null);
+        s.soundLvl1 = getAsString(o, "sound_low",   null);
+        s.soundLvl2 = getAsString(o, "sound_noisy", null);
+        s.soundLvl3 = getAsString(o, "sound_high",  null);
+
+        // дефолт на случай, если кто-то ещё читает старые поля:
+        s.imageRaw   = firstNonNull(s.imageLvl3, s.imageLvl2, s.imageLvl1, s.imageLvl0);
+        s.soundRawId = firstNonNullStr(s.soundLvl3, s.soundLvl2, s.soundLvl1, s.soundLvl0);
+
+        s.priceRaw   = getAsString(o, "price_raw",   "");
+        s.priceLow   = getAsString(o, "price_low",   "");
+        s.priceNoisy = getAsString(o, "price_noisy", "");
+        s.priceHigh  = getAsString(o, "price_high",  "");
+
+        s.textRawKey = getAsString(o, "text_raw", "");
+        return s;
+    }
+
+    private static String getAsString(JsonObject o, String k, String def) {
+        return o.has(k) && !o.get(k).isJsonNull() ? o.get(k).getAsString() : def;
+    }
+    private static double getAsDouble(JsonObject o, String k, double def) {
+        return o.has(k) && !o.get(k).isJsonNull() ? o.get(k).getAsDouble() : def;
+    }
+    private static boolean getAsBoolean(JsonObject o, String k, boolean def) {
+        return o.has(k) && !o.get(k).isJsonNull() && o.get(k).getAsBoolean();
+    }
+    private static int getAsInt(JsonObject o, String k, int def) {
+        return o.has(k) && !o.get(k).isJsonNull() ? o.get(k).getAsInt() : def;
+    }
+}
+
+
+
+private static ResourceLocation firstNonNull(ResourceLocation... arr) {
+    for (ResourceLocation rl : arr) if (rl != null) return rl;
+    return null;
+}
+private static String firstNonNullStr(String... arr) {
+    for (String s : arr) if (s != null && !s.isBlank()) return s;
+    return null;
+}
+
+private static ResourceLocation pickImageForLevel(SignalEntry s, int lvl) {
+    // соответствие: 0=raw, 1=low, 2=noisy, 3=high
+    ResourceLocation rl = switch (Math.max(0, Math.min(3, lvl))) {
+        case 1 -> s.imageLvl1;
+        case 2 -> s.imageLvl2;
+        case 3 -> s.imageLvl3;
+        default -> s.imageLvl0;
+    };
+    // fallback, если конкретного варианта нет в ресурсах
+    if (rl == null) rl = firstNonNull(s.imageLvl3, s.imageLvl2, s.imageLvl1, s.imageLvl0);
+    return rl;
+}
+
+private static String pickSoundForLevel(SignalEntry s, int lvl) {
+    String id = switch (Math.max(0, Math.min(3, lvl))) {
+        case 1 -> s.soundLvl1;
+        case 2 -> s.soundLvl2;
+        case 3 -> s.soundLvl3;
+        default -> s.soundLvl0;
+    };
+    if (id == null || id.isBlank())
+        id = firstNonNullStr(s.soundLvl3, s.soundLvl2, s.soundLvl1, s.soundLvl0);
+    return id;
+}
+
+
 
     private static ResourceLocation rlOrNull(String s) {
         if (s == null || s.isBlank()) return null;
@@ -1335,57 +1541,83 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
     }
 
     // Получить наш BE по координатам из меню
-    private TestPlaybackBlockEntity be() {
-        try {
-            Level w = this.menu.world;
-            BlockPos pos = new BlockPos(this.menu.x, this.menu.y, this.menu.z);
-            BlockEntity raw = w.getBlockEntity(pos);
-            return (raw instanceof TestPlaybackBlockEntity t) ? t : null;
-        } catch (Throwable ignored) {
-            return null;
-        }
+    private net.code.thisnotamod.block.entity.TestPlaybackBlockEntity be() {
+    try {
+        Object m = this.menu;
+        net.minecraft.world.level.Level w = null;
+        try { w = (net.minecraft.world.level.Level) m.getClass().getField("world").get(m); } catch (Throwable ignored) {}
+        if (w == null) w = this.minecraft != null ? this.minecraft.level : null;
+
+        int x = 0, y = 0, z = 0;
+        try { x = (int) m.getClass().getField("x").get(m); } catch (Throwable ignored) {}
+        try { y = (int) m.getClass().getField("y").get(m); } catch (Throwable ignored) {}
+        try { z = (int) m.getClass().getField("z").get(m); } catch (Throwable ignored) {}
+
+        if (w == null) return null;
+        net.minecraft.core.BlockPos pos = new net.minecraft.core.BlockPos(x, y, z);
+        net.minecraft.world.level.block.entity.BlockEntity raw = w.getBlockEntity(pos);
+        return (raw instanceof net.code.thisnotamod.block.entity.TestPlaybackBlockEntity t) ? t : null;
+    } catch (Throwable ignored) {
+        return null;
     }
+}
+
 
     // Сконструировать видимый список из импортов в блоке (lookup MASTER по id)
-    private void refreshVisibleFromBlock() {
-        SIGNALS.clear();
-        TestPlaybackBlockEntity b = be();
-        if (b == null) return;
+private void refreshVisibleFromBlock() {
+    SIGNALS.clear();
+    TestPlaybackBlockEntity b = be();
+    if (b == null) return;
 
-        for (TestPlaybackBlockEntity.ImportedSignal is : b.getImportsView()) {
-            SignalEntry m = MASTER.get(is.signalId);
-            if (m == null) continue;
+    for (TestPlaybackBlockEntity.ImportedSignal is : b.getImportsView()) {
+        SignalEntry m = MASTER.get(is.signalId);
+        if (m == null) continue;
 
-            SignalEntry v = new SignalEntry();
-            v.id = m.id;
-            v.name = m.name;
-            v.size = m.size;
-            v.weight = m.weight;
-            v.objectImage = m.objectImage;
-            v.type = m.type;
-            v.objectNameKey = m.objectNameKey;
-            v.specialResponse = m.specialResponse;
-            v.specialPrice = m.specialPrice;
+        SignalEntry v = new SignalEntry();
+        v.id = m.id;
+        v.name = m.name;
+        v.size = m.size;
+        v.weight = m.weight;
+        v.objectImage = m.objectImage;
+        v.type = m.type;
+        v.objectNameKey = m.objectNameKey;
+        v.specialResponse = m.specialResponse;
+        v.specialPrice = m.specialPrice;
 
-            v.level = is.level;
-            v.diskLabel = (is.diskName != null && !is.diskName.isBlank()) ? is.diskName : m.name;
+        // уровень берём из BE (для дисков — свой, для тюнера — мы теперь всегда сохранили lvl=0)
+        v.level = is.level;
+        v.diskLabel = (is.diskName != null && !is.diskName.isBlank()) ? is.diskName : m.name;
 
-            v.imageRaw = m.imageRaw;
-            v.imageRawWidth = m.imageRawWidth;
-            v.imageRawHeight = m.imageRawHeight;
-            v.imageExists = m.imageExists;
+        // скопировать все варианты из мастер-записи
+        v.imageLvl0 = m.imageLvl0; v.imageLvl1 = m.imageLvl1; v.imageLvl2 = m.imageLvl2; v.imageLvl3 = m.imageLvl3;
+        v.soundLvl0 = m.soundLvl0; v.soundLvl1 = m.soundLvl1; v.soundLvl2 = m.soundLvl2; v.soundLvl3 = m.soundLvl3;
 
-            v.soundRawId = m.soundRawId;
-            v.priceRaw = m.priceRaw;
-            v.priceLow = m.priceLow;
-            v.priceNoisy = m.priceNoisy;
-            v.priceHigh = m.priceHigh;
-            v.textRawKey = m.textRawKey;
+        // выбрать конкретный ресурс под уровень
+        v.imageRaw = pickImageForLevel(v, v.level);
+        v.imageRawWidth = m.imageRawWidth;
+        v.imageRawHeight = m.imageRawHeight;
+        v.imageExists = null; // пусть лениво проверится под новый rl
 
-            SIGNALS.add(v);
-        }
-        clampIndices();
+        v.soundRawId = pickSoundForLevel(v, v.level);
+
+        v.priceRaw = m.priceRaw;
+        v.priceLow = m.priceLow;
+        v.priceNoisy = m.priceNoisy;
+        v.priceHigh = m.priceHigh;
+        v.textRawKey = m.textRawKey;
+
+        SIGNALS.add(v);
     }
+    clampIndices();
+
+    // если играли и текущего id больше нет в видимом списке — останавливаем
+    if ((isPlaying || ghostPlaying || isAudioActive() || GLOBAL_ACTIVE_SOUND != null)
+            && currentPlayingId >= 0
+            && indexOfSignalIdInVisible(currentPlayingId) == -1) {
+        stopPlayback();
+    }
+}
+
 
 
     // Читает весь InputStream в ByteBuffer (и выделяет нативную память под него)
@@ -1684,24 +1916,70 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
     }
 
 
+    // Есть ли у игрока купленный модуль HEAT-спектра?
+private boolean isHeatSpecPurchased() {
+    var mc = Minecraft.getInstance();
+    if (mc == null || mc.player == null) return false;
+    var tag = mc.player.getPersistentData();
+
+    // Прямо в корне
+    if (tag.contains("heat_spec_purchased")) return tag.getBoolean("heat_spec_purchased");
+
+    // Частый кейс MCreator: внутри "player_persistance"
+    if (tag.contains("player_persistance")) {
+        var t = tag.getCompound("player_persistance");
+        if (t.contains("heat_spec_purchased")) return t.getBoolean("heat_spec_purchased");
+    }
+
+    // На всякий случай ещё пара распространённых вариантов именования
+    if (tag.contains("player_persistence")) {
+        var t = tag.getCompound("player_persistence");
+        if (t.contains("heat_spec_purchased")) return t.getBoolean("heat_spec_purchased");
+    }
+    if (tag.contains("thisnotamod_player_persistence")) {
+        var t = tag.getCompound("thisnotamod_player_persistence");
+        if (t.contains("heat_spec_purchased")) return t.getBoolean("heat_spec_purchased");
+    }
+    return false;
+}
+
+
+private void drawBigCenteredLabel(GuiGraphics gg, IntRect r, String text, int color) {
+    if (text == null) text = "";
+    float pad = 8f;
+    int rawW = Math.max(1, this.font.width(text));
+    float maxW = Math.max(1f, r.w - pad * 2f);
+    float scale = maxW / rawW;           // растягиваем по ширине секции
+    scale = Math.max(0.5f, Math.min(4f, scale)); // ограничим адекватный диапазон
+    float tw = rawW * scale;
+    float th = this.font.lineHeight * scale;
+    float x = r.x + (r.w - tw) / 2f;
+    float y = r.y + (r.h - th) / 2f;
+
+    gg.pose().pushPose();
+    gg.pose().translate(x, y, 0);
+    gg.pose().scale(scale, scale, 1f);
+    gg.drawString(this.font, text, 0, 0, color, false);
+    gg.pose().popPose();
+}
+
+
+
 
     // ----------------- Кастомный звук с динамической громкостью -----------------
     private static class PlaybackSound extends AbstractTickableSoundInstance {
-        private final Supplier<Float> volumeSupplier;
         private boolean requestedStop = false;
 
-        PlaybackSound(SoundEvent event, Supplier<Float> vol) {
+        PlaybackSound(SoundEvent event) {
             super(event, SoundSource.RECORDS, SoundInstance.createUnseededRandom());
-            this.volumeSupplier = vol != null ? vol : () -> 1.0f;
             this.looping = false;
             this.delay = 0;
             this.relative = true;
             this.x = 0.0;
             this.y = 0.0;
             this.z = 0.0;
-            this.volume = this.volumeSupplier.get();
+            this.volume = 1.0f; // выставим позже через setVolumeDynamic(...)
             this.pitch = 1.0f + ((java.util.concurrent.ThreadLocalRandom.current().nextFloat() - 0.5f) * 1.0e-4f);
-
         }
 
         void setVolumeDynamic(float v) {
@@ -1712,11 +1990,11 @@ public class PanelPlaybackScreen extends AbstractContainerScreen<PanelPlaybackMe
         public void tick() {
             if (requestedStop) {
                 this.stop();
-                return;
             }
-            this.volume = clamp01f(this.volumeSupplier.get());
+            // громкость больше НЕ подтягиваем из лямбды — остаётся последняя setVolumeDynamic(...)
         }
 
         void requestStop() { this.requestedStop = true; }
     }
+
 }

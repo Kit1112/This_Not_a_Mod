@@ -2,14 +2,14 @@
   "_fv": 66,
   "_type": "animatedblock",
   "definition": {
-    "texture": "workstat",
+    "texture": "tex_panel2",
     "textureTop": "",
     "textureLeft": "",
     "textureFront": "",
     "textureRight": "",
     "textureBack": "",
     "renderType": 0,
-    "rotationMode": 1,
+    "rotationMode": 0,
     "enablePitch": false,
     "emissiveRendering": false,
     "displayFluidOverlay": false,
@@ -23,7 +23,7 @@
     "disableOffset": false,
     "boundingBoxes": [
       {
-        "mx": 0.0,
+        "mx": 1.0,
         "my": 0.0,
         "mz": 0.0,
         "Mx": 16.0,
@@ -50,21 +50,15 @@
         "subtract": false
       }
     ],
-    "name": "Work Stat",
+    "name": "Work Stat Test 2",
     "specialInformation": {
-      "fixedValue": [
-        "На данный момент тест отображения"
-      ]
+      "fixedValue": []
     },
     "hardness": 1.0,
     "resistance": 10.0,
     "hasGravity": false,
     "isWaterloggable": false,
-    "creativeTabs": [
-      {
-        "value": "CUSTOM:VotV"
-      }
-    ],
+    "creativeTabs": [],
     "destroyTool": "Not specified",
     "customDrop": {
       "value": ""
@@ -153,7 +147,7 @@
     "minGenerateHeight": 0,
     "maxGenerateHeight": 64,
     "normal": "workstations.geo.json",
-    "displaySettings": "geckolib_item.json",
+    "displaySettings": "crafting_table_votv_left.geo.json",
     "vanillaToolTier": "NONE",
     "blockstateList": []
   }
