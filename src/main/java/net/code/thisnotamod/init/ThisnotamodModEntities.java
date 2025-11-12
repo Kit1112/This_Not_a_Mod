@@ -16,6 +16,7 @@ import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Entity;
 
+import net.code.thisnotamod.entity.ModTextDisplayEntity;
 import net.code.thisnotamod.entity.MannequinEntity;
 import net.code.thisnotamod.entity.KerfuOmegaEntity;
 import net.code.thisnotamod.entity.KerfuEntity;
@@ -35,6 +36,10 @@ public class ThisnotamodModEntities {
 					.sized(0.6f, 1.8f));
 	public static final RegistryObject<EntityType<Drone1Entity>> DRONE_1 = register("drone_1",
 			EntityType.Builder.<Drone1Entity>of(Drone1Entity::new, MobCategory.MONSTER).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(Drone1Entity::new).fireImmune().sized(0.6f, 1.8f));
+	public static final RegistryObject<EntityType<ModTextDisplayEntity>> MOD_TEXT_DISPLAY = register("mod_text_display",
+			EntityType.Builder.<ModTextDisplayEntity>of(ModTextDisplayEntity::new, MobCategory.MISC).setShouldReceiveVelocityUpdates(true).setTrackingRange(64).setUpdateInterval(3).setCustomClientFactory(ModTextDisplayEntity::new)
+
+					.sized(0.6f, 1.8f));
 
 	private static <T extends Entity> RegistryObject<EntityType<T>> register(String registryname, EntityType.Builder<T> entityTypeBuilder) {
 		return REGISTRY.register(registryname, () -> (EntityType<T>) entityTypeBuilder.build(registryname));
@@ -47,6 +52,7 @@ public class ThisnotamodModEntities {
 			KerfuOmegaEntity.init();
 			MannequinEntity.init();
 			Drone1Entity.init();
+			ModTextDisplayEntity.init();
 		});
 	}
 
@@ -56,5 +62,6 @@ public class ThisnotamodModEntities {
 		event.put(KERFU_OMEGA.get(), KerfuOmegaEntity.createAttributes().build());
 		event.put(MANNEQUIN.get(), MannequinEntity.createAttributes().build());
 		event.put(DRONE_1.get(), Drone1Entity.createAttributes().build());
+		event.put(MOD_TEXT_DISPLAY.get(), ModTextDisplayEntity.createAttributes().build());
 	}
 }
