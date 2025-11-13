@@ -47,7 +47,7 @@ public class DebugMenuScreen extends AbstractContainerScreen<DebugMenuMenu> {
     private int scroll; // пиксели от начала контента
     private int maxScroll;
 
-    private static final int FIELD_WIDTH = 32;
+    private static final int FIELD_WIDTH = 40;
     private static final int CLIP_PAD = 3; // ранний «обрез» сверху/снизу в пикселях
 
     // Кэш последних значений с сервера
@@ -675,16 +675,14 @@ for (Line l : lines) {
 
     @Override
     protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
-        // Фон: сначала подложка-заливка, затем — текстура (если есть)
-        g.fillGradient(this.leftPos, this.topPos, this.leftPos + this.imageWidth, this.topPos + this.imageHeight,
-                0xC0101010, 0xD0101010);
-        RenderSystem.enableBlend();
-        try {
-            g.blit(BACKGROUND, this.leftPos, this.topPos, 0, 0, BG_W, BG_H, BG_W, BG_H);
-        } catch (Exception ignored) {
-            // если текстуры нет, остаёмся на заливке
-        }
-        RenderSystem.disableBlend();
+        // Фон: рисуем только PNG с альфой, без прямоугольной заливки
+RenderSystem.enableBlend();
+RenderSystem.defaultBlendFunc();
+RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+try {
+    g.blit(BACKGROUND, this.leftPos, this.topPos, 0, 0, BG_W, BG_H, BG_W, BG_H);
+} catch (Exception ignored) {}
+RenderSystem.disableBlend();
 
         // Рамка области контента
         g.fill(this.leftPos + 8, viewportTop - 2, this.leftPos + this.imageWidth - 8, viewportTop - 1, 0xFF000000);
