@@ -17,6 +17,7 @@ import net.code.thisnotamod.client.gui.ServerInterfaceScreen;
 import net.code.thisnotamod.client.gui.PasslockGUIScreen;
 import net.code.thisnotamod.client.gui.PassChangeGuiScreen;
 import net.code.thisnotamod.client.gui.PassChangeGuiNScreen;
+import net.code.thisnotamod.client.gui.PanelUpgradeScreen;
 import net.code.thisnotamod.client.gui.PanelPlaybackScreen;
 import net.code.thisnotamod.client.gui.KerfuIntScreen;
 import net.code.thisnotamod.client.gui.FridgeDownIntScreen;
@@ -43,6 +44,7 @@ public class ThisnotamodModScreens {
 			MenuScreens.register(ThisnotamodModMenus.SIGNAL_TUNER.get(), SignalTunerScreen::new);
 			MenuScreens.register(ThisnotamodModMenus.PANEL_PLAYBACK.get(), PanelPlaybackScreen::new);
 			MenuScreens.register(ThisnotamodModMenus.DEBUG_MENU.get(), DebugMenuScreen::new);
+			MenuScreens.register(ThisnotamodModMenus.PANEL_UPGRADE.get(), PanelUpgradeScreen::new);
 		});
 	}
 }

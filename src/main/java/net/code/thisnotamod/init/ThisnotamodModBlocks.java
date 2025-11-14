@@ -25,6 +25,7 @@ import net.code.thisnotamod.block.VotvDoorTopBlock;
 import net.code.thisnotamod.block.VotvDoorBlock;
 import net.code.thisnotamod.block.VentCornerHorizontalBlock;
 import net.code.thisnotamod.block.VentCornerBlock;
+import net.code.thisnotamod.block.TestUpgradeBlock;
 import net.code.thisnotamod.block.TestSignalBlock;
 import net.code.thisnotamod.block.TestPlaybackBlock;
 import net.code.thisnotamod.block.TerminalBlock;
@@ -144,6 +145,7 @@ public class ThisnotamodModBlocks {
 	public static final RegistryObject<Block> KERFU_BLOCK = REGISTRY.register("kerfu_block", () -> new KerfuBlockBlock());
 	public static final RegistryObject<Block> TEST_PLAYBACK = REGISTRY.register("test_playback", () -> new TestPlaybackBlock());
 	public static final RegistryObject<Block> WORK_STAT_TEST_2 = REGISTRY.register("work_stat_test_2", () -> new WorkStatTest2Block());
+	public static final RegistryObject<Block> TEST_UPGRADE = REGISTRY.register("test_upgrade", () -> new TestUpgradeBlock());
 	// Start of user code block custom blocks
 	// End of user code block custom blocks
 }

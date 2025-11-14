@@ -174,6 +174,7 @@ public class ThisnotamodModItems {
 	public static final RegistryObject<Item> MUSIC_DISC_VOTV_HALLOWEEN = REGISTRY.register("music_disc_votv_halloween", () -> new MusicDiscVotvHalloweenItem());
 	public static final RegistryObject<Item> DRIVE = REGISTRY.register("drive", () -> new DriveItem());
 	public static final RegistryObject<Item> WORK_STAT_TEST_2 = REGISTRY.register(ThisnotamodModBlocks.WORK_STAT_TEST_2.getId().getPath(), () -> new WorkStatTest2DisplayItem(ThisnotamodModBlocks.WORK_STAT_TEST_2.get(), new Item.Properties()));
+	public static final RegistryObject<Item> TEST_UPGRADE = block(ThisnotamodModBlocks.TEST_UPGRADE);
 
 	// Start of user code block custom items
 	// End of user code block custom items

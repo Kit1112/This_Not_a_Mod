@@ -26,6 +26,7 @@ import net.code.thisnotamod.block.entity.VotvDoorTopTileEntity;
 import net.code.thisnotamod.block.entity.VotvDoorTileEntity;
 import net.code.thisnotamod.block.entity.VentCornerTileEntity;
 import net.code.thisnotamod.block.entity.VentCornerHorizontalTileEntity;
+import net.code.thisnotamod.block.entity.TestUpgradeBlockEntity;
 import net.code.thisnotamod.block.entity.TestSignalBlockEntity;
 import net.code.thisnotamod.block.entity.TestPlaybackBlockEntity;
 import net.code.thisnotamod.block.entity.TerminalTileEntity;
@@ -126,6 +127,7 @@ public class ThisnotamodModBlockEntities {
 	public static final RegistryObject<BlockEntityType<?>> TEST_PLAYBACK = register("test_playback", ThisnotamodModBlocks.TEST_PLAYBACK, TestPlaybackBlockEntity::new);
 	public static final RegistryObject<BlockEntityType<WorkStatTest2TileEntity>> WORK_STAT_TEST_2 = REGISTRY.register("work_stat_test_2",
 			() -> BlockEntityType.Builder.of(WorkStatTest2TileEntity::new, ThisnotamodModBlocks.WORK_STAT_TEST_2.get()).build(null));
+	public static final RegistryObject<BlockEntityType<?>> TEST_UPGRADE = register("test_upgrade", ThisnotamodModBlocks.TEST_UPGRADE, TestUpgradeBlockEntity::new);
 
 	private static RegistryObject<BlockEntityType<?>> register(String registryname, RegistryObject<Block> block, BlockEntityType.BlockEntitySupplier<?> supplier) {
 		return REGISTRY.register(registryname, () -> BlockEntityType.Builder.of(supplier, block.get()).build(null));
