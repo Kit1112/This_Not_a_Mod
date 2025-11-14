@@ -67,6 +67,10 @@ public class DebugMenuScreen extends AbstractContainerScreen<DebugMenuMenu> {
     private double cachedPolarityFilterWidth;
     private double cachedFrequencyFilterWidth;
 
+    // Signal upgrade
+	private double cachedUpgradeSpeed;
+
+
     private boolean hasCache = false;
 
     @Override
@@ -554,14 +558,18 @@ tabDebug = new TabButton(
             lines.add(new SeparatorLine());
             lines.add(new LabelLine("Signal Playback"));
             lines.add(new CheckBoxLine("Spectrogram_purchased", "heat_spec_purchased", C2SSetVarMessage.Scope.PLAYER));
+            // === Signal upgrade ===
+			lines.add(new SeparatorLine());
+			lines.add(new LabelLine("Signal upgrade"));
+			lines.add(new NumberLine("upgrade_speed", "upgrade_speed", C2SSetVarMessage.Scope.PLAYER));
 
         } else {
             // ----- ВКЛАДКА "Debug" -----
             lines.add(new LabelLine("Debug"));
             lines.add(new CheckBoxLine("debug (player)", "debug", C2SSetVarMessage.Scope.PLAYER));
-lines.add(new CheckBoxLine("worldDebug (global-map)", "worldDebug", C2SSetVarMessage.Scope.MAP));
-lines.add(new CheckBoxLine("TimeDisplay (player)", "TimeDisplay", C2SSetVarMessage.Scope.PLAYER));
-lines.add(new CheckBoxLine("Alarm", "Alarm", C2SSetVarMessage.Scope.MAP));
+			lines.add(new CheckBoxLine("worldDebug (global-map)", "worldDebug", C2SSetVarMessage.Scope.MAP));
+			lines.add(new CheckBoxLine("TimeDisplay (player)", "TimeDisplay", C2SSetVarMessage.Scope.PLAYER));
+			lines.add(new CheckBoxLine("Alarm", "Alarm", C2SSetVarMessage.Scope.MAP));
             lines.add(new SeparatorLine());
 
             lines.add(new LabelLine("Servers"));
@@ -599,6 +607,8 @@ lines.add(new CheckBoxLine("Alarm", "Alarm", C2SSetVarMessage.Scope.MAP));
                     if ("downloadSpeed".equals(nl.varKey))        nl.setValueClient(cachedDownloadSpeed);
                     if ("polarityFilterWidth".equals(nl.varKey))  nl.setValueClient(cachedPolarityFilterWidth);
                     if ("frequencyFilterWidth".equals(nl.varKey)) nl.setValueClient(cachedFrequencyFilterWidth);
+                    if ("upgrade_speed".equals(nl.varKey))        nl.setValueClient(cachedUpgradeSpeed);
+
                 } else if (l instanceof CheckBoxLine cl) {
     if ("debug".equals(cl.varKey))               cl.setValueClient(cachedDebug);
     if ("worldDebug".equals(cl.varKey))          cl.setValueClient(cachedWorldDebug);
@@ -712,6 +722,7 @@ RenderSystem.disableBlend();
         this.cachedDownloadSpeed       = s.downloadSpeed;
         this.cachedPolarityFilterWidth = s.polarityFilterWidth;
         this.cachedFrequencyFilterWidth= s.frequencyFilterWidth;
+        this.cachedUpgradeSpeed        = s.upgrade_speed;
         this.cachedHeatSpecPurchased = s.heatSpecPurchased;
 
 
@@ -736,6 +747,8 @@ RenderSystem.disableBlend();
                     if ("downloadSpeed".equals(nl.varKey))        nl.setValueClient(s.downloadSpeed);
                     if ("polarityFilterWidth".equals(nl.varKey))  nl.setValueClient(s.polarityFilterWidth);
                     if ("frequencyFilterWidth".equals(nl.varKey)) nl.setValueClient(s.frequencyFilterWidth);
+                    // Signal upgrade
+					if ("upgrade_speed".equals(nl.varKey))        nl.setValueClient(s.upgrade_speed);
                 }
             }  else if (line instanceof CheckBoxLine cl) {
     if ("debug".equals(cl.varKey))               cl.setValueClient(s.debug);

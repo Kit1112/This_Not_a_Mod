@@ -1,348 +1,552 @@
 package net.code.thisnotamod.client.gui;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.code.thisnotamod.block.entity.TestUpgradeBlockEntity;
-import net.code.thisnotamod.item.DriveItem;
+
 import net.code.thisnotamod.world.inventory.PanelUpgradeMenu;
+import net.code.thisnotamod.block.entity.TestUpgradeBlockEntity;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.sounds.SoundEvents;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import net.code.thisnotamod.network.ThisnotamodModVariables;
 
-import java.util.Locale;
+
+
+import java.util.HashMap;
 import java.util.Random;
 
-/** Экран апгрейда сигнала. Размер и скейлинг полностью совпадают с PanelPlayback. */
-public class PanelUpgradeScreen extends AbstractContainerScreen<AbstractContainerMenu> {
+/**
+ * Экран апгрейда сигнала.
+ * Геометрия и вписывание 16:9 перенесены из PanelPlayback: виртуальное 640x360,
+ * та же чёрная «экранная» область, инкрусты и кнопочная панель снизу.
+ */
+public class PanelUpgradeScreen extends AbstractContainerScreen<PanelUpgradeMenu> {
 
-    // --- виртуальная геометрия и «чёрный экран» те же, что в PanelPlayback ---
     public static final int VIRTUAL_W = 640;
     public static final int VIRTUAL_H = 360;
 
-    private static final int INSET_LEFT = 12, INSET_RIGHT = 12, INSET_TOP = 12, INSET_BOTTOM = 84;
-    private static final int SCREEN_X = INSET_LEFT, SCREEN_Y = INSET_TOP;
+    private static final int INSET_LEFT   = 12;
+    private static final int INSET_RIGHT  = 12;
+    private static final int INSET_TOP    = 12;
+    private static final int INSET_BOTTOM = 84;
+
+    private static final int SCREEN_X = INSET_LEFT;
+    private static final int SCREEN_Y = INSET_TOP;
     private static final int SCREEN_W = VIRTUAL_W - INSET_LEFT - INSET_RIGHT;
     private static final int SCREEN_H = VIRTUAL_H - INSET_TOP - INSET_BOTTOM;
 
-    // нижняя панель с кнопками
-    private static final int BTN_BAR_Y = SCREEN_Y + SCREEN_H + 20;
+    // Верхняя панель (заголовок + прогресс)
+    private static final int TOP_H = 66; 
 
-    // цвета
-    private static final int LINE_WHITE   = 0xFFFFFFFF;
-    private static final int TEXT_GREEN   = 0xFF00FF00;
-    private static final int TEXT_CYAN    = 0xFF00D0FF;
-    private static final int TEXT_YELLOW  = 0xFFFFFF00;
-    private static final int TEXT_MAGENTA = 0xFFFF00FF;
+    // Цвета
+    private static final int LINE_WHITE = 0xFFFFFFFF;
+    private static final int LINE_CYAN  = 0xFF00FFEA;
+    private static final int TEXT_GREEN = 0xFF00FF00;
+    private static final int TEXT_YEL   = 0xFFFFD700;
+    private static final int TEXT_BLUE  = 0xFF40C0FF;
+    private static final int TEXT_MAG   = 0xFFFF40FF;
 
-    // 4 кнопки: Import/Export, START, STOP, placeholder
-    private final IntRect btnImpExp   = new IntRect(SCREEN_X + 10,  BTN_BAR_Y, 24, 24);
-    private final IntRect btnStart    = new IntRect(SCREEN_X + 46,  BTN_BAR_Y, 24, 24);
-    private final IntRect btnStop     = new IntRect(SCREEN_X + 82,  BTN_BAR_Y, 24, 24);
-    private final IntRect btnStub     = new IntRect(SCREEN_X + 118, BTN_BAR_Y, 24, 24);
-
-    // скейл в окне
+    // ---- Рендер‑скейл в окне ----
     private int guiX, guiY;
     private float guiScale;
 
-    // генератор «шумового» текста
-    private final Random rand = new Random();
-        // статусная строка (импорт/экспорт/апгрейд)
-    private int statusTicks = 0;
-    private String statusText = "";
-    private boolean lastHasImport = false;
-    private int lastImportSignalId = -1;
-    private int lastImportLevel = -1;
+    private static final HashMap<String, Object> guistate = PanelUpgradeMenu.guistate;
+
+    private final int x, y, z;
+
+private static final boolean DBG_SPEED = false;
 
 
-    public PanelUpgradeScreen(AbstractContainerMenu menu, Inventory inv, Component title) {
-        super(menu, inv, title);
+    public PanelUpgradeScreen(PanelUpgradeMenu container, Inventory inv, Component title) {
+        super(container, inv, title);
+        this.x = container.x;
+        this.y = container.y;
+        this.z = container.z;
         this.imageWidth = VIRTUAL_W;
         this.imageHeight = VIRTUAL_H;
     }
 
     @Override public boolean isPauseScreen() { return false; }
 
+    // ---- Кнопки внизу (как зоны) ----
+    private static class IntRect {
+        final int x, y, w, h;
+        IntRect(int x, int y, int w, int h) { this.x=x; this.y=y; this.w=w; this.h=h; }
+        boolean contains(int mx, int my) { return mx >= x && mx < x + w && my >= y && my < y + h; }
+        int centerX() { return x + w/2; }
+        int centerY() { return y + h/2; }
+    }
+
+    private static final int BTN_BAR_Y = SCREEN_Y + SCREEN_H + 20;
+    private final IntRect btnImpExp  = new IntRect(SCREEN_X + 10,  BTN_BAR_Y, 24, 24); // I/E
+    private final IntRect btnStart   = new IntRect(SCREEN_X + 46,  BTN_BAR_Y, 48, 24); // START
+    private final IntRect btnStop    = new IntRect(SCREEN_X + 100, BTN_BAR_Y, 48, 24); // STOP
+    private final IntRect btnStub    = new IntRect(SCREEN_X + 154, BTN_BAR_Y, 32, 24); // STUB
+
+    // ---- Ресурсы (фон можно оставить пустым) ----
+    private static final ResourceLocation texture = new ResourceLocation("thisnotamod:textures/screens/panel_upgrade.png");
+
+    // id -> size из /data/thisnotamod/signals.json
+private static final Map<Integer, String> SIZE_BY_ID = new java.util.HashMap<>();
+private static boolean sizesLoaded = false;
+
+private static void ensureSizesLoaded() {
+    if (sizesLoaded) return;
+    try (InputStream in = PanelUpgradeScreen.class.getResourceAsStream("/data/thisnotamod/signals.json")) {
+        if (in != null) {
+            JsonArray arr = JsonParser.parseReader(new InputStreamReader(in, StandardCharsets.UTF_8)).getAsJsonArray();
+            for (JsonElement el : arr) {
+                if (!el.isJsonObject()) continue;
+                JsonObject o = el.getAsJsonObject();
+                int id = o.has("id") && !o.get("id").isJsonNull() ? o.get("id").getAsInt() : -1;
+                String size = o.has("size") && !o.get("size").isJsonNull() ? o.get("size").getAsString() : "";
+                if (id >= 0) SIZE_BY_ID.put(id, size == null ? "" : size);
+            }
+        }
+    } catch (Exception ignored) { }
+    sizesLoaded = true;
+}
+
+private String resolveFileSizeFromJson(TestUpgradeBlockEntity be) {
+    ensureSizesLoaded();
+    if (be == null || be.getSingleImport() == null) return "—";
+    int id = be.getSingleImport().signalId;
+    String s = SIZE_BY_ID.getOrDefault(id, "");
+    if (s != null && !s.isBlank()) return s;
+    // фолбек: что пришло с диска
+    String disk = be.getSingleImport().size;
+    return (disk == null || disk.isBlank()) ? "—" : disk;
+}
+
+
+    @Override
+    public void render(GuiGraphics gg, int mouseX, int mouseY, float partialTicks) {
+        this.renderBackground(gg);
+        super.render(gg, mouseX, mouseY, partialTicks);
+        this.renderTooltip(gg, mouseX, mouseY);
+    }
+
     @Override
     protected void renderBg(GuiGraphics gg, float partialTick, int mouseX, int mouseY) {
-        // затемнение вокруг
+        // затемняем мир и вписываем 16:9 (как в PanelPlayback)
         RenderSystem.enableBlend();
         final int shade = 0xA0000000;
-        int sw = this.width, sh = this.height;
+        int screenW = this.width;
+        int screenH = this.height;
 
-        // вписываем 16:9
-        float targetW = sw, targetH = sw * (9f / 16f);
-        if (targetH > sh) { targetH = sh; targetW = sh * (16f / 9f); }
-        guiX = Math.round((sw - targetW) / 2f);
-        guiY = Math.round((sh - targetH) / 2f);
+        float targetW = screenW;
+        float targetH = screenW * (9f / 16f);
+        if (targetH > screenH) { targetH = screenH; targetW = screenH * (16f / 9f); }
+
+        guiX = Math.round((screenW - targetW) / 2f);
+        guiY = Math.round((screenH - targetH) / 2f);
         guiScale = targetW / (float) VIRTUAL_W;
 
         int uiW = Math.round(guiScale * VIRTUAL_W);
         int uiH = Math.round(guiScale * VIRTUAL_H);
         int left = guiX, top = guiY, right = guiX + uiW, bottom = guiY + uiH;
 
-        gg.fill(0, 0, sw, top, shade);
+        gg.fill(0, 0, screenW, top, shade);
         gg.fill(0, top, left, bottom, shade);
-        gg.fill(right, top, sw, bottom, shade);
-        gg.fill(0, bottom, sw, sh, shade);
+        gg.fill(right, top, screenW, bottom, shade);
+        gg.fill(0, bottom, screenW, screenH, shade);
         RenderSystem.disableBlend();
 
         gg.pose().pushPose();
         gg.pose().translate(guiX, guiY, 0);
         gg.pose().scale(guiScale, guiScale, 1f);
 
-        // экран/рамка
-        drawScreenFrame(gg);
+        drawFrame(gg);
 
-        // контент
-        drawHeaderAndProgress(gg);
-        drawBottomPanels(gg);
-        drawButtons(gg);
+        // Прямоугольники областей
+        IntRect rTop = new IntRect(SCREEN_X, SCREEN_Y, SCREEN_W, TOP_H);
+        int restH = SCREEN_H - TOP_H;
+        IntRect rLeft  = new IntRect(SCREEN_X, SCREEN_Y + TOP_H, SCREEN_W/2, restH);
+        IntRect rRight = new IntRect(SCREEN_X + SCREEN_W/2, SCREEN_Y + TOP_H, SCREEN_W - SCREEN_W/2, restH);
+
+        drawTopBar(gg, rTop);
+        drawLeftInfo(gg, rLeft);
+        drawRightProcess(gg, rRight);
+
+        // Кнопки снизу
+        drawButton(gg, btnImpExp,  "I/E", 0xFFE0E0E0);
+        drawButton(gg, btnStart,   "START", 0xFFE0FFE0);
+        drawButton(gg, btnStop,    "STOP", 0xFFFFE0E0);
+        drawButton(gg, btnStub,    "STUB", 0xFFE0E0E0);
 
         gg.pose().popPose();
     }
 
-    @Override
-    public void render(GuiGraphics gg, int mouseX, int mouseY, float partialTick) {
-        super.render(gg, mouseX, mouseY, partialTick);
-        this.renderTooltip(gg, mouseX, mouseY);
+    private void drawFrame(GuiGraphics gg) {
+        // «экран»
+        gg.fill(SCREEN_X, SCREEN_Y, SCREEN_X + SCREEN_W, SCREEN_Y + SCREEN_H, 0xFF000000);
+        gg.renderOutline(SCREEN_X, SCREEN_Y, SCREEN_W, SCREEN_H, LINE_WHITE);
+        // горизонтальная линия отделяющая верхнюю панель
+        gg.hLine(SCREEN_X, SCREEN_X + SCREEN_W, SCREEN_Y + TOP_H, LINE_WHITE);
+        // вертикальная линия делящая низ пополам
+        gg.vLine(SCREEN_X + SCREEN_W/2, SCREEN_Y + TOP_H, SCREEN_Y + SCREEN_H, LINE_WHITE);
     }
 
-    // ---------- ввод ----------
-        @Override
-    public boolean mouseClicked(double mx, double my, int button) {
-        if (button == 0) {
-            if (isHovering(btnImpExp, mx, my)) {
-                if (this.minecraft != null && this.minecraft.gameMode != null) {
-                    this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, PanelUpgradeMenu.BTN_IMPORT_EXPORT);
-                }
-                doLocalImportExport();
-                playClick();
-                return true;
-            }
-            if (isHovering(btnStart, mx, my)) {
-                if (this.minecraft != null && this.minecraft.gameMode != null) {
-                    this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, PanelUpgradeMenu.BTN_START);
-                }
-                doLocalStart();
-                playClick();
-                return true;
-            }
-            if (isHovering(btnStop, mx, my)) {
-                if (this.minecraft != null && this.minecraft.gameMode != null) {
-                    this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, PanelUpgradeMenu.BTN_STOP);
-                }
-                doLocalStop();
-                playClick();
-                return true;
-            }
-            if (isHovering(btnStub, mx, my)) {
-                // плейсхолдер
-                playClick();
-                return true;
-            }
-        }
-        return super.mouseClicked(mx, my, button);
+    // --- полосатая заливка прогресса (w x h) заданным цветом ---
+private void drawStripedFill(GuiGraphics gg, int x, int y, int w, int h, int color) {
+    final int stripe = 6; // ширина «полоски»
+    final int gap    = 3; // зазор между полосками
+    for (int i = 0; i < w; i += (stripe + gap)) {
+        int segW = Math.min(stripe, w - i);
+        if (segW > 0) gg.fill(x + i, y, x + i + segW, y + h, color);
+    }
+}
+
+
+    // ==== Top ====
+// ==== Top (заголовок + отдельная рамка прогресса) ====
+private void drawTopBar(GuiGraphics gg, IntRect r) {
+    TestUpgradeBlockEntity be = be();
+
+    String head;
+    String size = "";
+    if (be != null && be.getSingleImport() != null) {
+        var is = be.getSingleImport();
+        int lvl = Math.max(0, Math.min(3, is.level));
+        head = ((is.diskName != null && !is.diskName.isBlank()) ? is.diskName : "signal") + "  [lvl " + lvl + "]";
+        size = is.size == null ? "" : is.size;
+    } else {
+        head = "no signal";
     }
 
- private void playClick() {
-        if (this.minecraft != null) {
-            this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
-        }
+    // внутренняя рамка заголовка
+    final int m = 2;               // внутренний отступ от общей области
+    final int headerH = 20;        // высота рамки заголовка
+    final int gap = 4;             // зазор между рамкой заголовка и рамкой прогресса
+
+    IntRect rHeader = new IntRect(r.x + m, r.y + m, r.w - m*2, headerH);
+    gg.fill(rHeader.x, rHeader.y, rHeader.x + rHeader.w, rHeader.y + rHeader.h, 0xFF000000);
+    gg.renderOutline(rHeader.x, rHeader.y, rHeader.w, rHeader.h, LINE_WHITE);
+
+    gg.drawString(this.font, head, rHeader.x + 6, rHeader.y + 6, TEXT_GREEN, false);
+    if (!size.isEmpty()) {
+        String sz = "size: " + size;
+        int tw = this.font.width(sz);
+        gg.drawString(this.font, sz, rHeader.x + rHeader.w - tw - 6, rHeader.y + 6, 0xFFB0B0B0, false);
     }
 
+    // отдельная рамка прогресса
+    final int barH   = 18;             // в 1.5 раза толще (было 12)
+    final int padIn  = 3;              // внутренний паддинг внутри рамки прогресса
+    final int boxH   = barH + padIn*2; // высота «коробки» с баром
 
-    // ---------- рисование ----------
-    private void drawScreenFrame(GuiGraphics gg) {
-        int x = SCREEN_X, y = SCREEN_Y, w = SCREEN_W, h = SCREEN_H;
-        gg.fill(x, y, x + w, y + h, 0xFF000000);  // чёрный фон «экрана»
-        gg.renderOutline(x, y, w, h, LINE_WHITE);
-        // горизонтальная линия под заголовком и прогресс‑баром
-        gg.hLine(x, x + w, y + 64, LINE_WHITE);
-        // вертикальная, делящая низ пополам
-        gg.vLine(x + w / 2, y + 64, y + h, LINE_WHITE);
-        // горизонтальная граница нижних зон
-        gg.hLine(x, x + w, y + (h + 64) / 2, LINE_WHITE);
+    IntRect rProgBox = new IntRect(r.x + m, rHeader.y + rHeader.h + gap, r.w - m*2, boxH);
+    gg.fill(rProgBox.x, rProgBox.y, rProgBox.x + rProgBox.w, rProgBox.y + rProgBox.h, 0xFF000000);
+    gg.renderOutline(rProgBox.x, rProgBox.y, rProgBox.w, rProgBox.h, LINE_WHITE);
+
+    // сам бар внутри коробки
+    int barX = rProgBox.x + padIn;
+    int barY = rProgBox.y + (rProgBox.h - barH) / 2;
+    int barW = rProgBox.w - padIn*2;
+
+    gg.fill(barX, barY, barX + barW, barY + barH, 0xFF101010);
+
+    float p = getProgress01(be);
+    int filled = Math.max(0, Math.min(barW, Math.round(barW * p)));
+
+    // «полосочки» вместо сплошной заливки
+    drawStripedFill(gg, barX, barY, filled, barH, 0xFFFF00FF);
+
+    gg.renderOutline(barX, barY, barW, barH, 0xFF404040);
+}
+
+
+
+    // ==== Left bottom ====
+private void drawLeftInfo(GuiGraphics gg, IntRect r) {
+    // фон общей области
+    gg.fill(r.x + 1, r.y + 1, r.x + r.w - 1, r.y + r.h - 1, 0xFF000000);
+
+    final int m = 2;          // внутренний отступ
+    final int headerH = 18;   // высота верхней рамки заголовка
+    final int gap = 3;        // зазор между рамками
+
+    // рамка заголовка секции
+    IntRect rHdr = new IntRect(r.x + m, r.y + m, r.w - m*2, headerH);
+    gg.fill(rHdr.x, rHdr.y, rHdr.x + rHdr.w, rHdr.y + rHdr.h, 0xFF000000);
+    gg.renderOutline(rHdr.x, rHdr.y, rHdr.w, rHdr.h, LINE_WHITE);
+    gg.drawString(this.font, "Progress:", rHdr.x + 8, rHdr.y + 5, LINE_CYAN, false);
+
+    // рамка-коробка под контент
+    IntRect rBody = new IntRect(r.x + m, rHdr.y + rHdr.h + gap, r.w - m*2, r.h - (headerH + gap + m*2));
+    gg.fill(rBody.x + 1, rBody.y + 1, rBody.x + rBody.w - 1, rBody.y + rBody.h - 1, 0xFF000000);
+    gg.renderOutline(rBody.x, rBody.y, rBody.w, rBody.h, LINE_WHITE);
+
+    // контент
+    TestUpgradeBlockEntity be = be();
+    float p = getProgress01(be);
+    boolean running = be != null && be.isUpgrading();
+
+    String sProg = String.format(java.util.Locale.US, "Progress:  %.3f%%", p * 100.0);
+    String sEff  = running
+            ? String.format(java.util.Locale.US, "Efficiency:  %.3f kB/s", (calcEfficiencyBps(be) / 1024.0))
+            : "Efficiency:  —";
+
+    double ep    = calcEnergyPct();
+    String sPow  = String.format(java.util.Locale.US, "Energy consumption:  %3.1f%%", ep);
+
+    String rawSize = resolveFileSizeFromJson(be);
+    String sSize   = "File size:  " + prettySize(rawSize);
+
+    int x = rBody.x + 8;
+    int y = rBody.y + 6;
+    gg.drawString(this.font, sProg, x, y, TEXT_GREEN, false); y += this.font.lineHeight + 3;
+    gg.drawString(this.font, sEff,  x, y, TEXT_YEL,   false); y += this.font.lineHeight + 3;
+    gg.drawString(this.font, sPow,  x, y, TEXT_BLUE,  false); y += this.font.lineHeight + 3;
+    gg.drawString(this.font, sSize, x, y, LINE_WHITE, false);
+
+    // внешняя рамка всей левой области
+    gg.renderOutline(r.x, r.y, r.w, r.h, LINE_WHITE);
+}
+
+
+// Читаем PLAYER_PERSISTENT → upgrade_speed (kB/s) с фолбэками, как в меню
+private static double getUpgradeSpeedKbpsLocal() {
+    Minecraft mc = Minecraft.getInstance();
+    if (mc == null || mc.player == null) return 1.0;
+    var root = mc.player.getPersistentData();
+
+    if (root.contains("upgrade_speed")) {
+        double v = root.getDouble("upgrade_speed");
+        if (Double.isFinite(v) && v > 0.0) return v;
     }
 
-    private void drawHeaderAndProgress(GuiGraphics gg) {
-        TestUpgradeBlockEntity be = be();
-        String name = "—";
-        int lvl = 0;
-        if (be != null && !be.getImportsView().isEmpty()) {
-            var is = be.getImportsView().get(0);
-            name = (is.diskName == null || is.diskName.isBlank()) ? "unnamed" : is.diskName;
-            lvl  = Math.max(0, Math.min(3, is.level));
-        }
-
-        String title = name + "  [ " + lvl + " / 3 ]";
-        int tx = SCREEN_X + 8;
-        int ty = SCREEN_Y + 8;
-        gg.drawString(this.font, title, tx, ty, TEXT_GREEN, false);
-
-        // прогресс‑бар (подписан Progress: xx.xxx%)
-        double p01 = (be != null) ? be.getProgress01() : 0.0;
-        String pLabel = String.format(Locale.US, "Progress:  %.3f%%", p01 * 100.0);
-        gg.drawString(this.font, pLabel, tx, ty + 14, TEXT_GREEN, false);
-
-        int barX = SCREEN_X + 8;
-        int barY = SCREEN_Y + 30;
-        int barW = SCREEN_W - 16;
-        int barH = 16;
-        gg.fill(barX, barY, barX + barW, barY + barH, 0xFF202020);
-        int fill = (int)Math.round(barW * p01);
-        gg.fill(barX, barY, barX + Math.max(0, fill), barY + barH, TEXT_MAGENTA);
-        gg.renderOutline(barX, barY, barW, barH, LINE_WHITE);
-    }
-
-    private void drawBottomPanels(GuiGraphics gg) {
-        TestUpgradeBlockEntity be = be();
-
-        // geo
-        int x = SCREEN_X, y = SCREEN_Y + 64, w = SCREEN_W, h = SCREEN_H - 64;
-        int midX = x + w / 2;
-        int midY = y + h / 2;
-
-        // ---- левая верхняя зона: метрики
-        int pad = 8;
-        int lx = x + pad, ly = y + pad;
-        double p01 = (be != null) ? be.getProgress01() : 0.0;
-        String sz = (be != null && !be.getImportsView().isEmpty())
-                ? (be.getImportsView().get(0).size == null ? "" : be.getImportsView().get(0).size)
-                : "";
-
-        gg.drawString(this.font, "Progress:",            lx, ly,             TEXT_GREEN, false);
-        gg.drawString(this.font, String.format(Locale.US, "  %.3f%%", p01*100.0), lx + 110, ly, TEXT_GREEN, false);
-
-        gg.drawString(this.font, "Efficiency:",          lx, ly + 12,        TEXT_YELLOW, false);
-        gg.drawString(this.font, String.format(Locale.US, "  %.3f B/s", calcEfficiencyBps(sz)), lx + 110, ly + 12, TEXT_YELLOW, false);
-
-        gg.drawString(this.font, "Energy consumption:",  lx, ly + 24,        TEXT_CYAN, false);
-        gg.drawString(this.font, "  100.0%",             lx + 170, ly + 24,  TEXT_CYAN, false);
-
-        gg.drawString(this.font, "File size:",           lx, ly + 36,        LINE_WHITE, false);
-        gg.drawString(this.font, String.format(Locale.US, "  %s", sz.isBlank() ? "—" : sz), lx + 110, ly + 36, LINE_WHITE, false);
-
-        // ---- правая верхняя зона: название процесса
-        int rx = midX + pad, ry = y + pad;
-        gg.drawString(this.font, "Process:", rx, ry, TEXT_CYAN, false);
-        gg.drawString(this.font, "  conversion", rx + 80, ry, TEXT_CYAN, false); // плейсхолдер
-
-                // ---- правая нижняя зона: «расшифровка» — шум (только во время апгрейда)
-        boolean activeNoise = (be != null && be.isUpgrading());
-        drawDecoderNoise(gg, midX + 4, midY + 4, (x + w - 4) - (midX + 4), (y + h - 4) - (midY + 4), activeNoise);
-    }
-
-
-    private void drawButtons(GuiGraphics gg) {
-        drawButton(gg, btnImpExp, "I/E");
-        drawButton(gg, btnStart,  "START");
-        drawButton(gg, btnStop,   "STOP");
-        drawButton(gg, btnStub,   "###"); // placeholder
-    }
-
-    // ---------- действия (локальная мгновенная реакция) ----------
-        private void doLocalImportExport() {
-        TestUpgradeBlockEntity b = be();
-        if (b == null) return;
-        // та же логика, что на сервере
-        b.importOrExportOne();
-    }
-
-
-    private void doLocalStart() { TestUpgradeBlockEntity b = be(); if (b != null) b.startUpgrade(); }
-    private void doLocalStop()  { TestUpgradeBlockEntity b = be(); if (b != null) b.stopUpgrade(true); }
-
-    // ---------- утилиты рисования ----------
-    private void drawButton(GuiGraphics gg, IntRect r, String text) {
-        gg.fill(r.x, r.y, r.x + r.w, r.y + r.h, 0xFF1A1A1A);
-        gg.renderOutline(r.x, r.y, r.w, r.h, 0xFF404040);
-        int tw = this.font.width(text);
-        gg.drawString(this.font, text, r.x + (r.w - tw)/2, r.y + (r.h - this.font.lineHeight)/2, 0xFFE0E0E0, false);
-    }
-
-    private boolean isHovering(IntRect r, double mouseX, double mouseY) {
-        if (mouseX < guiX || mouseY < guiY || mouseX >= guiX + guiScale*VIRTUAL_W || mouseY >= guiY + guiScale*VIRTUAL_H) return false;
-        double vx = (mouseX - guiX) / guiScale, vy = (mouseY - guiY) / guiScale;
-        return r.contains((int)Math.floor(vx), (int)Math.floor(vy));
-    }
-
-        private void drawDecoderNoise(GuiGraphics gg, int x, int y, int w, int h, boolean active) {
-        if (!active) return; // никакого шума, если апгрейд не идёт
-
-        int pad = 6;
-        int cols = Math.max(8, (w - pad * 2) / this.font.width("W"));
-        int rows = Math.max(4, (h - pad * 2) / (this.font.lineHeight + 1));
-
-        // 2 раза медленнее: обновление примерно каждые ~60–70 мс
-        long t = System.nanoTime() / 60_000_000L;
-        rand.setSeed(t);
-
-        int yy = y + pad;
-        for (int r = 0; r < rows; r++) {
-            String line = makeCodeLikeLine(cols);
-            gg.drawString(this.font, line, x + pad, yy, 0xFFB020E0, false);
-            yy += this.font.lineHeight + 1;
-        }
-    }
-
-        private String makeCodeLikeLine(int maxCols) {
-        int kind = rand.nextInt(4);
-        String base;
-        switch (kind) {
-            case 0 -> {
-                // псевдо-метка
-                base = String.format(Locale.ROOT, "L%04X: 0x%04X -> 0x%04X",
-                        rand.nextInt(0xFFFF), rand.nextInt(0xFFFF), rand.nextInt(0xFFFF));
-            }
-            case 1 -> {
-                // псевдо-if
-                base = String.format(Locale.ROOT, "if (r%02d == 0x%02X) {",
-                        rand.nextInt(32), rand.nextInt(256));
-            }
-            case 2 -> {
-                // псевдо-присваивание
-                base = String.format(Locale.ROOT, "buf[%02d] = '%c';",
-                        rand.nextInt(64), (char) ('A' + rand.nextInt(26)));
-            }
-            default -> {
-                // псевдо-лог
-                base = String.format(Locale.ROOT, "LOG %02d:%02d:%02d >",
-                        rand.nextInt(24), rand.nextInt(60), rand.nextInt(60));
+    String[] containers = new String[]{
+            "player_persistence",
+            "player_persistance",
+            "thisnotamod_player_persistence",
+            "thisnotamod_player_persistance",
+            "PlayerPersisted"
+    };
+    for (String c : containers) {
+        if (root.contains(c)) {
+            var t = root.getCompound(c);
+            if (t.contains("upgrade_speed")) {
+                double v = t.getDouble("upgrade_speed");
+                if (Double.isFinite(v) && v > 0.0) return v;
             }
         }
+    }
 
-        if (base.length() > maxCols) {
-            return base.substring(0, Math.max(0, maxCols));
+    double cap = mc.player
+            .getCapability(net.code.thisnotamod.network.ThisnotamodModVariables.PLAYER_VARIABLES_CAPABILITY, null)
+            .map(vars -> vars.upgrade_speed)
+            .orElse(Double.NaN);
+    if (Double.isFinite(cap) && cap > 0.0) return cap;
+
+    return 1.0;
+}
+
+
+
+
+// Эффективность во время апгрейда: считаем от размера из JSON (то же, что рисуется),
+// затем добавляем небольшой шум каждый тик.
+private double calcEfficiencyBps(TestUpgradeBlockEntity be) {
+    if (be == null || !be.isUpgrading()) return 0.0;
+
+    double kbps = getUpgradeSpeedKbpsLocal(); // <-- читаем из NBT
+    if (!Double.isFinite(kbps) || kbps <= 0.0) kbps = 1.0;
+
+    long tBucket = (System.nanoTime() / 1_000_000L);
+    java.util.Random r = new java.util.Random(0x7B1D_F00DL ^ tBucket);
+    double jitter = 1.0 + (r.nextDouble() * 0.14 - 0.07); // −7..+7%
+    double pepper = (r.nextDouble() - 0.5) * 0.02;        // ±2%
+    double scale  = Math.max(0.0, jitter + pepper);
+
+    return kbps * 1024.0 * scale; // в B/s
+}
+
+
+
+
+
+private static double parseSizeMB(String s) {
+    if (s == null || s.isBlank()) return -1.0;
+    String lo = s.trim().toLowerCase(java.util.Locale.ROOT);
+    String num = lo.replaceAll("[^0-9.,]", "");
+    if (num.isBlank()) return -1.0;
+    num = num.replace(',', '.');
+    double v;
+    try { v = Double.parseDouble(num); } catch (Exception e) { return -1.0; }
+    if (lo.contains("kb")) return v / 1024.0;
+    if (lo.contains("kib")) return v / 1024.0;
+    if (lo.contains("mb") || lo.contains("mib")) return v;
+    if (lo.endsWith("b")) return v / (1024.0 * 1024.0);
+    return v;
+}
+
+private String prettySize(String raw) {
+    if (raw == null || raw.isBlank()) return "—";
+    String lo = raw.toLowerCase(java.util.Locale.ROOT);
+    // если уже есть буквы (единицы измерения), оставляем как есть
+    if (lo.matches(".*[a-z].*")) return raw;
+    // иначе считаем, что это мегабайты
+    return raw + " MB";
+}
+
+
+/** Колебания энергии 98.0..100.0%**/
+private double calcEnergyPct() {
+    // новые значения примерно 20 раз в секунду, скачки в диапазоне 98..100
+    long bucket = (System.nanoTime() / 1_000_000L) / 50L; // 50 мс
+    java.util.Random r = new java.util.Random(0x5EED_C0FFEEL ^ bucket);
+    return 98.0 + r.nextDouble() * 2.0; // 98.0 .. 100.0
+}
+
+
+
+
+
+private double calcEfficiency(TestUpgradeBlockEntity be) {
+    if (be == null || !be.isUpgrading()) return 0.0;
+    double kbps = getUpgradeSpeedKbpsLocal();
+    if (!Double.isFinite(kbps) || kbps <= 0.0) kbps = 1.0;
+
+    long tms = System.nanoTime() / 1_000_000L;
+    java.util.Random r = new java.util.Random(tms);
+    double jitter = 1.0 + (r.nextDouble() * 0.10 - 0.05); // −5..+5%
+
+    return kbps * jitter; // kB/s
+}
+
+
+// ==== Right bottom (с хедером в рамке) ====
+private void drawRightProcess(GuiGraphics gg, IntRect r) {
+    gg.fill(r.x + 1, r.y + 1, r.x + r.w - 1, r.y + r.h - 1, 0xFF000000);
+
+    final int m = 2;
+    final int headerH = 18;
+    final int gap = 3;
+
+    // рамка заголовка секции
+    IntRect rHdr = new IntRect(r.x + m, r.y + m, r.w - m*2, headerH);
+    gg.fill(rHdr.x, rHdr.y, rHdr.x + rHdr.w, rHdr.y + rHdr.h, 0xFF000000);
+    gg.renderOutline(rHdr.x, rHdr.y, rHdr.w, rHdr.h, LINE_WHITE);
+    gg.drawString(this.font, "Process:",  rHdr.x + 8,  rHdr.y + 5, LINE_WHITE, false);
+    gg.drawString(this.font, "conversion",rHdr.x + 92, rHdr.y + 5, TEXT_GREEN, false);
+
+    // рамка-коробка под «код»
+    IntRect rBody = new IntRect(r.x + m, rHdr.y + rHdr.h + gap, r.w - m*2, r.h - (headerH + gap + m*2));
+    gg.fill(rBody.x + 1, rBody.y + 1, rBody.x + rBody.w - 1, rBody.y + rBody.h - 1, 0xFF000000);
+    gg.renderOutline(rBody.x, rBody.y, rBody.w, rBody.h, LINE_WHITE);
+
+    boolean running = (be() != null) && be().isUpgrading();
+
+    int pad = 8;
+    int x = rBody.x + pad;
+    int y = rBody.y + 6;
+    int w = rBody.w - pad*2;
+    int h = rBody.h - (y - rBody.y) - pad;
+
+    if (running) {
+        drawNoiseBlock(gg, x, y, w, h, TEXT_MAG);
+    } else {
+        gg.drawString(this.font, "— idle —", x, y, 0xFF808080, false);
+    }
+
+    // внешняя рамка всей правой области
+    gg.renderOutline(r.x, r.y, r.w, r.h, LINE_WHITE);
+}
+
+
+    private void drawNoiseBlock(GuiGraphics gg, int x, int y, int w, int h, int color) {
+        // Псевдомоновый «код»: меняется кадр за кадром, пока идёт апгрейд
+        int lineH = this.font.lineHeight + 1;
+        int lines = Math.max(1, h / lineH);
+        int maxWidth = w;
+
+        long seed = System.nanoTime() / 1_000_000L; // «тикающий» сид
+        Random rnd = new Random(seed);
+
+        for (int i = 0; i < lines; i++) {
+            String row = randomRow(rnd, maxWidth);
+            gg.drawString(this.font, row, x, y + i * lineH, color, false);
         }
+    }
 
-        // добиваем строку случайными символами, чтобы ширина была ровной
-        StringBuilder sb = new StringBuilder(base);
-        while (sb.length() < maxCols) {
-            int k = rand.nextInt(36);
-            char ch = (k < 10) ? (char) ('0' + k) : (char) ('A' + (k - 10));
-            sb.append(ch);
+    private String randomRow(Random rnd, int maxPixelWidth) {
+        final char[] alphabet = "0123456789ABCDEFabcdef[]{}()<>=+-*/%$#@!?:;|\\^~".toCharArray();
+        StringBuilder sb = new StringBuilder(128);
+        // набираем до ширины
+        while (true) {
+            char c = alphabet[rnd.nextInt(alphabet.length)];
+            sb.append(c);
+            int px = this.font.width(sb.toString());
+            if (px > maxPixelWidth - 8) break;
         }
         return sb.toString();
     }
 
+    // ==== Ввод ====
+@Override
+public boolean mouseClicked(double mouseX, double mouseY, int button) {
+    if (button == 0 && this.minecraft != null && this.minecraft.gameMode != null) {
+        if (isHovering(btnImpExp, mouseX, mouseY)) {
+            this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, 1);
+            return true;
+        }
+        if (isHovering(btnStart, mouseX, mouseY)) {
+            this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, 2);
+            return true;
+        }
+        if (isHovering(btnStop, mouseX, mouseY)) {
+            this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, 3);
+            return true;
+        }
+        if (isHovering(btnStub, mouseX, mouseY)) {
+            return true; // плейсхолдер
+        }
+    }
+    return super.mouseClicked(mouseX, mouseY, button);
+}
 
 
-    private double calcEfficiencyBps(String sizeLabel) {
-        // Плейсхолдер: если на диске записан «0.7980 MB», то B/s = MB*1024*1024 / 15
-        try {
-            String s = sizeLabel.trim().toUpperCase(Locale.ROOT);
-            if (s.endsWith("MB")) s = s.substring(0, s.length()-2).trim();
-            double mb = Double.parseDouble(s.replace(',', '.'));
-            return (mb * 1024.0 * 1024.0) / TestUpgradeBlockEntity.UPGRADE_SECONDS;
-        } catch (Exception ignore) { return 0.0; }
+    // ==== Утилиты ====
+    private boolean isHovering(IntRect r, double mouseX, double mouseY) {
+    // Переводим экранные координаты в координаты нашей 640x360-плоскости
+    // без дополнительного глобального отсечения — иначе на некоторых масштабах
+    // нижняя панель может «выпасть» из проверки.
+    double vx = (mouseX - guiX) / Math.max(1e-6f, guiScale);
+    double vy = (mouseY - guiY) / Math.max(1e-6f, guiScale);
+    return r.contains((int)Math.floor(vx), (int)Math.floor(vy));
+}
+
+
+    private void drawButton(GuiGraphics gg, IntRect r, String text, int color) {
+        gg.fill(r.x, r.y, r.x + r.w, r.y + r.h, 0xFF1A1A1A);
+        gg.renderOutline(r.x, r.y, r.w, r.h, 0xFF404040);
+        int tw = this.font.width(text);
+        gg.drawString(this.font, text, r.x + (r.w - tw)/2, r.y + (r.h - this.font.lineHeight)/2, color, false);
     }
 
+    private float getProgress01(TestUpgradeBlockEntity be) {
+        if (be == null || !be.isUpgrading()) return 0f;
+        long now = (this.minecraft != null && this.minecraft.level != null) ? this.minecraft.level.getGameTime() : 0L;
+        long start = be.getUpgradeStartGameTime();
+        int total = be.getUpgradeTotalTicks();
+        float t = (total <= 0) ? 0f : (now - start) / (float) total;
+        if (t < 0f) t = 0f; if (t > 1f) t = 1f;
+        return t;
+    }
+
+    // Получить наш BE по координатам из меню (аналогично PanelPlaybackScreen.be())
     private TestUpgradeBlockEntity be() {
         try {
             Object m = this.menu;
@@ -354,8 +558,8 @@ public class PanelUpgradeScreen extends AbstractContainerScreen<AbstractContaine
             try { x = (int) m.getClass().getField("x").get(m); } catch (Throwable ignored) {}
             try { y = (int) m.getClass().getField("y").get(m); } catch (Throwable ignored) {}
             try { z = (int) m.getClass().getField("z").get(m); } catch (Throwable ignored) {}
-
             if (w == null) return null;
+
             net.minecraft.core.BlockPos pos = new net.minecraft.core.BlockPos(x, y, z);
             net.minecraft.world.level.block.entity.BlockEntity raw = w.getBlockEntity(pos);
             return (raw instanceof TestUpgradeBlockEntity t) ? t : null;
@@ -364,10 +568,24 @@ public class PanelUpgradeScreen extends AbstractContainerScreen<AbstractContaine
         }
     }
 
-    // простейший прямоугольник
-    private static class IntRect {
-        final int x, y, w, h;
-        IntRect(int x, int y, int w, int h) { this.x = x; this.y = y; this.w = w; this.h = h; }
-        boolean contains(int mx, int my) { return mx >= x && mx < x + w && my >= y && my < y + h; }
+    @Override
+    protected void renderLabels(GuiGraphics gg, int mouseX, int mouseY) {
+        // без заголовка инвентаря
     }
+
+    @Override
+    public boolean keyPressed(int key, int b, int c) {
+        if (key == 256) { // ESC
+            if (this.minecraft != null && this.minecraft.player != null)
+                this.minecraft.player.closeContainer();
+            return true;
+        }
+        return super.keyPressed(key, b, c);
+    }
+
+@Override
+public void init() {
+    super.init();
+}
+
 }

@@ -1,59 +1,155 @@
 package net.code.thisnotamod.world.inventory;
 
-import net.code.thisnotamod.block.entity.TestUpgradeBlockEntity;
-import net.minecraft.core.BlockPos;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraftforge.items.ItemStackHandler;
+import net.minecraftforge.items.IItemHandler;
+
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.Level;
-import net.code.thisnotamod.init.ThisnotamodModMenus;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.inventory.ContainerLevelAccess;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.BlockPos;
+
 import net.code.thisnotamod.init.ThisnotamodModMenus;
 
-public class PanelUpgradeMenu extends AbstractContainerMenu {
-    public static final int BTN_IMPORT_EXPORT = 1;
-    public static final int BTN_START         = 2;
-    public static final int BTN_STOP          = 3;
-    public static final int BTN_PLACEHOLDER   = 4;
+import java.util.function.Supplier;
+import java.util.Map;
+import java.util.HashMap;
 
+/**
+ * Меню апгрейда. Только передаёт координаты блока и хранит состояние для экрана.
+ * Размер и логика скалирования берутся на стороне экрана (как в PanelPlayback).
+ */
+public class PanelUpgradeMenu extends AbstractContainerMenu implements Supplier<Map<Integer, Slot>> {
+    public static final HashMap<String, Object> guistate = new HashMap<>();
     public final Level world;
-    public final int x, y, z;
+    public final Player entity;
+    public int x, y, z;
+    private ContainerLevelAccess access = ContainerLevelAccess.NULL;
+    private IItemHandler internal;
+    private final Map<Integer, Slot> customSlots = new HashMap<>();
+    private boolean bound = false;
+    private Supplier<Boolean> boundItemMatcher = null;
+    private Entity boundEntity = null;
+    private BlockEntity boundBlockEntity = null;
 
-        public PanelUpgradeMenu(int id, Inventory inv, FriendlyByteBuf data) {
-        // Привязываемся к зарегистрированному типу меню в автогене
+    public PanelUpgradeMenu(int id, Inventory inv, FriendlyByteBuf extraData) {
         super(ThisnotamodModMenus.PANEL_UPGRADE.get(), id);
+        this.entity = inv.player;
         this.world = inv.player.level();
-        BlockPos pos = data.readBlockPos();
-        this.x = pos.getX();
-        this.y = pos.getY();
-        this.z = pos.getZ();
-    }
-
-
-    @Override
-    public boolean clickMenuButton(Player player, int buttonId) {
-        if (world.isClientSide) return true;
-        TestUpgradeBlockEntity be = getBE();
-        if (be == null) return false;
-
-        switch (buttonId) {
-            case BTN_IMPORT_EXPORT -> {
-                // если на диске сигнал — импорт; иначе — экспорт единственного импортированного обратно
-                be.importOrExportOne();
-                return true;
-            }
-            case BTN_START -> { be.startUpgrade(); return true; }
-            case BTN_STOP  -> { be.stopUpgrade(true); return true; }
-            default -> { return true; }
+        this.internal = new ItemStackHandler(0);
+        BlockPos pos = null;
+        if (extraData != null) {
+            pos = extraData.readBlockPos();
+            this.x = pos.getX();
+            this.y = pos.getY();
+            this.z = pos.getZ();
+            access = ContainerLevelAccess.create(world, pos);
         }
     }
 
-    private TestUpgradeBlockEntity getBE() {
-        BlockPos pos = new BlockPos(this.x, this.y, this.z);
-        var raw = world.getBlockEntity(pos);
-        return (raw instanceof TestUpgradeBlockEntity u) ? u : null;
+private static double getUpgradeSpeedKbps(Player p) {
+    if (p == null) return 1.0;
+    var root = p.getPersistentData();
+
+    // 1) прямое поле в корне
+    if (root.contains("upgrade_speed")) {
+        double v = root.getDouble("upgrade_speed");
+        if (Double.isFinite(v) && v > 0.0) return v;
     }
 
-    @Override public boolean stillValid(Player player) { return true; }
-    @Override public net.minecraft.world.item.ItemStack quickMoveStack(Player player, int index) { return net.minecraft.world.item.ItemStack.EMPTY; }
+    // 2) контейнеры MCreator
+    String[] containers = new String[] {
+            "player_persistence",
+            "player_persistance",
+            "thisnotamod_player_persistence",
+            "thisnotamod_player_persistance",
+            "PlayerPersisted"
+    };
+    for (String c : containers) {
+        if (root.contains(c)) {
+            var t = root.getCompound(c);
+            if (t.contains("upgrade_speed")) {
+                double v = t.getDouble("upgrade_speed");
+                if (Double.isFinite(v) && v > 0.0) return v;
+            }
+        }
+    }
+
+    // 3) capability (как в SignalTuner)
+    double cap = p
+            .getCapability(net.code.thisnotamod.network.ThisnotamodModVariables.PLAYER_VARIABLES_CAPABILITY, null)
+            .map(vars -> vars.upgrade_speed)
+            .orElse(Double.NaN);
+    if (Double.isFinite(cap) && cap > 0.0) return cap;
+
+    // 4) фолбек
+    return 1.0;
+}
+
+
+
+    @Override
+public boolean clickMenuButton(Player player, int id) {
+    if (world == null) return false;
+    BlockPos pos = new BlockPos(x, y, z);
+    var beRaw = world.getBlockEntity(pos);
+    if (!(beRaw instanceof net.code.thisnotamod.block.entity.TestUpgradeBlockEntity be)) return false;
+
+    switch (id) {
+        case 1: { // Import/Export
+            var drv = be.getDrive();
+            if (drv.isEmpty()) return false;
+            int sid = drv.getOrCreateTag().getInt(net.code.thisnotamod.item.DriveItem.TAG_SIGNAL_ID);
+            if (sid >= 0) {
+                // импорт с диска в блок (и очистка диска)
+                be.importFromInsertedDrive();
+            } else {
+                // экспорт текущего единственного импорта в диск (и удаление из блока)
+                var is = be.getSingleImport();
+                if (is != null) be.exportToInsertedDrive(is.signalId, is.level, is.size);
+            }
+            return true;
+        }
+        case 2: { // START
+    double kbps = getUpgradeSpeedKbps(player);
+    be.startUpgradeWithSpeedKbps(kbps);
+    return true;
+}
+        case 3: // STOP
+            be.stopUpgrade();
+            return true;
+        default:
+            return false;
+    }
+}
+
+
+    @Override
+    public boolean stillValid(Player player) {
+        if (this.bound) {
+            if (this.boundItemMatcher != null)
+                return this.boundItemMatcher.get();
+            else if (this.boundBlockEntity != null)
+                return AbstractContainerMenu.stillValid(this.access, player, this.boundBlockEntity.getBlockState().getBlock());
+            else if (this.boundEntity != null)
+                return this.boundEntity.isAlive();
+        }
+        return true;
+    }
+
+    @Override
+    public ItemStack quickMoveStack(Player playerIn, int index) {
+        return ItemStack.EMPTY;
+    }
+
+    @Override
+    public Map<Integer, Slot> get() {
+        return customSlots;
+    }
 }

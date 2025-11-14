@@ -9359,12 +9359,12 @@
       "registry_name": "test_upgrade",
       "metadata": {
         "files": [
-          "src/main/java/net/code/thisnotamod/block/entity/TestUpgradeBlockEntity.java",
+          "src/main/resources/assets/thisnotamod/models/item/test_upgrade.json",
           "src/main/resources/assets/thisnotamod/blockstates/test_upgrade.json",
+          "src/main/java/net/code/thisnotamod/block/entity/TestUpgradeBlockEntity.java",
           "src/main/resources/assets/thisnotamod/models/block/test_upgrade.json",
           "src/main/java/net/code/thisnotamod/block/TestUpgradeBlock.java",
-          "src/main/resources/data/thisnotamod/loot_tables/blocks/test_upgrade.json",
-          "src/main/resources/assets/thisnotamod/models/item/test_upgrade.json"
+          "src/main/resources/data/thisnotamod/loot_tables/blocks/test_upgrade.json"
         ]
       },
       "path": "~/VotVresources/utilities/Test"
@@ -9916,6 +9916,12 @@
       "type": "logic",
       "scope": "player_persistent",
       "value": "false"
+    },
+    {
+      "name": "upgrade_speed",
+      "type": "number",
+      "scope": "player_persistent",
+      "value": "256.0"
     }
   ],
   "sound_elements": [

@@ -137,6 +137,9 @@ private static final class ClientHandlers {
                                 // новые Signal Download
                                 if ("polarityFilterWidth".equals(m.name))  vars.polarityFilterWidth = m.number;
                                 if ("frequencyFilterWidth".equals(m.name)) vars.frequencyFilterWidth = m.number;
+                                
+                                // Signal upgrade
+								if ("upgrade_speed".equals(m.name))        vars.upgrade_speed = m.number;
                             } else { // BOOL
                                 if ("debug".equals(m.name))       vars.debug = m.bool;
                                 if ("TimeDisplay".equals(m.name)) vars.TimeDisplay = m.bool;
@@ -315,6 +318,7 @@ private static final class ClientHandlers {
         public double downloadSpeed;
         public double polarityFilterWidth;
         public double frequencyFilterWidth;
+        public double upgrade_speed;
 
         // --- bools ---
         public boolean debug;
@@ -333,6 +337,7 @@ private static final class ClientHandlers {
             buf.writeDouble(m.downloadSpeed);
             buf.writeDouble(m.polarityFilterWidth);
             buf.writeDouble(m.frequencyFilterWidth);
+            buf.writeDouble(m.upgrade_speed);
 
             buf.writeBoolean(m.debug);
             buf.writeBoolean(m.worldDebug);
@@ -352,6 +357,7 @@ private static final class ClientHandlers {
             m.downloadSpeed        = buf.readDouble();
             m.polarityFilterWidth  = buf.readDouble();
             m.frequencyFilterWidth = buf.readDouble();
+            m.upgrade_speed        = buf.readDouble();
 
             m.debug       = buf.readBoolean();
             m.worldDebug  = buf.readBoolean();
@@ -379,6 +385,8 @@ private static final class ClientHandlers {
                     s.downloadSpeed        = vars.downloadSpeed;
                     s.polarityFilterWidth  = vars.polarityFilterWidth;
                     s.frequencyFilterWidth = vars.frequencyFilterWidth;
+                    // Signal upgrade
+					s.upgrade_speed        = vars.upgrade_speed;
 
                     // player bools
                     s.debug       = vars.debug;
