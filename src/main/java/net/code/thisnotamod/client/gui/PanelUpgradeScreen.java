@@ -93,6 +93,47 @@ private static final boolean DBG_SPEED = false;
     private final IntRect btnStart   = new IntRect(SCREEN_X + 46,  BTN_BAR_Y, 48, 24); // START
     private final IntRect btnStop    = new IntRect(SCREEN_X + 100, BTN_BAR_Y, 48, 24); // STOP
     private final IntRect btnStub    = new IntRect(SCREEN_X + 154, BTN_BAR_Y, 32, 24); // STUB
+    // Буфер «кода» для правой панели: построчный плавный скролл
+private final java.util.ArrayList<String> codeBuf = new java.util.ArrayList<>();
+private int  codeBufWidthPx = -1;
+private int  codeBufLines   = 0;
+private long codeUpdateBucket = -1L; // шаг ~120 мс
+// Тайпинг по одному символу + курсор
+private final java.util.ArrayList<Integer> codeTyped = new java.util.ArrayList<>();
+private long codeTypeBucket   = -1L;   // шаг добора символов ~35 мс
+private long codeCursorBucket = -1L;   // мигание курсора ~400 мс
+private boolean codeCursorOn  = false;
+// --- флаги для сброса и фронтовой детекции старта ---
+private boolean lastRunning   = false; // предыдущее состояние "идёт апгрейд"
+private boolean codeJustReset = false; // требование: собрать буфер пустым
+// первый кадр после открытия: не триггерим ресет, а просто синхронизируемся
+private boolean runningEdgePrimed = false;
+// сид «сессии кода», чтобы каждая сессия начиналась по-разному
+private long codeSessionSeed = 0L;
+
+
+
+// Полный сброс правой "консоли" (буфера и таймеров)
+private void resetCodePanel() {
+    codeBuf.clear();
+    codeTyped.clear();
+    codeUpdateBucket = -1L;
+    codeTypeBucket   = -1L;
+    codeCursorBucket = -1L;
+    codeCursorOn     = false;
+    // новый сид для новой «сессии» кода
+codeSessionSeed = buildCodeSeed();
+
+    // форсим пересбор буфера под текущую геометрию на следующем кадре
+    codeBufWidthPx = -1;
+    codeBufLines   = 0;
+
+    // попросим собрать буфер «пустым» (все строки начинают печататься с 0)
+    codeJustReset = true;
+}
+
+
+
 
     // ---- Ресурсы (фон можно оставить пустым) ----
     private static final ResourceLocation texture = new ResourceLocation("thisnotamod:textures/screens/panel_upgrade.png");
@@ -447,7 +488,20 @@ private void drawRightProcess(GuiGraphics gg, IntRect r) {
     gg.fill(rBody.x + 1, rBody.y + 1, rBody.x + rBody.w - 1, rBody.y + rBody.h - 1, 0xFF000000);
     gg.renderOutline(rBody.x, rBody.y, rBody.w, rBody.h, LINE_WHITE);
 
-    boolean running = (be() != null) && be().isUpgrading();
+boolean running = (be() != null) && be().isUpgrading();
+
+// Первый валидный кадр после открытия: просто примем текущее состояние,
+// чтобы ре-энтри GUI не сбрасывал консоль.
+if (!runningEdgePrimed) {
+    lastRunning = running;
+    runningEdgePrimed = true;
+} else if (running && !lastRunning) {
+    // реальный фронт внутри этой сессии — сбрасываем
+    resetCodePanel();
+}
+lastRunning = running;
+
+
 
     int pad = 8;
     int x = rBody.x + pad;
@@ -456,43 +510,348 @@ private void drawRightProcess(GuiGraphics gg, IntRect r) {
     int h = rBody.h - (y - rBody.y) - pad;
 
     if (running) {
-        drawNoiseBlock(gg, x, y, w, h, TEXT_MAG);
-    } else {
-        gg.drawString(this.font, "— idle —", x, y, 0xFF808080, false);
-    }
+    drawNoiseBlock(gg, x, y, w, h, TEXT_MAG, true);
+} else {
+    drawNoiseBlock(gg, x, y, w, h, 0xFF606060, false); // замрёт, как консоль на паузе
+}
+
 
     // внешняя рамка всей правой области
     gg.renderOutline(r.x, r.y, r.w, r.h, LINE_WHITE);
 }
 
 
-    private void drawNoiseBlock(GuiGraphics gg, int x, int y, int w, int h, int color) {
-        // Псевдомоновый «код»: меняется кадр за кадром, пока идёт апгрейд
-        int lineH = this.font.lineHeight + 1;
-        int lines = Math.max(1, h / lineH);
-        int maxWidth = w;
+// Псевдокод с по-символьным тайпингом и мигающим курсором
+private void drawNoiseBlock(GuiGraphics gg, int x, int y, int w, int h, int color, boolean running) {
+    int lineH = this.font.lineHeight + 1;
+    int lines = Math.max(1, h / lineH);
 
-        long seed = System.nanoTime() / 1_000_000L; // «тикающий» сид
-        Random rnd = new Random(seed);
+    // обновляем буфер (геометрия/скролл/тайпинг)
+    updateCodeBuffer(w, lines, running);
 
-        for (int i = 0; i < lines; i++) {
-            String row = randomRow(rnd, maxWidth);
-            gg.drawString(this.font, row, x, y + i * lineH, color, false);
+    // рисуем строки
+    for (int i = 0; i < lines; i++) {
+        String full = (i < codeBuf.size()) ? codeBuf.get(i) : "";
+        int typed = (i < codeTyped.size()) ? Math.min(codeTyped.get(i), full.length()) : 0;
+        String shown = (typed <= 0) ? "" : full.substring(0, typed);
+
+        // курсор на последней видимой строке
+        if (i == lines - 1) {
+            long blinkBucket = (System.nanoTime() / 1_000_000L) / 400L; // 400 мс
+            if (blinkBucket != codeCursorBucket) {
+                codeCursorBucket = blinkBucket;
+                codeCursorOn = !codeCursorOn;
+            }
+            if (running && codeCursorOn) {
+                // добавим тонкий курсор, не страшно, если чуть вылезет за ширину
+                shown = shown + "▌";
+            }
+        }
+
+        gg.drawString(this.font, shown, x, y + i * lineH, color, false);
+    }
+}
+
+
+private void updateCodeBuffer(int maxWidthPx, int linesVisible, boolean running) {
+    // геометрия изменилась — пересобираем
+    if (maxWidthPx != codeBufWidthPx || linesVisible != codeBufLines) {
+    codeBufWidthPx = maxWidthPx;
+    codeBufLines   = linesVisible;
+
+    codeBuf.clear();
+    codeTyped.clear();
+
+    Random seedRnd = new Random(codeSessionSeed != 0L ? codeSessionSeed : (codeSessionSeed = buildCodeSeed()));
+    for (int i = 0; i < linesVisible; i++) {
+        String line = randomCodeRow(seedRnd, maxWidthPx);
+        codeBuf.add(line);
+        if (codeJustReset) {
+            // после сброса — ВСЕ строки печатаются с нуля (панель визуально пустая)
+            codeTyped.add(0);
+        } else {
+            // обычное поведение при первой сборке/смене геометрии
+            codeTyped.add(i < linesVisible - 1 ? line.length() : 0);
+        }
+    }
+    codeUpdateBucket = -1L;
+    codeTypeBucket   = -1L;
+
+    // одноразовый флажок отрабатываем
+    codeJustReset = false;
+}
+
+
+    if (codeBuf.isEmpty() || codeTyped.isEmpty()) return;
+
+    // Тайпинг: по 1 символу ~каждые 35 мс на последней строке
+    long typeBucket = (System.nanoTime() / 1_000_000L) / 35L; // 35 мс
+    if (running && typeBucket != codeTypeBucket) {
+        codeTypeBucket = typeBucket;
+        int last = codeBuf.size() - 1;
+        String lastLine = codeBuf.get(last);
+        int typed = codeTyped.get(last);
+        if (typed < lastLine.length()) {
+            codeTyped.set(last, typed + 1);
         }
     }
 
-    private String randomRow(Random rnd, int maxPixelWidth) {
-        final char[] alphabet = "0123456789ABCDEFabcdef[]{}()<>=+-*/%$#@!?:;|\\^~".toCharArray();
-        StringBuilder sb = new StringBuilder(128);
-        // набираем до ширины
-        while (true) {
-            char c = alphabet[rnd.nextInt(alphabet.length)];
-            sb.append(c);
-            int px = this.font.width(sb.toString());
-            if (px > maxPixelWidth - 8) break;
-        }
-        return sb.toString();
+    // Можно ли скроллить? — только когда последняя строка полностью напечатана
+    boolean lastDone = false;
+    {
+        int last = codeBuf.size() - 1;
+        lastDone = codeTyped.get(last) >= codeBuf.get(last).length();
     }
+
+    // Плавный скролл ~120 мс, но только если есть завершённая нижняя строка
+    long scrollBucket = (System.nanoTime() / 1_000_000L) / 120L; // 120 мс
+    if (running && lastDone && scrollBucket != codeUpdateBucket) {
+        codeUpdateBucket = scrollBucket;
+
+        // удалить верхнюю строку
+        if (!codeBuf.isEmpty())  codeBuf.remove(0);
+        if (!codeTyped.isEmpty()) codeTyped.remove(0);
+
+        // добавить новую нижнюю и сбросить её типинг
+        String newLine = randomCodeRow(
+        new Random((scrollBucket ^ 0xC0DEF00DL) ^ codeSessionSeed),
+        maxWidthPx
+);
+        codeBuf.add(newLine);
+        codeTyped.add(0); // новая строка будет печататься с нуля
+    }
+}
+
+
+private String randomCodeRow(Random rnd, int maxPixelWidth) {
+    final String[] KW_TYPES = {"int","float","double","long","bool","byte","var", "image", "sound", "degen"};
+    final String[] KW_CTRL  = {"if","for","while","return","switch", "import", "ChatPGT", "Access", "Gemini", "Neuro", "if/else/if/else/if/else", "else", "midd", "VotV", "MrDrNose", "Monique", "TvOS", "play", "say", "genius", "if", "for", "while", "while{while{while{}}}", "forEach", "generate", "million", "clamp", "hit", "ler", "signal", "argem" };
+    final String[] FNAMES   = {"hash","convert","process","update","step","mix","scan","encode","decode","flush", "anal", "doublepene", "lol", "small", "Kvass", "Tail", "Cat", "Duck", "idiot", "dnt_rd_ths", "votv", "kel", "listen", "kerfu", "meow", "us", "think", "rei", "bi*ch", ":)", "head", "rand", "pseudo", "cicle", "image", "raw", "kotakbass", "SoSaL", "Ko0tk", "deny"};
+    final String[] OPS      = {"=","+=","-=","*=","^=","&=","|=","==","!=",">","<",">=","<=", "etc", "+<<++=", "(^-^)", "+-", "--", "of", "T-T", "()()()()", "(.)(.)", "cl", "rn", "dmp", "==", "+/-", "ss", "sas", "dsd", "sos", "al", "s", "+", "--", "==", "UwU", "ds", "rkn"};
+
+    StringBuilder sb = new StringBuilder(96);
+
+    // случайный отступ
+    int indent = rnd.nextInt(4); // 0..3
+    for (int i = 0; i < indent; i++) sb.append("  ");
+
+    // иногда комментарий
+    if (rnd.nextDouble() < 0.18) {
+        sb.append("// ").append(randomIdent(rnd));
+        if (rnd.nextBoolean()) sb.append(" ").append(randomIdent(rnd));
+        return trimToWidth(sb.toString(), maxPixelWidth);
+    }
+
+    double roll = rnd.nextDouble();
+
+    if (roll < 0.20) {
+        // скобки блока
+        sb.append(rnd.nextBoolean() ? "{" : "}");
+        return trimToWidth(sb.toString(), maxPixelWidth);
+    } else if (roll < 0.42) {
+        // управляющая конструкция
+        String kw = KW_CTRL[rnd.nextInt(KW_CTRL.length)];
+        sb.append(kw).append(" (")
+          .append(randomIdent(rnd)).append(" ")
+          .append(OPS[rnd.nextInt(OPS.length)]).append(" ")
+          .append(randomNumber(rnd))
+          .append(") {");
+        return trimToWidth(sb.toString(), maxPixelWidth);
+    } else if (roll < 0.70) {
+        // объявление/присваивание
+        sb.append(KW_TYPES[rnd.nextInt(KW_TYPES.length)]).append(" ")
+          .append(randomIdent(rnd)).append(" ")
+          .append(OPS[rnd.nextInt(OPS.length)]).append(" ");
+        if (rnd.nextDouble() < 0.25) {
+            sb.append('"').append(randomString(rnd, 4 + rnd.nextInt(6))).append('"');
+        } else if (rnd.nextDouble() < 0.25) {
+            sb.append("0x").append(Integer.toHexString(rnd.nextInt()).toUpperCase(java.util.Locale.ROOT));
+        } else {
+            sb.append(randomNumber(rnd));
+        }
+        sb.append(";");
+        return trimToWidth(sb.toString(), maxPixelWidth);
+    } else {
+        // вызов функции
+        sb.append(FNAMES[rnd.nextInt(FNAMES.length)]).append("(");
+        int argc = 1 + rnd.nextInt(3);
+        for (int i = 0; i < argc; i++) {
+            if (rnd.nextDouble() < 0.33) sb.append('"').append(randomString(rnd, 3 + rnd.nextInt(5))).append('"');
+            else if (rnd.nextDouble() < 0.5) sb.append(randomNumber(rnd));
+            else sb.append(randomIdent(rnd));
+            if (i + 1 < argc) sb.append(", ");
+        }
+        sb.append(");");
+        return trimToWidth(sb.toString(), maxPixelWidth);
+    }
+}
+
+
+private String trimToWidth(String s, int maxPixelWidth) {
+    if (this.font.width(s) <= maxPixelWidth - 4) return s;
+    String ell = s;
+    while (!ell.isEmpty() && this.font.width(ell) > maxPixelWidth - 4) {
+        ell = ell.substring(0, ell.length() - 1);
+    }
+    return ell;
+}
+
+private String randomIdent(Random rnd) {
+    String[] syll = {"al","be","co","da","en","fa","gi","ho","ix","jo","ka","lu","mi","no","or","pi","qu","ra","si","to","ux","va","wo","xi","ya","zo"};
+    int parts = 2 + rnd.nextInt(3);
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < parts; i++) sb.append(syll[rnd.nextInt(syll.length)]);
+    // иногда camelCase
+    if (sb.length() > 0) sb.setCharAt(0, Character.toLowerCase(sb.charAt(0)));
+    if (rnd.nextDouble() < 0.25 && sb.length() > 2) sb.setCharAt(1, Character.toUpperCase(sb.charAt(1)));
+    return sb.toString();
+}
+
+private String randomNumber(Random rnd) {
+    if (rnd.nextDouble() < 0.35) return "0x" + Integer.toHexString(rnd.nextInt()).toUpperCase(java.util.Locale.ROOT);
+    if (rnd.nextDouble() < 0.5)  return Integer.toString(rnd.nextInt(10_000));
+    int a = rnd.nextInt(5000);
+    int b = rnd.nextInt(1000); // 000..999
+    return String.format(java.util.Locale.ROOT, "%d.%03d", a, b);
+}
+
+private String randomString(Random rnd, int len) {
+    final char[] alpha = "abcdef0123456789_-./".toCharArray();
+    StringBuilder sb = new StringBuilder(len);
+    for (int i = 0; i < len; i++) sb.append(alpha[rnd.nextInt(alpha.length)]);
+    return sb.toString();
+}
+
+private long buildCodeSeed() {
+    long s = System.nanoTime();
+    // привяжем к миру/времени/игроку/позиции блока, чтобы сид был «правдоподобный»
+    if (this.minecraft != null) {
+        if (this.minecraft.level != null) s ^= this.minecraft.level.getGameTime();
+        if (this.minecraft.player != null) {
+            var u = this.minecraft.player.getUUID();
+            s ^= u.getMostSignificantBits() ^ u.getLeastSignificantBits();
+        }
+    }
+    // координаты блока из меню
+    s ^= (((long) x) << 32) ^ (((long) z) << 16) ^ (long) y;
+    return s;
+}
+
+// --- ключ в guistate для конкретного блока ---
+private String codeStateKey() {
+    return "code_state@" + x + "," + y + "," + z;
+}
+
+// --- сохранить текущее состояние консоли в guistate ---
+@SuppressWarnings("unchecked")
+private void saveConsoleState() {
+    try {
+        java.util.HashMap<String, Object> m = new java.util.HashMap<>();
+        m.put("buf", new java.util.ArrayList<>(codeBuf));      // ArrayList<String>
+        m.put("typed", new java.util.ArrayList<>(codeTyped));  // ArrayList<Integer>
+        m.put("width", codeBufWidthPx);
+        m.put("lines", codeBufLines);
+        m.put("seed", codeSessionSeed);
+        m.put("running", lastRunning);
+        long gt = (this.minecraft != null && this.minecraft.level != null) ? this.minecraft.level.getGameTime() : 0L;
+        m.put("gt", gt);
+        guistate.put(codeStateKey(), m);
+    } catch (Throwable ignored) {}
+}
+
+// --- загрузить состояние консоли из guistate + «догнать» печать за время, пока GUI был закрыт ---
+@SuppressWarnings("unchecked")
+private void loadConsoleState() {
+    try {
+        Object o = guistate.get(codeStateKey());
+        if (!(o instanceof java.util.Map)) return;
+        java.util.Map<?, ?> m = (java.util.Map<?, ?>) o;
+
+        Object bufObj   = m.get("buf");
+        Object typedObj = m.get("typed");
+        if (!(bufObj instanceof java.util.List) || !(typedObj instanceof java.util.List)) return;
+
+        // восстановим буфер
+        codeBuf.clear();
+        codeTyped.clear();
+        for (Object s : (java.util.List<?>) bufObj)   if (s instanceof String)  codeBuf.add((String) s);
+        for (Object n : (java.util.List<?>) typedObj) if (n instanceof Number)  codeTyped.add(((Number) n).intValue());
+
+        Object w = m.get("width");  if (w instanceof Number) codeBufWidthPx = ((Number) w).intValue();
+        Object l = m.get("lines");  if (l instanceof Number) codeBufLines   = ((Number) l).intValue();
+        Object sd= m.get("seed");   if (sd instanceof Number) codeSessionSeed = ((Number) sd).longValue();
+
+        // таймеры перезапускаем (они завязаны на системные bucket'ы)
+        codeUpdateBucket = -1L;
+        codeTypeBucket   = -1L;
+        codeCursorBucket = -1L;
+        codeCursorOn     = false;
+
+        long savedGT = 0L;
+        Object gtObj = m.get("gt");
+        if (gtObj instanceof Number) savedGT = ((Number) gtObj).longValue();
+
+        // если апгрейд реально идёт — догоним печать за время, пока GUI был закрыт
+        boolean actuallyRunning = (be() != null) && be().isUpgrading();
+        long nowGT = (this.minecraft != null && this.minecraft.level != null) ? this.minecraft.level.getGameTime() : savedGT;
+        long deltaMs = Math.max(0L, (nowGT - savedGT) * 50L);
+
+        // чтобы не жечь CPU при огромных паузах — ограничим догонку, например, 60 сек
+        deltaMs = Math.min(deltaMs, 60_000L);
+
+        if (actuallyRunning && deltaMs > 0) {
+            catchUpConsole(deltaMs);
+        }
+    } catch (Throwable ignored) {}
+}
+
+// --- симуляция «догонки» печати/скролла за deltaMs миллисекунд ---
+private void catchUpConsole(long ms) {
+    if (codeBufWidthPx <= 0 || codeBufLines <= 0) return;
+    if (codeBuf.isEmpty() || codeTyped.isEmpty()) return;
+
+    // гарантируем согласованность размеров
+    while (codeTyped.size() < codeBuf.size()) codeTyped.add(0);
+    while (codeTyped.size() > codeBuf.size()) codeTyped.remove(codeTyped.size()-1);
+
+    // шаг печати — 35мс/символ, скролл — 120мс
+    while (ms >= 35 && !codeBuf.isEmpty() && !codeTyped.isEmpty()) {
+        int last = codeBuf.size() - 1;
+        String lastLine = codeBuf.get(last);
+        int typed = Math.min(codeTyped.get(last), lastLine.length());
+
+        if (typed < lastLine.length()) {
+            long canChars = Math.min((long)(lastLine.length() - typed), ms / 35L);
+            if (canChars <= 0) break;
+            codeTyped.set(last, typed + (int) canChars);
+            ms -= canChars * 35L;
+        } else {
+            if (ms < 120) break;
+            ms -= 120L;
+
+            // скроллим, добавляем новую строку
+            if (!codeBuf.isEmpty())  codeBuf.remove(0);
+            if (!codeTyped.isEmpty()) codeTyped.remove(0);
+
+            String newLine = randomCodeRow(
+                    new java.util.Random((codeSessionSeed ^ (ms * 1103515245L))),
+                    codeBufWidthPx
+            );
+            codeBuf.add(newLine);
+            codeTyped.add(0);
+
+            // держим окно фиксированного кол-ва строк
+            while (codeBuf.size() > codeBufLines) {
+                codeBuf.remove(0);
+                if (!codeTyped.isEmpty()) codeTyped.remove(0);
+            }
+        }
+    }
+}
+
+
+
+
 
     // ==== Ввод ====
 @Override
@@ -503,9 +862,11 @@ public boolean mouseClicked(double mouseX, double mouseY, int button) {
             return true;
         }
         if (isHovering(btnStart, mouseX, mouseY)) {
-            this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, 2);
-            return true;
-        }
+    resetCodePanel(); // сбросить вывод "кода" перед новым стартом
+    this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, 2);
+    return true;
+}
+
         if (isHovering(btnStop, mouseX, mouseY)) {
             this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, 3);
             return true;
@@ -583,9 +944,33 @@ public boolean mouseClicked(double mouseX, double mouseY, int button) {
         return super.keyPressed(key, b, c);
     }
 
+    @Override
+public void onClose() {
+    saveConsoleState();
+    super.onClose();
+}
+
+@Override
+public void removed() {
+    saveConsoleState();
+    super.removed();
+}
+
+
 @Override
 public void init() {
     super.init();
+
+    // 1) попытаться восстановить консоль
+    loadConsoleState();
+
+    // 2) синхронизируемся с фактическим состоянием блока (без ресета на ре-энтри)
+    TestUpgradeBlockEntity t = be();
+    lastRunning = (t != null) && t.isUpgrading();
+    runningEdgePrimed = false; // первый проход в drawRightProcess не ресетит
+    codeJustReset = false;     // на ре-энтри не собираем буфер пустым
 }
+
+
 
 }
