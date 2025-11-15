@@ -206,6 +206,9 @@ public class SignalScannerScreen extends AbstractContainerScreen<SignalScannerMe
     private static final float ARROW_NEAR_LEN   = 10f;
     private static final float ARROW_NEAR_WIDTH = 4f;
 
+    private static final float ARROW_SHORTEN_RADIUS_FACTOR = 1.5f; // насколько большой радиус зоны укорачивания (1.2–2.0)
+	private static final float ARROW_SHORTEN_CURVE = 1.35f;        // кривизна: >1 укорачивает раньше, 1 — линейно
+
     private static final long ARROW_RENDER_LOG_PERIOD_MS = 600L;
     private long lastArrowRenderLogMs = 0L;
 
@@ -449,21 +452,24 @@ if (ok != null) {
             float ang = (float)Math.atan2(s.y - retWcy, s.x - retWcx);
 
             boolean visible = s.x>=camX && s.x<=camX+viewW && s.y>=camY && s.y<=camY+viewH;
-            float sx = (s.x - camX);
-            float sy = (s.y - camY);
-            float dx = sx - (viewW/2f  + RETICLE_OFFSET_X);
-            float dy = sy - (viewH/2f + RETICLE_OFFSET_Y);
-            float dist = (float)Math.sqrt(dx*dx + dy*dy);
+float sx = (s.x - camX);
+float sy = (s.y - camY);
+float dx = sx - (viewW/2f  + RETICLE_OFFSET_X);
+float dy = sy - (viewH/2f + RETICLE_OFFSET_Y);
+float dist = (float)Math.sqrt(dx*dx + dy*dy);
 
-            float baseLen = ARROW_BASE_LEN;
-            float baseWidth = ARROW_BASE_WIDTH;
-            float len = baseLen, bw = baseWidth;
+float baseLen = ARROW_BASE_LEN;
+float baseWidth = ARROW_BASE_WIDTH;
 
-            if (visible) {
-                float dNorm = clamp(dist / (Math.min(viewW, viewH) * 0.6f), 0f, 1f);
-                len = lerp(ARROW_NEAR_LEN,   baseLen,   dNorm);
-                bw  = lerp(ARROW_NEAR_WIDTH, baseWidth, dNorm);
-            }
+// Нормируем расстояние на расширенный радиус и применяем кривую,
+// чтобы стрелки становились короче раньше И вне экрана тоже.
+float dNorm = clamp(dist / (Math.min(viewW, viewH) * ARROW_SHORTEN_RADIUS_FACTOR), 0f, 1f);
+// Кривая смещает значение к 0 (при >1), значит длина чаще будет ближе к "короткой"
+float d = (float)Math.pow(dNorm, ARROW_SHORTEN_CURVE);
+
+float len = lerp(ARROW_NEAR_LEN,   baseLen,   d);
+float bw  = lerp(ARROW_NEAR_WIDTH, baseWidth, d);
+
 
             ScanArrow a = new ScanArrow();
             a.angleRad = ang;
