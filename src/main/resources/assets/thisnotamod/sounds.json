@@ -429,5 +429,37 @@
         "stream": false
       }
     ]
+  },
+  "vion_high": {
+    "sounds": [
+      {
+        "name": "thisnotamod:signal_vion",
+        "stream": false
+      }
+    ]
+  },
+  "vion_low": {
+    "sounds": [
+      {
+        "name": "thisnotamod:signal_vion_low",
+        "stream": false
+      }
+    ]
+  },
+  "vion_noisy": {
+    "sounds": [
+      {
+        "name": "thisnotamod:signal_vion_noisy",
+        "stream": false
+      }
+    ]
+  },
+  "vion_raw": {
+    "sounds": [
+      {
+        "name": "thisnotamod:signal_vion_raw",
+        "stream": false
+      }
+    ]
   }
 }

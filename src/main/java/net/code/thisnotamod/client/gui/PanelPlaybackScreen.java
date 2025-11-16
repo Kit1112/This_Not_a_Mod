@@ -1916,22 +1916,26 @@ private void refreshVisibleFromBlock() {
     }
 
 
-    // Есть ли у игрока купленный модуль HEAT-спектра?
+// Есть ли у игрока купленный модуль HEAT-спектра?
 private boolean isHeatSpecPurchased() {
     var mc = Minecraft.getInstance();
     if (mc == null || mc.player == null) return false;
+
+    // 1) Правильный источник: капабилити MCreator, которую ты меняешь и синкаешь в DebugMenuNetwork
+    try {
+        var vars = mc.player
+                .getCapability(net.code.thisnotamod.network.ThisnotamodModVariables.PLAYER_VARIABLES_CAPABILITY, null)
+                .orElse(null);
+        if (vars != null) return vars.heat_spec_purchased;
+    } catch (Throwable ignored) {}
+
+    // 2) Fallback: если по какой-то причине капабилити недоступна — попробуем клиентский persistent
     var tag = mc.player.getPersistentData();
-
-    // Прямо в корне
     if (tag.contains("heat_spec_purchased")) return tag.getBoolean("heat_spec_purchased");
-
-    // Частый кейс MCreator: внутри "player_persistance"
     if (tag.contains("player_persistance")) {
         var t = tag.getCompound("player_persistance");
         if (t.contains("heat_spec_purchased")) return t.getBoolean("heat_spec_purchased");
     }
-
-    // На всякий случай ещё пара распространённых вариантов именования
     if (tag.contains("player_persistence")) {
         var t = tag.getCompound("player_persistence");
         if (t.contains("heat_spec_purchased")) return t.getBoolean("heat_spec_purchased");
@@ -1942,6 +1946,7 @@ private boolean isHeatSpecPurchased() {
     }
     return false;
 }
+
 
 
 private void drawBigCenteredLabel(GuiGraphics gg, IntRect r, String text, int color) {

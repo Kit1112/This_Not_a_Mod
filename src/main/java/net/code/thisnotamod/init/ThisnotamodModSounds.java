@@ -68,4 +68,8 @@ public class ThisnotamodModSounds {
 	public static final RegistryObject<SoundEvent> SERVER_2 = REGISTRY.register("server_2", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "server_2")));
 	public static final RegistryObject<SoundEvent> SERVER_3 = REGISTRY.register("server_3", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "server_3")));
 	public static final RegistryObject<SoundEvent> SERVER_LOOP = REGISTRY.register("server_loop", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "server_loop")));
+	public static final RegistryObject<SoundEvent> VION_HIGH = REGISTRY.register("vion_high", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "vion_high")));
+	public static final RegistryObject<SoundEvent> VION_LOW = REGISTRY.register("vion_low", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "vion_low")));
+	public static final RegistryObject<SoundEvent> VION_NOISY = REGISTRY.register("vion_noisy", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "vion_noisy")));
+	public static final RegistryObject<SoundEvent> VION_RAW = REGISTRY.register("vion_raw", () -> SoundEvent.createVariableRangeEvent(new ResourceLocation("thisnotamod", "vion_raw")));
 }
