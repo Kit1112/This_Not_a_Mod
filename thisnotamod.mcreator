@@ -8434,16 +8434,16 @@
       "registry_name": "kerfu_head",
       "metadata": {
         "files": [
-          "src/main/java/net/code/thisnotamod/block/KerfuHeadBlock.java",
-          "src/main/java/net/code/thisnotamod/block/model/KerfuHeadBlockModel.java",
           "src/main/resources/assets/thisnotamod/models/custom/kerfu_head_particle.json",
-          "src/main/java/net/code/thisnotamod/block/display/KerfuHeadDisplayItem.java",
-          "src/main/java/net/code/thisnotamod/block/renderer/KerfuHeadDisplayItemRenderer.java",
-          "src/main/resources/assets/thisnotamod/models/item/kerfu_head.json",
-          "src/main/java/net/code/thisnotamod/block/model/KerfuHeadDisplayModel.java",
-          "src/main/resources/assets/thisnotamod/blockstates/kerfu_head.json",
           "src/main/java/net/code/thisnotamod/block/renderer/KerfuHeadTileRenderer.java",
-          "src/main/java/net/code/thisnotamod/block/entity/KerfuHeadTileEntity.java"
+          "src/main/java/net/code/thisnotamod/block/renderer/KerfuHeadDisplayItemRenderer.java",
+          "src/main/resources/assets/thisnotamod/blockstates/kerfu_head.json",
+          "src/main/java/net/code/thisnotamod/block/display/KerfuHeadDisplayItem.java",
+          "src/main/java/net/code/thisnotamod/block/KerfuHeadBlock.java",
+          "src/main/java/net/code/thisnotamod/block/model/KerfuHeadDisplayModel.java",
+          "src/main/java/net/code/thisnotamod/block/model/KerfuHeadBlockModel.java",
+          "src/main/java/net/code/thisnotamod/block/entity/KerfuHeadTileEntity.java",
+          "src/main/resources/assets/thisnotamod/models/item/kerfu_head.json"
         ]
       },
       "path": "~/VotVresources/objects/Props/KerfuReceip"
