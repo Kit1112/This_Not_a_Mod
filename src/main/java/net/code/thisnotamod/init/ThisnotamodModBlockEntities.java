@@ -40,6 +40,7 @@ import net.code.thisnotamod.block.entity.ShopIntTestTileEntity;
 import net.code.thisnotamod.block.entity.RadiotielieskopTileEntity;
 import net.code.thisnotamod.block.entity.RadarTileEntity;
 import net.code.thisnotamod.block.entity.PasslockBBlockEntity;
+import net.code.thisnotamod.block.entity.PanelsV2TileEntity;
 import net.code.thisnotamod.block.entity.LightSwitchTileEntity;
 import net.code.thisnotamod.block.entity.Lampplus1UppedTileEntity;
 import net.code.thisnotamod.block.entity.Lampplus1TileEntity;
@@ -128,6 +129,7 @@ public class ThisnotamodModBlockEntities {
 	public static final RegistryObject<BlockEntityType<WorkStatTest2TileEntity>> WORK_STAT_TEST_2 = REGISTRY.register("work_stat_test_2",
 			() -> BlockEntityType.Builder.of(WorkStatTest2TileEntity::new, ThisnotamodModBlocks.WORK_STAT_TEST_2.get()).build(null));
 	public static final RegistryObject<BlockEntityType<?>> TEST_UPGRADE = register("test_upgrade", ThisnotamodModBlocks.TEST_UPGRADE, TestUpgradeBlockEntity::new);
+	public static final RegistryObject<BlockEntityType<PanelsV2TileEntity>> PANELS_V_2 = REGISTRY.register("panels_v_2", () -> BlockEntityType.Builder.of(PanelsV2TileEntity::new, ThisnotamodModBlocks.PANELS_V_2.get()).build(null));
 
 	private static RegistryObject<BlockEntityType<?>> register(String registryname, RegistryObject<Block> block, BlockEntityType.BlockEntitySupplier<?> supplier) {
 		return REGISTRY.register(registryname, () -> BlockEntityType.Builder.of(supplier, block.get()).build(null));

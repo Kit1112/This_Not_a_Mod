@@ -16,6 +16,15 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.client.gui.components.Checkbox;
 import org.lwjgl.glfw.GLFW;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +44,9 @@ public class DebugMenuScreen extends AbstractContainerScreen<DebugMenuMenu> {
 
     private Button tabModifiers;
     private Button tabDebug;
-    private int currentTab = 0; // 0 - modifiers, 1 - Debug
+    private Button tabSignals;
+    private int currentTab = 1; // 0 - modifiers, 1 - Debug, 2 - Signals
+
 
     private final List<Line> lines = new ArrayList<>();
     private int viewportTop;
@@ -55,6 +66,90 @@ public class DebugMenuScreen extends AbstractContainerScreen<DebugMenuMenu> {
     private boolean cachedAlarm;
     private boolean cachedHeatSpecPurchased;
 
+    // === Вкладка Signals ===
+    private static class SignalInfo {
+        final int id;
+        final String name;
+        final double weight;
+        final String size;
+        float chancePercent; // 0..100
+
+        SignalInfo(int id, String name, double weight, String size) {
+            this.id = id;
+            this.name = name;
+            this.weight = weight;
+            this.size = size;
+        }
+    }
+
+    private static final List<SignalInfo> SIGNALS_TAB = new ArrayList<>();
+    private static boolean signalsLoaded = false;
+
+    private static InputStream openSignalsJsonStreamForSignals() {
+        // 1) из JAR: /data/thisnotamod/signals.json
+        InputStream in = DebugMenuScreen.class.getResourceAsStream("/data/thisnotamod/signals.json");
+        if (in != null) return in;
+        // 2) через ResourceManager (если вдруг лежит иначе)
+        try {
+            var mc = Minecraft.getInstance();
+            if (mc != null && mc.getResourceManager() != null) {
+                var opt = mc.getResourceManager().getResource(new ResourceLocation("thisnotamod", "signals.json"));
+                if (opt.isPresent()) {
+                    return opt.get().open();
+                }
+            }
+        } catch (Exception ignored) {}
+        return null;
+    }
+
+    private static void ensureSignalsLoaded() {
+        if (signalsLoaded) return;
+        signalsLoaded = true;
+
+        SIGNALS_TAB.clear();
+        double totalWeight = 0.0;
+        List<SignalInfo> tmp = new ArrayList<>();
+
+        try (InputStream in = openSignalsJsonStreamForSignals()) {
+            if (in != null) {
+                JsonArray arr = JsonParser
+                        .parseReader(new InputStreamReader(in, StandardCharsets.UTF_8))
+                        .getAsJsonArray();
+                for (JsonElement el : arr) {
+                    if (!el.isJsonObject()) continue;
+                    JsonObject o = el.getAsJsonObject();
+
+                    int id = o.has("id") && !o.get("id").isJsonNull() ? o.get("id").getAsInt() : 0;
+                    String name = o.has("name") && !o.get("name").isJsonNull()
+                            ? o.get("name").getAsString()
+                            : ("signal_" + id);
+                    double weight = o.has("weight") && !o.get("weight").isJsonNull()
+                            ? o.get("weight").getAsDouble()
+                            : 0.0;
+                    String size = o.has("size") && !o.get("size").isJsonNull()
+                            ? o.get("size").getAsString()
+                            : "-";
+
+                    SignalInfo info = new SignalInfo(id, name, weight, size);
+                    tmp.add(info);
+                    totalWeight += Math.max(0.0, weight);
+                }
+            }
+        } catch (Exception ignored) {}
+
+        if (tmp.isEmpty()) return;
+
+        for (SignalInfo info : tmp) {
+            if (totalWeight > 0.0) {
+                info.chancePercent = (float) (info.weight / totalWeight * 100.0);
+            } else {
+                info.chancePercent = 0f;
+            }
+            SIGNALS_TAB.add(info);
+        }
+    }
+
+
     // Signal Scanner
     private double cachedSignalScanerSpeedMod;
     private double cachedPingerCooldown;
@@ -68,7 +163,7 @@ public class DebugMenuScreen extends AbstractContainerScreen<DebugMenuMenu> {
     private double cachedFrequencyFilterWidth;
 
     // Signal upgrade
-	private double cachedUpgradeSpeed;
+    private double cachedUpgradeSpeed;
 
 
     private boolean hasCache = false;
@@ -78,85 +173,87 @@ public class DebugMenuScreen extends AbstractContainerScreen<DebugMenuMenu> {
         // Не рисуем ни заголовок, ни метку "Инвентарь"
     }
 
-private static class CheckBoxLine extends Line {
-    private final String varKey;
-    private final C2SSetVarMessage.Scope scope;
-    private Checkbox checkbox;
-    private boolean current = false;
-    private boolean suppressSend = false;
+    private static class CheckBoxLine extends Line {
+        private final String varKey;
+        private final C2SSetVarMessage.Scope scope;
+        private Checkbox checkbox;
+        private boolean current = false;
+        private boolean suppressSend = false;
 
-    CheckBoxLine(String caption, String varKey, C2SSetVarMessage.Scope scope) {
-        super(caption, 20);
-        this.varKey = varKey;
-        this.scope = scope;
-    }
+        CheckBoxLine(String caption, String varKey, C2SSetVarMessage.Scope scope) {
+            super(caption, 20);
+            this.varKey = varKey;
+            this.scope = scope;
+        }
 
-    @Override
-    void attach(DebugMenuScreen s) {
-        int visual = Math.round(DebugMenuScreen.CHECKBOX_BASE * DebugMenuScreen.CHECKBOX_SCALE);
-        final int drawX = s.fieldX - (visual - FIELD_WIDTH); // привязка по ВИЗУАЛЬНОЙ ширине
+        @Override
+        void attach(DebugMenuScreen s) {
+            int visual = Math.round(DebugMenuScreen.CHECKBOX_BASE * DebugMenuScreen.CHECKBOX_SCALE);
+            // прибиваем чекбокс к правому краю GUI (с небольшим отступом)
+            final int drawX = s.leftPos + s.imageWidth - 12 - visual;
 
-        checkbox = new Checkbox(drawX, 0,
-                DebugMenuScreen.CHECKBOX_BASE, DebugMenuScreen.CHECKBOX_BASE,
-                Component.literal(""), current) {
-            @Override
-            public void onPress() {
-                super.onPress();
-                current = this.selected();
-                if (!suppressSend) {
-                    DebugMenuNetwork.sendToServer(
-                        new C2SSetVarMessage(C2SSetVarMessage.Type.BOOL, scope, varKey, 0.0, current)
-                    );
+            checkbox = new Checkbox(drawX, 0,
+                    DebugMenuScreen.CHECKBOX_BASE, DebugMenuScreen.CHECKBOX_BASE,
+                    Component.literal(""), current) {
+
+                @Override
+                public void onPress() {
+                    super.onPress();
+                    current = this.selected();
+                    if (!suppressSend) {
+                        DebugMenuNetwork.sendToServer(
+                                new C2SSetVarMessage(C2SSetVarMessage.Type.BOOL, scope, varKey, 0.0, current)
+                        );
+                    }
                 }
+
+                @Override
+                public void renderWidget(GuiGraphics gg, int mouseX, int mouseY, float partialTick) {
+                    // Масштаб вокруг центра 20x20 — ничего не режется
+                    var pose = gg.pose();
+                    float cx = this.getX() + DebugMenuScreen.CHECKBOX_BASE / 2f;
+                    float cy = this.getY() + DebugMenuScreen.CHECKBOX_BASE / 2f;
+                    pose.pushPose();
+                    pose.translate(cx, cy, 0);
+                    pose.scale(DebugMenuScreen.CHECKBOX_SCALE, DebugMenuScreen.CHECKBOX_SCALE, 1.0f);
+                    pose.translate(-cx, -cy, 0);
+                    super.renderWidget(gg, mouseX, mouseY, partialTick);
+                    pose.popPose();
+                }
+            };
+
+            s.addRenderableWidget(checkbox);
+        }
+
+        @Override
+        void detach(DebugMenuScreen s) { s.removeWidget(checkbox); }
+
+        @Override
+        void setY(int screenY) {  // <— важно: метод с параметром и с фигурными скобками
+            int visual = Math.round(DebugMenuScreen.CHECKBOX_BASE * DebugMenuScreen.CHECKBOX_SCALE);
+            checkbox.setY(screenY + (20 - visual) / 2);
+        }
+
+        @Override
+        void setVisible(boolean v) { checkbox.visible = v; checkbox.active = v; }
+
+        @Override
+        void renderLabel(GuiGraphics g, DebugMenuScreen s, int labelX) {
+            if (checkbox == null || !checkbox.visible) return;
+            int y = checkbox.getY() + 4;
+            if (y < s.viewportTop + CLIP_PAD || y > s.viewportBottom - CLIP_PAD - 10) return;
+            g.drawString(s.font, Component.literal(name), labelX, y, 0x000000, false);
+        }
+
+        void setValueClient(boolean v) {
+            current = v;
+            if (checkbox != null && checkbox.selected() != v) {
+                suppressSend = true;
+                checkbox.onPress();
+                suppressSend = false;
             }
-
-            @Override
-            public void renderWidget(GuiGraphics gg, int mouseX, int mouseY, float partialTick) {
-                // Масштаб вокруг центра 20x20 — ничего не режется
-                var pose = gg.pose();
-                float cx = this.getX() + DebugMenuScreen.CHECKBOX_BASE / 2f;
-                float cy = this.getY() + DebugMenuScreen.CHECKBOX_BASE / 2f;
-                pose.pushPose();
-                pose.translate(cx, cy, 0);
-                pose.scale(DebugMenuScreen.CHECKBOX_SCALE, DebugMenuScreen.CHECKBOX_SCALE, 1.0f);
-                pose.translate(-cx, -cy, 0);
-                super.renderWidget(gg, mouseX, mouseY, partialTick);
-                pose.popPose();
-            }
-        };
-
-        s.addRenderableWidget(checkbox);
-    }
-
-    @Override
-    void detach(DebugMenuScreen s) { s.removeWidget(checkbox); }
-
-    @Override
-    void setY(int screenY) {  // <— важно: метод с параметром и с фигурными скобками
-        int visual = Math.round(DebugMenuScreen.CHECKBOX_BASE * DebugMenuScreen.CHECKBOX_SCALE);
-        checkbox.setY(screenY + (20 - visual) / 2);
-    }
-
-    @Override
-    void setVisible(boolean v) { checkbox.visible = v; checkbox.active = v; }
-
-    @Override
-    void renderLabel(GuiGraphics g, DebugMenuScreen s, int labelX) {
-        if (checkbox == null || !checkbox.visible) return;
-        int y = checkbox.getY() + 4;
-        if (y < s.viewportTop + CLIP_PAD || y > s.viewportBottom - CLIP_PAD - 10) return;
-        g.drawString(s.font, Component.literal(name), labelX, y, 0x000000, false);
-    }
-
-    void setValueClient(boolean v) {
-        current = v;
-        if (checkbox != null && checkbox.selected() != v) {
-            suppressSend = true;
-            checkbox.onPress();
-            suppressSend = false;
         }
     }
-}
 
 
     // -------- СТРУКТУРЫ ЛИНИЙ --------
@@ -299,6 +396,60 @@ private static class CheckBoxLine extends Line {
         }
     }
 
+    private static class SignalsHeaderLine extends LabelLine {
+        private boolean myVisible = true;
+
+        SignalsHeaderLine() {
+            super("");
+        }
+
+        @Override
+        void setVisible(boolean v) {
+            super.setVisible(v);
+            this.myVisible = v;
+        }
+
+        @Override
+        void renderLabel(GuiGraphics g, DebugMenuScreen s, int labelX) {
+            if (!myVisible) return;
+
+            int drawY = s.viewportTop + 2 + (this.y - s.viewportTop) - s.scroll;
+            if (drawY < s.viewportTop || drawY > s.viewportBottom - 10) return;
+
+            // name — слева
+            g.drawString(s.font, Component.literal("name"), labelX, drawY, 0x808080, false);
+
+            // chance — по центру, но сдвинут на 12px влево
+            int centerX = s.leftPos + s.imageWidth / 2;
+            int chanceCenterX = centerX - 12;
+            String chance = "chance";
+            int chanceW = s.font.width(chance);
+            int chanceX = chanceCenterX - chanceW / 2;
+            g.drawString(s.font, Component.literal(chance), chanceX, drawY, 0x808080, false);
+
+
+            // level / copy — над кнопками и чекбоксом справа
+            int buttonW = 14;      // меньше ширина кнопок
+            int gap = 1;           // меньше расстояние между ними
+            int visualCb = Math.round(DebugMenuScreen.CHECKBOX_BASE * DebugMenuScreen.CHECKBOX_SCALE);
+            int cbX = s.leftPos + s.imageWidth - 12 - visualCb;
+            int totalButtonsW = buttonW * 4 + gap * 3;
+            int firstBtnX = cbX - 2 - totalButtonsW; // ближе к правому краю
+
+
+            String level = "level";
+            int levelW = s.font.width(level);
+            int levelX = firstBtnX + (totalButtonsW - levelW) / 2;
+            g.drawString(s.font, Component.literal(level), levelX, drawY, 0x808080, false);
+
+            String copy = "copy";
+            int copyW = s.font.width(copy);
+            int copyX = cbX + visualCb / 2 - copyW / 2;
+            g.drawString(s.font, Component.literal(copy), copyX, drawY, 0x808080, false);
+        }
+    }
+
+
     private static class ActionLine extends Line {
         private final String action; // "break_all" | "repair_all" | "clear_list"
         private Button button;
@@ -313,17 +464,17 @@ private static class CheckBoxLine extends Line {
         void attach(DebugMenuScreen s) {
             clicked = false; // на всякий случай при новом attach
             button = new TextOnlyButton(
-    s.fieldX - (44 - FIELD_WIDTH), 0, 44, 18,
-    Component.literal("run"),
-    b -> {
-        if (clicked) return;
-        DebugMenuNetwork.sendToServer(new DebugMenuNetwork.C2SServersAction(action));
-        clicked = true;
-        button.active = false;
-        button.setMessage(Component.literal("done"));
-    },
-    s
-);
+                    s.fieldX - (44 - FIELD_WIDTH), 0, 44, 18,
+                    Component.literal("run"),
+                    b -> {
+                        if (clicked) return;
+                        DebugMenuNetwork.sendToServer(new DebugMenuNetwork.C2SServersAction(action));
+                        clicked = true;
+                        button.active = false;
+                        button.setMessage(Component.literal("done"));
+                    },
+                    s
+            );
 
 
             s.addRenderableWidget(button); // добавить на экран
@@ -366,17 +517,17 @@ private static class CheckBoxLine extends Line {
         void attach(DebugMenuScreen s) {
             clicked = false;
             button = new TextOnlyButton(
-    s.fieldX - (44 - FIELD_WIDTH), 0, 44, 18,
-    Component.literal("run"),
-    b -> {
-        if (clicked) return;
-        DebugMenuNetwork.sendToServer(new DebugMenuNetwork.C2SWeatherAction(action));
-        clicked = true;
-        button.active = false;
-        button.setMessage(Component.literal("done"));
-    },
-    s
-);
+                    s.fieldX - (44 - FIELD_WIDTH), 0, 44, 18,
+                    Component.literal("run"),
+                    b -> {
+                        if (clicked) return;
+                        DebugMenuNetwork.sendToServer(new DebugMenuNetwork.C2SWeatherAction(action));
+                        clicked = true;
+                        button.active = false;
+                        button.setMessage(Component.literal("done"));
+                    },
+                    s
+            );
 
 
             s.addRenderableWidget(button);
@@ -406,71 +557,196 @@ private static class CheckBoxLine extends Line {
     }
 
 
+    private static class SignalsLine extends Line {
+        private final SignalInfo info;
+        private final String name;
+        private final String chanceText;
+        private final Button[] lvlButtons = new Button[4];
+        private Checkbox copyCheckbox;
+
+        SignalsLine(SignalInfo info) {
+            super("", 20);
+            this.info = info;
+            this.name = info.name;
+            this.chanceText = String.format(Locale.US, "%.1f%%", info.chancePercent);
+        }
+
+
+        @Override
+        void attach(DebugMenuScreen s) {
+            int buttonW = 14;
+            int buttonH = 14;
+            int gap = 1;
+
+            int visualCb = Math.round(DebugMenuScreen.CHECKBOX_BASE * DebugMenuScreen.CHECKBOX_SCALE);
+            int cbX = s.leftPos + s.imageWidth - 12 - visualCb;
+
+            copyCheckbox = new Checkbox(cbX, 0,
+
+                    DebugMenuScreen.CHECKBOX_BASE, DebugMenuScreen.CHECKBOX_BASE,
+                    Component.literal(""), false) {
+                @Override
+                public void renderWidget(GuiGraphics gg, int mouseX, int mouseY, float partialTick) {
+                    var pose = gg.pose();
+                    float cx = this.getX() + DebugMenuScreen.CHECKBOX_BASE / 2f;
+                    float cy = this.getY() + DebugMenuScreen.CHECKBOX_BASE / 2f;
+                    pose.pushPose();
+                    pose.translate(cx, cy, 0);
+                    pose.scale(DebugMenuScreen.CHECKBOX_SCALE, DebugMenuScreen.CHECKBOX_SCALE, 1.0f);
+                    pose.translate(-cx, -cy, 0);
+                    super.renderWidget(gg, mouseX, mouseY, partialTick);
+                    pose.popPose();
+                }
+            };
+            s.addRenderableWidget(copyCheckbox);
+
+			int totalButtonsW = buttonW * 4 + gap * 3;
+            int firstBtnX = cbX - 2 - totalButtonsW;
+
+
+            for (int lvl = 0; lvl < 4; lvl++) {
+                final int lv = lvl;
+                Button b = new TextOnlyButton(
+                        firstBtnX + lvl * (buttonW + gap),
+                        0,
+                        buttonW,
+                        buttonH,
+                        Component.literal(String.valueOf(lvl)),
+                        btn -> {
+                            boolean copy = copyCheckbox != null && copyCheckbox.selected();
+                            DebugMenuNetwork.sendToServer(
+                                    new DebugMenuNetwork.C2SGiveDriveMessage(info.id, lv, copy, info.size, info.name)
+                            );
+                        },
+                        s
+                );
+                lvlButtons[lvl] = b;
+                s.addRenderableWidget(b);
+            }
+        }
+
+        @Override
+        void detach(DebugMenuScreen s) {
+            if (copyCheckbox != null) s.removeWidget(copyCheckbox);
+            for (Button b : lvlButtons) {
+                if (b != null) s.removeWidget(b);
+            }
+        }
+
+        @Override
+		void setY(int screenY) {
+    		if (copyCheckbox != null) {
+        	int visualCb = Math.round(DebugMenuScreen.CHECKBOX_BASE * DebugMenuScreen.CHECKBOX_SCALE);
+        	copyCheckbox.setY(screenY + (20 - visualCb) / 2);
+    	}
+   		 // опускаем кнопки на 3 пикселя (было +1, стало +4)
+    	for (Button b : lvlButtons) {
+        if (b != null) b.setY(screenY + 4);
+   			}
+		}
+
+
+        @Override
+        void setVisible(boolean v) {
+            if (copyCheckbox != null) {
+                copyCheckbox.visible = v;
+                copyCheckbox.active = v;
+            }
+            for (Button b : lvlButtons) {
+                if (b != null) {
+                    b.visible = v;
+                    b.active = v;
+                }
+            }
+        }
+
+        @Override
+        void renderLabel(GuiGraphics g, DebugMenuScreen s, int labelX) {
+            if (copyCheckbox == null || !copyCheckbox.visible) return;
+            int y = copyCheckbox.getY() + 4;
+            if (y < s.viewportTop + CLIP_PAD || y > s.viewportBottom - CLIP_PAD - 10) return;
+
+            // имя сигнала — слева
+            g.drawString(s.font, Component.literal(name), labelX, y, 0x000000, false);
+
+            // шанс поимки — центр колонки, сдвинутой на 12px влево
+            int centerX = s.leftPos + s.imageWidth / 2;
+            int chanceCenterX = centerX - 12;
+            int chanceW = s.font.width(chanceText);
+            int chanceX = chanceCenterX - chanceW / 2;
+            g.drawString(s.font, Component.literal(chanceText), chanceX, y, 0x000000, false);
+
+        }
+
+    }
+
+
+
     private static class TabButton extends Button {
-    private final DebugMenuScreen screen;
-    private final java.util.function.Supplier<Boolean> isActive;
+        private final DebugMenuScreen screen;
+        private final java.util.function.Supplier<Boolean> isActive;
 
-    TabButton(int x, int y, int w, int h, Component label,
-              OnPress onPress, DebugMenuScreen screen,
-              java.util.function.Supplier<Boolean> isActive) {
-        super(x, y, w, h, label, onPress, DEFAULT_NARRATION);
-        this.screen = screen;
-        this.isActive = isActive;
-    }
-
-    @Override
-    public void renderWidget(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        // Без текстуры — рисуем только текст
-        boolean hover = this.isMouseOver(mouseX, mouseY);
-        boolean active = isActive.get();
-
-        Component msg = getMessage();
-        int tw = screen.font.width(msg);
-        int tx = getX() + (getWidth() - tw) / 2;
-        int ty = getY() + (getHeight() - 8) / 2;
-
-        // Подложка под текст при ховере: белый текст, сдвиг 1px влево-вниз
-        if (hover) {
-            g.drawString(screen.font, msg, tx - 1, ty + 1, 0xFF404040, false);
+        TabButton(int x, int y, int w, int h, Component label,
+                  OnPress onPress, DebugMenuScreen screen,
+                  java.util.function.Supplier<Boolean> isActive) {
+            super(x, y, w, h, label, onPress, DEFAULT_NARRATION);
+            this.screen = screen;
+            this.isActive = isActive;
         }
 
-        // Основной текст
-        int color = active ? 0xFFE0E0E0 : 0xFF9E9E9E; // активная – светлее, пассивная – тёмно-серая
-        g.drawString(screen.font, msg, tx, ty, color, false);
-    }
+        @Override
+        public void renderWidget(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+            // Без текстуры — рисуем только текст
+            boolean hover = this.isMouseOver(mouseX, mouseY);
+            boolean active = isActive.get();
 
-	
-    
-}
+            Component msg = getMessage();
+            int tw = screen.font.width(msg);
+            int tx = getX() + (getWidth() - tw) / 2;
+            int ty = getY() + (getHeight() - 8) / 2;
 
+            // Подложка под текст при ховере: белый текст, сдвиг 1px влево-вниз
+            if (hover) {
+                g.drawString(screen.font, msg, tx - 1, ty + 1, 0xFF404040, false);
+            }
 
-private static class TextOnlyButton extends Button {
-    private final DebugMenuScreen screen;
-
-    TextOnlyButton(int x, int y, int w, int h, Component label,
-                   OnPress onPress, DebugMenuScreen screen) {
-        super(x, y, w, h, label, onPress, DEFAULT_NARRATION);
-        this.screen = screen;
-    }
-
-    @Override
-    public void renderWidget(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
-        // без текстуры: только текст, как у вкладок
-        boolean hover = this.active && this.isMouseOver(mouseX, mouseY);
-
-        Component msg = getMessage();
-        int tw = screen.font.width(msg);
-        int tx = getX() + (getWidth() - tw) / 2;
-        int ty = getY() + (getHeight() - 8) / 2;
-
-        if (hover) {
-            g.drawString(screen.font, msg, tx - 1, ty + 1, 0xFF404040, false);
+            // Основной текст
+            int color = active ? 0xFFE0E0E0 : 0xFF9E9E9E; // активная – светлее, пассивная – тёмно-серая
+            g.drawString(screen.font, msg, tx, ty, color, false);
         }
-        // активная — светлая, выключенная (после done) — более тёмная
-        int color = this.active ? 0xFFE0E0E0 : 0xFF707070;
-        g.drawString(screen.font, msg, tx, ty, color, false);
+
+
+
     }
-}
+
+
+    private static class TextOnlyButton extends Button {
+        private final DebugMenuScreen screen;
+
+        TextOnlyButton(int x, int y, int w, int h, Component label,
+                       OnPress onPress, DebugMenuScreen screen) {
+            super(x, y, w, h, label, onPress, DEFAULT_NARRATION);
+            this.screen = screen;
+        }
+
+        @Override
+        public void renderWidget(GuiGraphics g, int mouseX, int mouseY, float partialTick) {
+            // без текстуры: только текст, как у вкладок
+            boolean hover = this.active && this.isMouseOver(mouseX, mouseY);
+
+            Component msg = getMessage();
+            int tw = screen.font.width(msg);
+            int tx = getX() + (getWidth() - tw) / 2;
+            int ty = getY() + (getHeight() - 8) / 2;
+
+            if (hover) {
+                g.drawString(screen.font, msg, tx - 1, ty + 1, 0xFF404040, false);
+            }
+            // активная — светлая, выключенная (после done) — более тёмная
+            int color = this.active ? 0xFFE0E0E0 : 0xFF707070;
+            g.drawString(screen.font, msg, tx, ty, color, false);
+        }
+    }
 
 
 
@@ -492,30 +768,49 @@ private static class TextOnlyButton extends Button {
         this.leftPos = (this.width - this.imageWidth) / 2;
         this.topPos = (this.height - this.imageHeight) / 2;
 
+// Вкладки: чуть меньше и вокруг центра интерфейса
         int tabsY = this.topPos + 6;
-        int tabsX = this.leftPos + 6;
-        int tabW = 100;
-        int tabH = 20;
+        int tabH = 16;
+        int gap = 6;
 
-        // Вкладки (кнопки сверху)
+// ширины кнопок по тексту
+        int wModifiers = this.font.width("Modifiers") + 10;
+        int wDebug     = this.font.width("Debug") + 10;
+        int wSignals   = this.font.width("Signals") + 10;
+
+        int centerX = this.leftPos + this.imageWidth / 2;
+
+// Modifiers строго по центру, Debug слева, Signals справа
+        int modX     = centerX - wModifiers / 2;
+        int debugX   = modX - gap - wDebug;
+        int signalsX = modX + wModifiers + gap;
+
+// Вкладки (кнопки сверху)
         tabModifiers = new TabButton(
-        tabsX, tabsY, tabW, tabH,
-        Component.literal("Modifiers"),
-        b -> setTab(0),
-        this,
-        () -> currentTab == 0
-);
-tabDebug = new TabButton(
-        tabsX + tabW + 6, tabsY, tabW, tabH,
-        Component.literal("Debug"),
-        b -> setTab(1),
-        this,
-        () -> currentTab == 1
-);
-
+                modX, tabsY, wModifiers, tabH,
+                Component.literal("Modifiers"),
+                b -> setTab(0),
+                this,
+                () -> currentTab == 0
+        );
+        tabDebug = new TabButton(
+                debugX, tabsY, wDebug, tabH,
+                Component.literal("Debug"),
+                b -> setTab(1),
+                this,
+                () -> currentTab == 1
+        );
+        tabSignals = new TabButton(
+                signalsX, tabsY, wSignals, tabH,
+                Component.literal("Signals"),
+                b -> setTab(2),
+                this,
+                () -> currentTab == 2
+        );
 
         addRenderableWidget(tabModifiers);
         addRenderableWidget(tabDebug);
+        addRenderableWidget(tabSignals);
 
         // Область контента под вкладками
         viewportTop = tabsY + tabH + 6;
@@ -559,17 +854,17 @@ tabDebug = new TabButton(
             lines.add(new LabelLine("Signal Playback"));
             lines.add(new CheckBoxLine("Spectrogram_purchased", "heat_spec_purchased", C2SSetVarMessage.Scope.PLAYER));
             // === Signal upgrade ===
-			lines.add(new SeparatorLine());
-			lines.add(new LabelLine("Signal upgrade"));
-			lines.add(new NumberLine("upgrade_speed", "upgrade_speed", C2SSetVarMessage.Scope.PLAYER));
+            lines.add(new SeparatorLine());
+            lines.add(new LabelLine("Signal upgrade"));
+            lines.add(new NumberLine("upgrade_speed", "upgrade_speed", C2SSetVarMessage.Scope.PLAYER));
 
-        } else {
+        } else if (currentTab == 1) {
             // ----- ВКЛАДКА "Debug" -----
             lines.add(new LabelLine("Debug"));
             lines.add(new CheckBoxLine("debug (player)", "debug", C2SSetVarMessage.Scope.PLAYER));
-			lines.add(new CheckBoxLine("worldDebug (global-map)", "worldDebug", C2SSetVarMessage.Scope.MAP));
-			lines.add(new CheckBoxLine("TimeDisplay (player)", "TimeDisplay", C2SSetVarMessage.Scope.PLAYER));
-			lines.add(new CheckBoxLine("Alarm", "Alarm", C2SSetVarMessage.Scope.MAP));
+            lines.add(new CheckBoxLine("worldDebug (global-map)", "worldDebug", C2SSetVarMessage.Scope.MAP));
+            lines.add(new CheckBoxLine("TimeDisplay (player)", "TimeDisplay", C2SSetVarMessage.Scope.PLAYER));
+            lines.add(new CheckBoxLine("Alarm", "Alarm", C2SSetVarMessage.Scope.MAP));
             lines.add(new SeparatorLine());
 
             lines.add(new LabelLine("Servers"));
@@ -583,7 +878,20 @@ tabDebug = new TabButton(
             lines.add(new ActionLineWeather("weather_clear", "weather_clear"));
             lines.add(new ActionLineWeather("weather_rain", "weather_rain"));
             lines.add(new ActionLineWeather("weather_thunder", "weather_thunder"));
+
+        } else if (currentTab == 2) {
+            // ----- ВКЛАДКА "Signals" -----
+            ensureSignalsLoaded();
+
+            // шапка: name / chance / level / copy
+            lines.add(new SignalsHeaderLine());
+
+            for (SignalInfo info : SIGNALS_TAB) {
+                lines.add(new SignalsLine(info));
+            }
         }
+
+
 
         // Привязка виджетов и первичная раскладка
         int y = viewportTop + 2;
@@ -610,20 +918,20 @@ tabDebug = new TabButton(
                     if ("upgrade_speed".equals(nl.varKey))        nl.setValueClient(cachedUpgradeSpeed);
 
                 } else if (l instanceof CheckBoxLine cl) {
-    if ("debug".equals(cl.varKey))               cl.setValueClient(cachedDebug);
-    if ("worldDebug".equals(cl.varKey))          cl.setValueClient(cachedWorldDebug);
-    if ("TimeDisplay".equals(cl.varKey))         cl.setValueClient(cachedTimeDisplay);
-    if ("Alarm".equals(cl.varKey))               cl.setValueClient(cachedAlarm);
-    if ("heat_spec_purchased".equals(cl.varKey)) cl.setValueClient(cachedHeatSpecPurchased);
-}
+                    if ("debug".equals(cl.varKey))               cl.setValueClient(cachedDebug);
+                    if ("worldDebug".equals(cl.varKey))          cl.setValueClient(cachedWorldDebug);
+                    if ("TimeDisplay".equals(cl.varKey))         cl.setValueClient(cachedTimeDisplay);
+                    if ("Alarm".equals(cl.varKey))               cl.setValueClient(cachedAlarm);
+                    if ("heat_spec_purchased".equals(cl.varKey)) cl.setValueClient(cachedHeatSpecPurchased);
+                }
 
             }
         }
 
         contentHeight = y - viewportTop;
-int visibleHeight = (viewportBottom - viewportTop) - 2 * CLIP_PAD; // учитываем паддинг клипа
-final int EXTRA_SCROLL = 10; // позволяем докрутить ещё на 2px
-maxScroll = Math.max(0, contentHeight - visibleHeight + EXTRA_SCROLL);
+        int visibleHeight = (viewportBottom - viewportTop) - 2 * CLIP_PAD; // учитываем паддинг клипа
+        final int EXTRA_SCROLL = 10; // позволяем докрутить ещё на 2px
+        maxScroll = Math.max(0, contentHeight - visibleHeight + EXTRA_SCROLL);
         repositionLines();
     }
 
@@ -637,19 +945,19 @@ maxScroll = Math.max(0, contentHeight - visibleHeight + EXTRA_SCROLL);
 
     private void repositionLines() {
         final int top = viewportTop + CLIP_PAD;
-final int bottom = viewportBottom - CLIP_PAD;
+        final int bottom = viewportBottom - CLIP_PAD;
 
-for (Line l : lines) {
-    int screenY = l.y - scroll;
+        for (Line l : lines) {
+            int screenY = l.y - scroll;
 
-    boolean fully   = (screenY >= top) && (screenY + l.height <= bottom);
-    boolean partial = (screenY + l.height > top) && (screenY < bottom);
+            boolean fully   = (screenY >= top) && (screenY + l.height <= bottom);
+            boolean partial = (screenY + l.height > top) && (screenY < bottom);
 
-    boolean visible = (l instanceof LabelLine || l instanceof SeparatorLine) ? partial : fully;
+            boolean visible = (l instanceof LabelLine || l instanceof SeparatorLine) ? partial : fully;
 
-    l.setVisible(visible);
-    if (visible) l.setY(screenY);
-}
+            l.setVisible(visible);
+            if (visible) l.setY(screenY);
+        }
     }
 
 
@@ -686,13 +994,13 @@ for (Line l : lines) {
     @Override
     protected void renderBg(GuiGraphics g, float partialTick, int mouseX, int mouseY) {
         // Фон: рисуем только PNG с альфой, без прямоугольной заливки
-RenderSystem.enableBlend();
-RenderSystem.defaultBlendFunc();
-RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
-try {
-    g.blit(BACKGROUND, this.leftPos, this.topPos, 0, 0, BG_W, BG_H, BG_W, BG_H);
-} catch (Exception ignored) {}
-RenderSystem.disableBlend();
+        RenderSystem.enableBlend();
+        RenderSystem.defaultBlendFunc();
+        RenderSystem.setShaderColor(1f, 1f, 1f, 1f);
+        try {
+            g.blit(BACKGROUND, this.leftPos, this.topPos, 0, 0, BG_W, BG_H, BG_W, BG_H);
+        } catch (Exception ignored) {}
+        RenderSystem.disableBlend();
 
         // Рамка области контента
         g.fill(this.leftPos + 8, viewportTop - 2, this.leftPos + this.imageWidth - 8, viewportTop - 1, 0xFF000000);
@@ -748,15 +1056,15 @@ RenderSystem.disableBlend();
                     if ("polarityFilterWidth".equals(nl.varKey))  nl.setValueClient(s.polarityFilterWidth);
                     if ("frequencyFilterWidth".equals(nl.varKey)) nl.setValueClient(s.frequencyFilterWidth);
                     // Signal upgrade
-					if ("upgrade_speed".equals(nl.varKey))        nl.setValueClient(s.upgrade_speed);
+                    if ("upgrade_speed".equals(nl.varKey))        nl.setValueClient(s.upgrade_speed);
                 }
             }  else if (line instanceof CheckBoxLine cl) {
-    if ("debug".equals(cl.varKey))               cl.setValueClient(s.debug);
-    if ("worldDebug".equals(cl.varKey))          cl.setValueClient(s.worldDebug);
-    if ("TimeDisplay".equals(cl.varKey))         cl.setValueClient(s.timeDisplay);
-    if ("Alarm".equals(cl.varKey))               cl.setValueClient(s.alarm);
-    if ("heat_spec_purchased".equals(cl.varKey)) cl.setValueClient(s.heatSpecPurchased);
-}
+                if ("debug".equals(cl.varKey))               cl.setValueClient(s.debug);
+                if ("worldDebug".equals(cl.varKey))          cl.setValueClient(s.worldDebug);
+                if ("TimeDisplay".equals(cl.varKey))         cl.setValueClient(s.timeDisplay);
+                if ("Alarm".equals(cl.varKey))               cl.setValueClient(s.alarm);
+                if ("heat_spec_purchased".equals(cl.varKey)) cl.setValueClient(s.heatSpecPurchased);
+            }
 
         }
     }

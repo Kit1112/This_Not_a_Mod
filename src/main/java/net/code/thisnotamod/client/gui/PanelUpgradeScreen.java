@@ -48,6 +48,8 @@ public class PanelUpgradeScreen extends AbstractContainerScreen<PanelUpgradeMenu
 
     // Верхняя панель (заголовок + прогресс)
     private static final int TOP_H = 66; 
+    // Высота полосы между горизонтальными рамками (имя / прогресс / Прогресс / Процесс)
+    private static final int HEADER_STRIP_H = 25;
 
     // Цвета
     private static final int LINE_WHITE = 0xFFFFFFFF;
@@ -251,110 +253,158 @@ private void drawStripedFill(GuiGraphics gg, int x, int y, int w, int h, int col
 
 
     // ==== Top ====
-// ==== Top (заголовок + отдельная рамка прогресса) ====
+// Заголовок: отдельная рамка. Прогресс-бар: отдельная рамка такой же высоты,
+// пришитая к нижней границе верхней панели (единый блок с нижней частью UI).
 private void drawTopBar(GuiGraphics gg, IntRect r) {
     TestUpgradeBlockEntity be = be();
 
     String head;
-    String size = "";
     if (be != null && be.getSingleImport() != null) {
         var is = be.getSingleImport();
         int lvl = Math.max(0, Math.min(3, is.level));
-        head = ((is.diskName != null && !is.diskName.isBlank()) ? is.diskName : "signal") + "  [lvl " + lvl + "]";
-        size = is.size == null ? "" : is.size;
+        head = ((is.diskName != null && !is.diskName.isBlank()) ? is.diskName : "signal")
+                + "  [lvl " + lvl + "/3]";
     } else {
-        head = "no signal";
+        head = "[ЗАГРУЗИТЬ ДАННЫЕ]";
     }
 
-    // внутренняя рамка заголовка
-    final int m = 2;               // внутренний отступ от общей области
-    final int headerH = 20;        // высота рамки заголовка
-    final int gap = 4;             // зазор между рамкой заголовка и рамкой прогресса
+    // Высота рамки заголовка и рамки прогресс-бара — одинаковая
+    final int boxH      = HEADER_STRIP_H; // высота обводки и у заголовка, и у бара
+    final int padSide   = 2;              // отступ слева/справа от края экрана
+    // Подбираем верхний отступ так, чтобы:
+    // 1) рамка заголовка = boxH
+    // 2) зазор между рамками = boxH
+    // 3) нижняя рамка прогресса высотой boxH касалась нижней границы r (TOP_H)
+    final int padTop = Math.max(0, r.h - boxH * 3); // для TOP_H=66 и boxH=20 -> 6
 
-    IntRect rHeader = new IntRect(r.x + m, r.y + m, r.w - m*2, headerH);
-    gg.fill(rHeader.x, rHeader.y, rHeader.x + rHeader.w, rHeader.y + rHeader.h, 0xFF000000);
-    gg.renderOutline(rHeader.x, rHeader.y, rHeader.w, rHeader.h, LINE_WHITE);
+    // --- РАМКА ЗАГОЛОВКА ---
+    int headX = r.x + padSide;
+    int headY = r.y + padTop;
+    int headW = r.w - padSide * 2;
+    int headH = boxH;
 
-    gg.drawString(this.font, head, rHeader.x + 6, rHeader.y + 6, TEXT_GREEN, false);
-    if (!size.isEmpty()) {
-        String sz = "size: " + size;
-        int tw = this.font.width(sz);
-        gg.drawString(this.font, sz, rHeader.x + rHeader.w - tw - 6, rHeader.y + 6, 0xFFB0B0B0, false);
-    }
+    gg.fill(headX, headY, headX + headW, headY + headH, 0xFF000000);
+    gg.renderOutline(headX, headY, headW, headH, LINE_WHITE);
 
-    // отдельная рамка прогресса
-    final int barH   = 18;             // в 1.5 раза толще (было 12)
-    final int padIn  = 3;              // внутренний паддинг внутри рамки прогресса
-    final int boxH   = barH + padIn*2; // высота «коробки» с баром
+    int headTextY = headY + (headH - this.font.lineHeight) / 2;
+    gg.drawString(this.font, head, headX + 6, headTextY, 0xFFFF4040, false);
 
-    IntRect rProgBox = new IntRect(r.x + m, rHeader.y + rHeader.h + gap, r.w - m*2, boxH);
-    gg.fill(rProgBox.x, rProgBox.y, rProgBox.x + rProgBox.w, rProgBox.y + rProgBox.h, 0xFF000000);
-    gg.renderOutline(rProgBox.x, rProgBox.y, rProgBox.w, rProgBox.h, LINE_WHITE);
+    // --- РАМКА ПРОГРЕСС-БАРА ---
+    int barX = r.x + padSide;
+    int barH = boxH;
+    int barY = r.y + r.h - barH; // низ рамки совпадает с SCREEN_Y + TOP_H
+    int barW = headW;
 
-    // сам бар внутри коробки
-    int barX = rProgBox.x + padIn;
-    int barY = rProgBox.y + (rProgBox.h - barH) / 2;
-    int barW = rProgBox.w - padIn*2;
+    // фон рамки бара
+    gg.fill(barX, barY, barX + barW, barY + barH, 0xFF000000);
 
-    gg.fill(barX, barY, barX + barW, barY + barH, 0xFF101010);
+    // рисуем рамку бара: верх+лево+право сами, низ отдаём глобальной линии TOP_H
+    // (чтобы визуально быть единым с нижней панелью)
+    gg.hLine(barX, barX + barW, barY, LINE_WHITE);                  // верхняя грань
+    gg.vLine(barX, barY, barY + barH, LINE_WHITE);                  // левая грань
+    gg.vLine(barX + barW, barY, barY + barH, LINE_WHITE);           // правая грань
+    // нижнюю линию не рисуем — она уже есть из drawFrame() как граница TOP_H
+
+    // --- ВНУТРЕННЯЯ ПОЛОСА ПРОГРЕССА ВНУТРИ РАМКИ ---
+    final int padIn = 3;               // внутренние отступы внутри рамки
+    int progH = barH - padIn * 2;      // реальная высота цветной полосы
+    if (progH < 4) progH = 4;
+
+    int progX = barX + padIn;
+    int progY = barY + (barH - progH) / 2;
+    int progW = barW - padIn * 2;
+
+    gg.fill(progX, progY, progX + progW, progY + progH, 0xFF101010);
 
     float p = getProgress01(be);
-    int filled = Math.max(0, Math.min(barW, Math.round(barW * p)));
+    int filled = Math.max(0, Math.min(progW, Math.round(progW * p)));
 
-    // «полосочки» вместо сплошной заливки
-    drawStripedFill(gg, barX, barY, filled, barH, 0xFFFF00FF);
-
-    gg.renderOutline(barX, barY, barW, barH, 0xFF404040);
+    drawStripedFill(gg, progX, progY, filled, progH, 0xFFFF00FF);
+    gg.renderOutline(progX, progY, progW, progH, 0xFF404040);
 }
 
 
 
-    // ==== Left bottom ====
+
+    // ==== Left bottom: табличка как на референсе ====
 private void drawLeftInfo(GuiGraphics gg, IntRect r) {
-    // фон общей области
-    gg.fill(r.x + 1, r.y + 1, r.x + r.w - 1, r.y + r.h - 1, 0xFF000000);
+    // внешняя рамка левой области
+    gg.renderOutline(r.x, r.y, r.w, r.h, LINE_WHITE);
 
-    final int m = 2;          // внутренний отступ
-    final int headerH = 18;   // высота верхней рамки заголовка
-    final int gap = 3;        // зазор между рамками
+        final int padOuter   = 2;                         // отступ от внешней рамки
+    final int headerRowH = HEADER_STRIP_H;            // полоска как у имени/прогресса
+    final int rowH       = this.font.lineHeight + 4;  // высота строк таблицы
 
-    // рамка заголовка секции
-    IntRect rHdr = new IntRect(r.x + m, r.y + m, r.w - m*2, headerH);
-    gg.fill(rHdr.x, rHdr.y, rHdr.x + rHdr.w, rHdr.y + rHdr.h, 0xFF000000);
-    gg.renderOutline(rHdr.x, rHdr.y, rHdr.w, rHdr.h, LINE_WHITE);
-    gg.drawString(this.font, "Progress:", rHdr.x + 8, rHdr.y + 5, LINE_CYAN, false);
 
-    // рамка-коробка под контент
-    IntRect rBody = new IntRect(r.x + m, rHdr.y + rHdr.h + gap, r.w - m*2, r.h - (headerH + gap + m*2));
-    gg.fill(rBody.x + 1, rBody.y + 1, rBody.x + rBody.w - 1, rBody.y + rBody.h - 1, 0xFF000000);
-    gg.renderOutline(rBody.x, rBody.y, rBody.w, rBody.h, LINE_WHITE);
+    // внутренняя область
+    int innerX = r.x + padOuter;
+    int innerY = r.y + padOuter;
+    int innerW = r.w - padOuter * 2;
+    int innerH = r.h - padOuter * 2;
 
-    // контент
+    gg.fill(innerX, innerY, innerX + innerW, innerY + innerH, 0xFF000000);
+    gg.renderOutline(innerX, innerY, innerW, innerH, LINE_WHITE);
+
+    // горизонтальная линия между заголовком и таблицей
+    int headerBottomY = innerY + headerRowH;
+    gg.hLine(innerX, innerX + innerW, headerBottomY, LINE_WHITE);
+
+    // ещё две горизонтальные линии для строк (как на макете)
+    int bodyY0 = headerBottomY;
+    int row1Y = bodyY0 + rowH;
+    int row2Y = bodyY0 + rowH * 2;
+    int row3Y = bodyY0 + rowH * 3;
+
+    gg.hLine(innerX, innerX + innerW, row1Y, LINE_WHITE);
+    gg.hLine(innerX, innerX + innerW, row2Y, LINE_WHITE);
+    // нижняя граница таблицы совпадает с внутренней рамкой
+
+    // вертикальная линия между колонкой текста и значений
+    int colSplitX = innerX + Math.round(innerW * 0.60f);
+    gg.vLine(colSplitX, bodyY0, innerY + innerH, LINE_WHITE);
+
+    // --- данные ---
     TestUpgradeBlockEntity be = be();
     float p = getProgress01(be);
     boolean running = be != null && be.isUpgrading();
 
-    String sProg = String.format(java.util.Locale.US, "Progress:  %.3f%%", p * 100.0);
-    String sEff  = running
-            ? String.format(java.util.Locale.US, "Efficiency:  %.3f kB/s", (calcEfficiencyBps(be) / 1024.0))
-            : "Efficiency:  —";
+    String sProgVal = String.format(java.util.Locale.US, "%.3f%%", p * 100.0);
 
-    double ep    = calcEnergyPct();
-    String sPow  = String.format(java.util.Locale.US, "Energy consumption:  %3.1f%%", ep);
+    double effBps = calcEfficiencyBps(be);
+    String sEffVal = running
+            ? String.format(java.util.Locale.US, "%.3f B/s", effBps)
+            : "—";
+
+    double ep = calcEnergyPct();
+    String sPowVal = String.format(java.util.Locale.US, "%3.1f%%", ep);
 
     String rawSize = resolveFileSizeFromJson(be);
-    String sSize   = "File size:  " + prettySize(rawSize);
+    String sSizeVal = prettySize(rawSize);
 
-    int x = rBody.x + 8;
-    int y = rBody.y + 6;
-    gg.drawString(this.font, sProg, x, y, TEXT_GREEN, false); y += this.font.lineHeight + 3;
-    gg.drawString(this.font, sEff,  x, y, TEXT_YEL,   false); y += this.font.lineHeight + 3;
-    gg.drawString(this.font, sPow,  x, y, TEXT_BLUE,  false); y += this.font.lineHeight + 3;
-    gg.drawString(this.font, sSize, x, y, LINE_WHITE, false);
+    int labelX = innerX + 6;
+    int valueX = colSplitX + 6;
 
-    // внешняя рамка всей левой области
-    gg.renderOutline(r.x, r.y, r.w, r.h, LINE_WHITE);
+    // заголовок "Прогресс:" + значение справа
+    int headTextY = innerY + (headerRowH - this.font.lineHeight) / 2;
+    gg.drawString(this.font, "Прогресс:", labelX, headTextY, TEXT_GREEN, false);
+    gg.drawString(this.font, sProgVal, valueX, headTextY, TEXT_GREEN, false);
+
+    // строка 1: эффективность
+    int rowTextY0 = bodyY0 + (rowH - this.font.lineHeight) / 2;
+    gg.drawString(this.font, "эффективность", labelX, rowTextY0, TEXT_YEL, false);
+    gg.drawString(this.font, sEffVal, valueX, rowTextY0, TEXT_YEL, false);
+
+    // строка 2: потребление энергии
+    int rowTextY1 = rowTextY0 + rowH;
+    gg.drawString(this.font, "Потребление энергии", labelX, rowTextY1, TEXT_BLUE, false);
+    gg.drawString(this.font, sPowVal, valueX, rowTextY1, TEXT_BLUE, false);
+
+    // строка 3: размер файла
+    int rowTextY2 = rowTextY1 + rowH;
+    gg.drawString(this.font, "размер файла", labelX, rowTextY2, LINE_WHITE, false);
+    gg.drawString(this.font, sSizeVal, valueX, rowTextY2, LINE_WHITE, false);
 }
+
 
 
 // Читаем PLAYER_PERSISTENT → upgrade_speed (kB/s) с фолбэками, как в меню
@@ -468,57 +518,67 @@ private double calcEfficiency(TestUpgradeBlockEntity be) {
 }
 
 
-// ==== Right bottom (с хедером в рамке) ====
+// ==== Right bottom (общая рамка с хедером и областью кода) ====
 private void drawRightProcess(GuiGraphics gg, IntRect r) {
-    gg.fill(r.x + 1, r.y + 1, r.x + r.w - 1, r.y + r.h - 1, 0xFF000000);
+    // внешняя рамка правой области
+    gg.renderOutline(r.x, r.y, r.w, r.h, LINE_WHITE);
 
-    final int m = 2;
-    final int headerH = 18;
-    final int gap = 3;
+        final int padOuter   = 2;
+    final int headerRowH = HEADER_STRIP_H;   // та же высота полосы
 
-    // рамка заголовка секции
-    IntRect rHdr = new IntRect(r.x + m, r.y + m, r.w - m*2, headerH);
-    gg.fill(rHdr.x, rHdr.y, rHdr.x + rHdr.w, rHdr.y + rHdr.h, 0xFF000000);
-    gg.renderOutline(rHdr.x, rHdr.y, rHdr.w, rHdr.h, LINE_WHITE);
-    gg.drawString(this.font, "Process:",  rHdr.x + 8,  rHdr.y + 5, LINE_WHITE, false);
-    gg.drawString(this.font, "conversion",rHdr.x + 92, rHdr.y + 5, TEXT_GREEN, false);
 
-    // рамка-коробка под «код»
-    IntRect rBody = new IntRect(r.x + m, rHdr.y + rHdr.h + gap, r.w - m*2, r.h - (headerH + gap + m*2));
+    // внутренняя область
+    int innerX = r.x + padOuter;
+    int innerY = r.y + padOuter;
+    int innerW = r.w - padOuter * 2;
+    int innerH = r.h - padOuter * 2;
+
+    gg.fill(innerX, innerY, innerX + innerW, innerY + innerH, 0xFF000000);
+    gg.renderOutline(innerX, innerY, innerW, innerH, LINE_WHITE);
+
+    // линия, отделяющая хедер от области псевдокода
+    int headerBottomY = innerY + headerRowH;
+    gg.hLine(innerX, innerX + innerW, headerBottomY, LINE_WHITE);
+
+    TestUpgradeBlockEntity be = be();
+    boolean running = (be != null) && be.isUpgrading();
+
+    // фронт старта: сброс консоли только при переходе false -> true
+    if (!runningEdgePrimed) {
+        lastRunning = running;
+        runningEdgePrimed = true;
+    } else if (running && !lastRunning) {
+        resetCodePanel();
+    }
+    lastRunning = running;
+
+    // --- заголовок "Процесс: ожидание/конвертация" ---
+    int headTextY = innerY + (headerRowH - this.font.lineHeight) / 2;
+    gg.drawString(this.font, "Процесс:", innerX + 8, headTextY, LINE_CYAN, false);
+
+    String status = running ? "конвертация" : "ожидание";
+    int statusW = this.font.width(status);
+    gg.drawString(this.font, status, innerX + innerW - statusW - 8, headTextY, TEXT_BLUE, false);
+
+    // --- область псевдокода ---
+    IntRect rBody = new IntRect(innerX, headerBottomY, innerW, innerH - headerRowH);
     gg.fill(rBody.x + 1, rBody.y + 1, rBody.x + rBody.w - 1, rBody.y + rBody.h - 1, 0xFF000000);
     gg.renderOutline(rBody.x, rBody.y, rBody.w, rBody.h, LINE_WHITE);
-
-boolean running = (be() != null) && be().isUpgrading();
-
-// Первый валидный кадр после открытия: просто примем текущее состояние,
-// чтобы ре-энтри GUI не сбрасывал консоль.
-if (!runningEdgePrimed) {
-    lastRunning = running;
-    runningEdgePrimed = true;
-} else if (running && !lastRunning) {
-    // реальный фронт внутри этой сессии — сбрасываем
-    resetCodePanel();
-}
-lastRunning = running;
-
-
 
     int pad = 8;
     int x = rBody.x + pad;
     int y = rBody.y + 6;
-    int w = rBody.w - pad*2;
+    int w = rBody.w - pad * 2;
     int h = rBody.h - (y - rBody.y) - pad;
 
     if (running) {
-    drawNoiseBlock(gg, x, y, w, h, TEXT_MAG, true);
-} else {
-    drawNoiseBlock(gg, x, y, w, h, 0xFF606060, false); // замрёт, как консоль на паузе
+        drawNoiseBlock(gg, x, y, w, h, TEXT_MAG, true);
+    } else {
+        // «замороженная» консоль
+        drawNoiseBlock(gg, x, y, w, h, 0xFF606060, false);
+    }
 }
 
-
-    // внешняя рамка всей правой области
-    gg.renderOutline(r.x, r.y, r.w, r.h, LINE_WHITE);
-}
 
 
 // Псевдокод с по-символьным тайпингом и мигающим курсором

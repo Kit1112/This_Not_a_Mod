@@ -43,6 +43,7 @@ import net.code.thisnotamod.block.ServerBBlock;
 import net.code.thisnotamod.block.RadiotielieskopBlock;
 import net.code.thisnotamod.block.RadarBlock;
 import net.code.thisnotamod.block.PasslockBBlock;
+import net.code.thisnotamod.block.PanelsV2Block;
 import net.code.thisnotamod.block.LightSwitchBlock;
 import net.code.thisnotamod.block.Lampplus1UppedBlock;
 import net.code.thisnotamod.block.Lampplus1Block;
@@ -146,6 +147,7 @@ public class ThisnotamodModBlocks {
 	public static final RegistryObject<Block> TEST_PLAYBACK = REGISTRY.register("test_playback", () -> new TestPlaybackBlock());
 	public static final RegistryObject<Block> WORK_STAT_TEST_2 = REGISTRY.register("work_stat_test_2", () -> new WorkStatTest2Block());
 	public static final RegistryObject<Block> TEST_UPGRADE = REGISTRY.register("test_upgrade", () -> new TestUpgradeBlock());
+	public static final RegistryObject<Block> PANELS_V_2 = REGISTRY.register("panels_v_2", () -> new PanelsV2Block());
 	// Start of user code block custom blocks
 	// End of user code block custom blocks
 }

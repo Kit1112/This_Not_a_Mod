@@ -57,6 +57,7 @@ import net.code.thisnotamod.block.display.StartPointDisplayItem;
 import net.code.thisnotamod.block.display.ShopIntTestDisplayItem;
 import net.code.thisnotamod.block.display.RadiotielieskopDisplayItem;
 import net.code.thisnotamod.block.display.RadarDisplayItem;
+import net.code.thisnotamod.block.display.PanelsV2DisplayItem;
 import net.code.thisnotamod.block.display.LightSwitchDisplayItem;
 import net.code.thisnotamod.block.display.Lampplus1UppedDisplayItem;
 import net.code.thisnotamod.block.display.Lampplus1DisplayItem;
@@ -175,6 +176,7 @@ public class ThisnotamodModItems {
 	public static final RegistryObject<Item> DRIVE = REGISTRY.register("drive", () -> new DriveItem());
 	public static final RegistryObject<Item> WORK_STAT_TEST_2 = REGISTRY.register(ThisnotamodModBlocks.WORK_STAT_TEST_2.getId().getPath(), () -> new WorkStatTest2DisplayItem(ThisnotamodModBlocks.WORK_STAT_TEST_2.get(), new Item.Properties()));
 	public static final RegistryObject<Item> TEST_UPGRADE = block(ThisnotamodModBlocks.TEST_UPGRADE);
+	public static final RegistryObject<Item> PANELS_V_2 = REGISTRY.register(ThisnotamodModBlocks.PANELS_V_2.getId().getPath(), () -> new PanelsV2DisplayItem(ThisnotamodModBlocks.PANELS_V_2.get(), new Item.Properties()));
 
 	// Start of user code block custom items
 	// End of user code block custom items

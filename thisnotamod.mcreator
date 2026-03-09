@@ -9368,6 +9368,160 @@
         ]
       },
       "path": "~/VotVresources/utilities/Test"
+    },
+    {
+      "name": "OBB",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "obb",
+      "metadata": {
+        "files": [
+          "src/main/java/net/code/thisnotamod/OBB.java"
+        ]
+      }
+    },
+    {
+      "name": "OBBEntity",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "obb_entity",
+      "metadata": {
+        "files": [
+          "src/main/java/net/code/thisnotamod/OBBEntity.java"
+        ]
+      }
+    },
+    {
+      "name": "InteractionHelper",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "interaction_helper",
+      "metadata": {
+        "files": [
+          "src/main/java/net/code/thisnotamod/InteractionHelper.java"
+        ]
+      }
+    },
+    {
+      "name": "PanelsV2",
+      "type": "animatedblock",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "panels_v_2",
+      "metadata": {
+        "files": [
+          "src/main/java/net/code/thisnotamod/block/renderer/PanelsV2TileRenderer.java",
+          "src/main/java/net/code/thisnotamod/block/PanelsV2Block.java",
+          "src/main/java/net/code/thisnotamod/block/display/PanelsV2DisplayItem.java",
+          "src/main/resources/assets/thisnotamod/models/item/panels_v_2.json",
+          "src/main/resources/assets/thisnotamod/models/custom/panels_v_2_particle.json",
+          "src/main/java/net/code/thisnotamod/block/entity/PanelsV2TileEntity.java",
+          "src/main/java/net/code/thisnotamod/block/model/PanelsV2DisplayModel.java",
+          "src/main/java/net/code/thisnotamod/block/model/PanelsV2BlockModel.java",
+          "src/main/java/net/code/thisnotamod/block/renderer/PanelsV2DisplayItemRenderer.java",
+          "src/main/resources/assets/thisnotamod/blockstates/panels_v_2.json"
+        ]
+      },
+      "path": "~/VotVresources/objects/Props/Panels"
+    },
+    {
+      "name": "OBBPhysicsHandler",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "obb_physics_handler",
+      "metadata": {
+        "files": [
+          "src/main/java/net/code/thisnotamod/OBBPhysicsHandler.java"
+        ]
+      }
+    },
+    {
+      "name": "OBBCollisionEvent",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "obb_collision_event",
+      "metadata": {
+        "files": [
+          "src/main/java/net/code/thisnotamod/OBBCollisionEvent.java"
+        ]
+      }
+    },
+    {
+      "name": "PanelsV2ScreenLayer",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "panels_v_2_screen_layer",
+      "metadata": {
+        "files": [
+          "src/main/java/net/code/thisnotamod/PanelsV2ScreenLayer.java"
+        ]
+      }
+    },
+    {
+      "name": "OpenPanelPacket",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "open_panel_packet",
+      "metadata": {
+        "files": [
+          "src/main/java/net/code/thisnotamod/OpenPanelPacket.java"
+        ]
+      }
+    },
+    {
+      "name": "ClientOBBInteraction",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "client_obb_interaction",
+      "metadata": {
+        "files": [
+          "src/main/java/net/code/thisnotamod/ClientOBBInteraction.java"
+        ]
+      }
+    },
+    {
+      "name": "ModNetworkSetup",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "mod_network_setup",
+      "metadata": {
+        "files": [
+          "src/main/java/net/code/thisnotamod/ModNetworkSetup.java"
+        ]
+      }
+    },
+    {
+      "name": "ModMessages",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "mod_messages",
+      "metadata": {
+        "files": [
+          "src/main/java/net/code/thisnotamod/ModMessages.java"
+        ]
+      }
+    },
+    {
+      "name": "BreakPanelPacket",
+      "type": "code",
+      "compiles": true,
+      "locked_code": true,
+      "registry_name": "break_panel_packet",
+      "metadata": {
+        "files": [
+          "src/main/java/net/code/thisnotamod/BreakPanelPacket.java"
+        ]
+      }
     }
   ],
   "variable_elements": [
@@ -10442,7 +10596,8 @@
       "KerfuHead",
       "KerfuBlock",
       "KerfuBlueprint",
-      "Drive"
+      "Drive",
+      "PanelsV2"
     ]
   },
   "language_map": {
@@ -10451,22 +10606,22 @@
       "block.thisnotamod.warning_lamp": "Аварийный светильник",
       "gui.thisnotamod.delivery_gui.Music_disc_main": "Пластинка главной темы",
       "signalmanager.text.2.noisy": ".###.####И########ЗЛЛ#Ю#########Б##Е############ ##Г###О#С#и##д#А#О####Т#####ЭЕ#Т##Т ЛЮ##ЦЕН###И####З####Т##С###Т##Т##Т#ЛЛ########И### Т##С##О###Т######Л#ЦЕ#ЫС#А#### ###########ОБ######Т  ЛЮ#######Е ##ИЗБ#######Е#Т### #ЛЮ####С## #ИЗБЕ###иди #ЭТО О####Т### #####О##### ",
-      "signalmanager.default_special_response": " ",
       "subtitles.mercury_low": "",
+      "signalmanager.default_special_response": " ",
       "block.thisnotamod.w_canim": "Унитаз",
-      "block.thisnotamod.lamp_middle_plus_1_upped": "Электрическая лампа ",
       "block.thisnotamod.lamp_middle_plus_1": "Электрическая лампа ",
+      "block.thisnotamod.lamp_middle_plus_1_upped": "Электрическая лампа ",
       "item.tnam.blood_guidebook": "Иконка гайдбука Blood Magic",
       "block.thisnotamod.lamp": "Электрическая лампа",
       "block.thisnotamod.start_point": "Стартовая точка для дрона",
-      "signalmanager.ui.scanner.banner": "STOLAS Astronomical™",
-      "signalmanager.ui.tuner.label.object": "Объект:",
       "block.thisnotamod.lamp_round_up": "Небольшая лампа",
-      "item.thisnotamod.music_disk_votv_winter.desc": "VotV Winter theme - VtOS21",
+      "signalmanager.ui.tuner.label.object": "Объект:",
+      "signalmanager.ui.scanner.banner": "STOLAS Astronomical™",
       "signal_1_low": "",
-      "gui.thisnotamod.server_interface.sosal": "",
-      "block.thisnotamod.fridge_down": "Fridge Down",
+      "item.thisnotamod.music_disk_votv_winter.desc": "VotV Winter theme - VtOS21",
       "gui.thisnotamod.delivery_gui.ArirPlush": "Плюшевый арирал",
+      "block.thisnotamod.fridge_down": "Fridge Down",
+      "gui.thisnotamod.server_interface.sosal": "",
       "block.thisnotamod.votv_door": "Металлическая дверь",
       "gui.thisnotamod.passlock_gui.button_555": "5",
       "subtitles.sosal222": "",
@@ -10482,12 +10637,12 @@
       "block.thisnotamod.window_right_d": "Окно с решётками",
       "gui.thisnotamod.kerfu_int.button_ispolzovat1": "Погладить",
       "block.thisnotamod.radiotielieskop": "Радиотелескоп",
-      "item.thisnotamod.mannequin_spawn_egg": "Яйцо призыва Манекена",
       "gui.thisnotamod.kerfu_int.button_ispolzovat2": "Патрулировать",
+      "item.thisnotamod.mannequin_spawn_egg": "Яйцо призыва Манекена",
       "key.thisnotamod.open_debug_menu": "Open Debug Menu",
-      "subtitles.knob_sound": "",
-      "gui.thisnotamod.passlock_gui.button_444": "4",
       "block.thisnotamod.argemiapurple": "Аргемия",
+      "gui.thisnotamod.passlock_gui.button_444": "4",
+      "subtitles.knob_sound": "",
       "item.modname.blood_guidebook": "Иконка гайдбука Blood Magic",
       "signalmanager.special_response.0.high": "фы",
       "block.thisnotamod.argemiawhite": "Аргемия",
@@ -10736,6 +10891,7 @@
       "entity.thisnotamod.drone_1": "Дрон (W.I.P)",
       "signal_1_noisy": "",
       "block.thisnotamod.passlock_b": "Кодовый замок",
+      "block.thisnotamod.panels_v_2": "Панели",
       "subtitles.morning_ambient_votv": "amb2_morning",
       "gui.thisnotamod.server_interface.second": "",
       "signal_1_high": "",
@@ -10761,22 +10917,22 @@
       "block.thisnotamod.warning_lamp": "Аварийный светильник",
       "gui.thisnotamod.delivery_gui.Music_disc_main": "Music disc Main Theme",
       "signalmanager.text.2.noisy": ".###.####J########LL#C#########D##H############ ##L###S#S#f##d#A#O####H#####JE#T##T AL##COST###V####T##S###J##T##T#A#L########V### T##S##B###T######L#CO#TS#A#### ###########B######T  A#######S ##OI#######O#JE#T### #L####S## #VOI###ome #HIS O####T### #####O#####",
-      "subtitles.mercury_low": "",
       "signalmanager.default_special_response": " ",
+      "subtitles.mercury_low": "",
       "block.thisnotamod.w_canim": "Toilet",
-      "block.thisnotamod.lamp_middle_plus_1": "Электрическая лампа ",
       "block.thisnotamod.lamp_middle_plus_1_upped": "Электрическая лампа ",
+      "block.thisnotamod.lamp_middle_plus_1": "Электрическая лампа ",
       "item.tnam.blood_guidebook": "Blood Guidebook",
       "block.thisnotamod.lamp": "Электрическая лампа ",
       "block.thisnotamod.start_point": "Стартовая точка для дрона",
-      "signalmanager.ui.scanner.banner": "STOLAS Astronomical™",
-      "signalmanager.ui.tuner.label.object": "Object:",
       "block.thisnotamod.lamp_round_up": "Небольшая лампа",
-      "item.thisnotamod.music_disk_votv_winter.desc": "VotV Winter theme - VtOS21",
+      "signalmanager.ui.tuner.label.object": "Object:",
+      "signalmanager.ui.scanner.banner": "STOLAS Astronomical™",
       "signal_1_low": "signal_1_low",
-      "gui.thisnotamod.server_interface.sosal": "",
-      "block.thisnotamod.fridge_down": "Fridge Down",
+      "item.thisnotamod.music_disk_votv_winter.desc": "VotV Winter theme - VtOS21",
       "gui.thisnotamod.delivery_gui.ArirPlush": "Плюшевый арирал",
+      "block.thisnotamod.fridge_down": "Fridge Down",
+      "gui.thisnotamod.server_interface.sosal": "",
       "block.thisnotamod.votv_door": "Дверь Voices of the Void",
       "gui.thisnotamod.passlock_gui.button_555": "5",
       "subtitles.sosal222": "",
@@ -10792,12 +10948,12 @@
       "block.thisnotamod.window_right_d": "Окно с решётками",
       "gui.thisnotamod.kerfu_int.button_ispolzovat1": "Pet",
       "block.thisnotamod.radiotielieskop": "Радиотелескоп (нажми ПКМ по нижнему блоку)",
-      "item.thisnotamod.mannequin_spawn_egg": "Mannequen Spawn Egg",
       "gui.thisnotamod.kerfu_int.button_ispolzovat2": "Patroul",
+      "item.thisnotamod.mannequin_spawn_egg": "Mannequen Spawn Egg",
       "key.thisnotamod.open_debug_menu": "Open Debug Menu",
-      "subtitles.knob_sound": "",
-      "block.thisnotamod.argemiapurple": "Argemia",
       "gui.thisnotamod.passlock_gui.button_444": "4",
+      "block.thisnotamod.argemiapurple": "Argemia",
+      "subtitles.knob_sound": "",
       "item.modname.blood_guidebook": "Blood Guidebook",
       "signalmanager.special_response.0.high": "фы",
       "block.thisnotamod.argemiawhite": "Argemia",
@@ -11046,6 +11202,7 @@
       "entity.thisnotamod.drone_1": "Drone",
       "signal_1_noisy": "signal_1_noisy",
       "block.thisnotamod.passlock_b": "Кодовый замок",
+      "block.thisnotamod.panels_v_2": "Панели",
       "subtitles.morning_ambient_votv": "amb2_morning",
       "gui.thisnotamod.server_interface.second": "",
       "signal_1_high": "signal_1_high",
@@ -11251,6 +11408,10 @@
                   },
                   {
                     "name": "musicDiscs",
+                    "children": []
+                  },
+                  {
+                    "name": "Panels",
                     "children": []
                   }
                 ]

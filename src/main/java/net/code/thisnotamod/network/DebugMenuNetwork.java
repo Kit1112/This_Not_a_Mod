@@ -8,6 +8,12 @@ import net.code.thisnotamod.ThisnotamodMod;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.DistExecutor;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.core.registries.BuiltInRegistries;
+
+import net.code.thisnotamod.item.DriveItem;
+
 
 import java.util.function.Supplier;
 
@@ -16,15 +22,15 @@ import java.util.function.Supplier;
  * Автоинициализация статическим блоком — без правок основного класса.
  */
 public class DebugMenuNetwork {
-	@OnlyIn(Dist.CLIENT)
-private static final class ClientHandlers {
-    static void applyInitStateClient(S2CInitState m) {
-        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
-        if (mc.screen instanceof net.code.thisnotamod.client.gui.DebugMenuScreen screen) {
-            screen.applyInitState(m);
+    @OnlyIn(Dist.CLIENT)
+    private static final class ClientHandlers {
+        static void applyInitStateClient(S2CInitState m) {
+            net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+            if (mc.screen instanceof net.code.thisnotamod.client.gui.DebugMenuScreen screen) {
+                screen.applyInitState(m);
+            }
         }
     }
-}
 
     // Используем канал MCreator
     public static void sendToServer(Object msg) {
@@ -67,6 +73,13 @@ private static final class ClientHandlers {
                     C2SWeatherAction::decode,
                     C2SWeatherAction::handle
             );
+            ThisnotamodMod.addNetworkMessage(
+                    C2SGiveDriveMessage.class,
+                    C2SGiveDriveMessage::encode,
+                    C2SGiveDriveMessage::decode,
+                    C2SGiveDriveMessage::handle
+            );
+
         } catch (Throwable ignored) {
             // если метод недоступен — проигнорируем (в стандартной сборке MCreator он есть)
         }
@@ -137,9 +150,9 @@ private static final class ClientHandlers {
                                 // новые Signal Download
                                 if ("polarityFilterWidth".equals(m.name))  vars.polarityFilterWidth = m.number;
                                 if ("frequencyFilterWidth".equals(m.name)) vars.frequencyFilterWidth = m.number;
-                                
+
                                 // Signal upgrade
-								if ("upgrade_speed".equals(m.name))        vars.upgrade_speed = m.number;
+                                if ("upgrade_speed".equals(m.name))        vars.upgrade_speed = m.number;
                             } else { // BOOL
                                 if ("debug".equals(m.name))       vars.debug = m.bool;
                                 if ("TimeDisplay".equals(m.name)) vars.TimeDisplay = m.bool;
@@ -306,6 +319,88 @@ private static final class ClientHandlers {
         }
     }
 
+    public static class C2SGiveDriveMessage {
+    public int signalId;
+    public int level;
+    public boolean isCopy;
+    public String size;
+    public String signalName; // <-- новое поле
+
+    public C2SGiveDriveMessage() {}
+
+    public C2SGiveDriveMessage(int signalId, int level, boolean isCopy, String size, String signalName) {
+        this.signalId = signalId;
+        this.level = level;
+        this.isCopy = isCopy;
+        this.size = (size != null) ? size : "";
+        this.signalName = (signalName != null) ? signalName : "";
+    }
+
+    public static void encode(C2SGiveDriveMessage m, FriendlyByteBuf buf) {
+        buf.writeInt(m.signalId);
+        buf.writeInt(m.level);
+        buf.writeBoolean(m.isCopy);
+        buf.writeUtf(m.size);
+        buf.writeUtf(m.signalName);
+    }
+
+    public static C2SGiveDriveMessage decode(FriendlyByteBuf buf) {
+        C2SGiveDriveMessage m = new C2SGiveDriveMessage();
+        m.signalId = buf.readInt();
+        m.level = buf.readInt();
+        m.isCopy = buf.readBoolean();
+        m.size = buf.readUtf();
+        m.signalName = buf.readUtf();
+        return m;
+    }
+
+    public static void handle(C2SGiveDriveMessage m, java.util.function.Supplier<NetworkEvent.Context> ctx) {
+        ctx.get().enqueueWork(() -> {
+            ServerPlayer player = ctx.get().getSender();
+            if (player == null) return;
+            if (m.signalId < 0) return;
+
+            int lvl = Math.max(0, Math.min(3, m.level));
+
+            Item driveItem = findDriveItem();
+            if (driveItem == null) return;
+
+            ItemStack stack = new ItemStack(driveItem);
+            var tag = stack.getOrCreateTag();
+
+            tag.putInt(DriveItem.TAG_SIGNAL_ID, m.signalId);
+            tag.putInt(DriveItem.TAG_LEVEL, lvl);
+            tag.putBoolean(DriveItem.TAG_IS_COPY, m.isCopy);
+            if (m.size != null && !m.size.isEmpty()) {
+                tag.putString(DriveItem.TAG_SIG_SIZE, m.size);
+            }
+
+            // ==== ВОТ ЭТО МЕНЯЕМ: теперь пишем ИМЯ СИГНАЛА, а не игрока ====
+            if (m.signalName != null && !m.signalName.isEmpty()) {
+                tag.putString(DriveItem.TAG_USER_NAME, m.signalName);
+            }
+
+            // Выдать игроку: сначала в инвентарь, если нет места — дропнуть
+            if (!player.getInventory().add(stack)) {
+                player.drop(stack, false);
+            }
+        });
+        ctx.get().setPacketHandled(true);
+    }
+
+    private static Item findDriveItem() {
+        for (Item item : BuiltInRegistries.ITEM) {
+            if (item instanceof DriveItem) {
+                return item;
+            }
+        }
+        return null;
+    }
+}
+
+
+
+
     // ----- Состояние для клиента -----
     public static class S2CInitState {
         // --- doubles ---
@@ -386,7 +481,7 @@ private static final class ClientHandlers {
                     s.polarityFilterWidth  = vars.polarityFilterWidth;
                     s.frequencyFilterWidth = vars.frequencyFilterWidth;
                     // Signal upgrade
-					s.upgrade_speed        = vars.upgrade_speed;
+                    s.upgrade_speed        = vars.upgrade_speed;
 
                     // player bools
                     s.debug       = vars.debug;
@@ -404,15 +499,12 @@ private static final class ClientHandlers {
             return s;
         }
 
-public static void handle(S2CInitState m, Supplier<NetworkEvent.Context> ctx) {
-    ctx.get().enqueueWork(() -> {
-        final S2CInitState msg = m; // фиксируем ссылку, чтобы ничего лишнего не захватывать
-        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> (Runnable) () -> ClientHandlers.applyInitStateClient(msg));
-    });
-    ctx.get().setPacketHandled(true);
-}
-
-
-
+        public static void handle(S2CInitState m, Supplier<NetworkEvent.Context> ctx) {
+            ctx.get().enqueueWork(() -> {
+                final S2CInitState msg = m; // фиксируем ссылку, чтобы ничего лишнего не захватывать
+                DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> (Runnable) () -> ClientHandlers.applyInitStateClient(msg));
+            });
+            ctx.get().setPacketHandled(true);
+        }
     }
 }

@@ -1,0 +1,7 @@
+
+{
+  "parent": "thisnotamod:displaysettings/locker_disp",
+  "textures": {
+    "particle": "thisnotamod:block/panels"
+  }
+}

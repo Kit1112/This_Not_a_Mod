@@ -32,6 +32,7 @@ import net.code.thisnotamod.block.renderer.StartPointTileRenderer;
 import net.code.thisnotamod.block.renderer.ShopIntTestTileRenderer;
 import net.code.thisnotamod.block.renderer.RadiotielieskopTileRenderer;
 import net.code.thisnotamod.block.renderer.RadarTileRenderer;
+import net.code.thisnotamod.block.renderer.PanelsV2TileRenderer;
 import net.code.thisnotamod.block.renderer.LightSwitchTileRenderer;
 import net.code.thisnotamod.block.renderer.Lampplus1UppedTileRenderer;
 import net.code.thisnotamod.block.renderer.Lampplus1TileRenderer;
@@ -102,5 +103,6 @@ public class ClientListener {
 		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.KERFU_HEAD.get(), context -> new KerfuHeadTileRenderer());
 		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.KERFU_BLOCK.get(), context -> new KerfuBlockTileRenderer());
 		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.WORK_STAT_TEST_2.get(), context -> new WorkStatTest2TileRenderer());
+		event.registerBlockEntityRenderer(ThisnotamodModBlockEntities.PANELS_V_2.get(), context -> new PanelsV2TileRenderer());
 	}
 }

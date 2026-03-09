@@ -1,0 +1,43 @@
+package net.code.thisnotamod.network;
+
+import net.minecraft.resources.ResourceLocation;
+import net.minecraftforge.network.NetworkRegistry;
+import net.minecraftforge.network.simple.SimpleChannel;
+
+public class ModMessages {
+    private static SimpleChannel INSTANCE;
+    private static int packetId = 0;
+
+    private static int id() {
+        return packetId++;
+    }
+
+    public static void register() {
+        SimpleChannel net = NetworkRegistry.ChannelBuilder
+                .named(new ResourceLocation("thisnotamod", "messages"))
+                .networkProtocolVersion(() -> "1.0")
+                .clientAcceptedVersions(s -> true)
+                .serverAcceptedVersions(s -> true)
+                .simpleChannel();
+
+        INSTANCE = net;
+
+        // Старый пакет
+        net.messageBuilder(OpenPanelPacket.class, id())
+                .decoder(OpenPanelPacket::new)
+                .encoder(OpenPanelPacket::toBytes)
+                .consumerNetworkThread(OpenPanelPacket::handle)
+                .add();
+
+        // НОВЫЙ ПАКЕТ ДЛЯ РАЗРУШЕНИЯ
+        net.messageBuilder(BreakPanelPacket.class, id())
+                .decoder(BreakPanelPacket::new)
+                .encoder(BreakPanelPacket::toBytes)
+                .consumerNetworkThread(BreakPanelPacket::handle)
+                .add();
+    }
+
+    public static <MSG> void sendToServer(MSG message) {
+        INSTANCE.sendToServer(message);
+    }
+}
